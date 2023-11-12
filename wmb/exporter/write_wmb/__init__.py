@@ -473,7 +473,7 @@ def create_wmb_textures(wmb_file, data): #wmb4
     wmb_file.seek(data.textures_Offset)
     for tex in data.textures.textures:
         write_uInt32(wmb_file, tex[0]) # flags
-        write_uInt32(wmb_file, int(tex[1], 16)) # wta index/hash thing
+        write_uInt32(wmb_file, int(tex[1])) # wta index/hash thing
 
 def create_wmb_unknownWorldData(wmb_file, data):
     wmb_file.seek(data.unknownWorldData_Offset)

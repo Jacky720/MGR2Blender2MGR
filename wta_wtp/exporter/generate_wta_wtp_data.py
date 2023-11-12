@@ -17,15 +17,15 @@ def generate(context):
             continue
 
         # Check if identifier is 8 chars long
-        if len( texture.texture_identifier) != 8:
-            print('[!] WTA/WTP Export Error: A texture identifier is not characters long.')
-            ShowMessageBox('A texture identifier is not characters long.', 'WTA/WTP Export Error', 'ERROR')
-            return None, None, None
+        #if len( texture.texture_identifier) != 8:
+        #    print('[!] WTA/WTP Export Error: A texture identifier is not characters long.')
+        #    ShowMessageBox('A texture identifier is not characters long.', 'WTA/WTP Export Error', 'ERROR')
+        #    return None, None, None
 
-        # Check if identifier is valid hex
-        if not all(c in string.hexdigits for c in texture.texture_identifier):
-            print('[!] WTA/WTP Export Error: A texture identifier contains a non-hex character.')
-            ShowMessageBox('A texture identifier contains a non-hex character.', 'WTA/WTP Export Error', 'ERROR')
+        # Check if identifier is valid hex NOPE, DECIMAL
+        if not all(c in string.digits for c in texture.texture_identifier):
+            print('[!] WTA/WTP Export Error: A texture identifier contains a non-numeric character.')
+            ShowMessageBox('A texture identifier contains a non-numeric character.', 'WTA/WTP Export Error', 'ERROR')
             return None, None, None
 
         # Assign Identifier.

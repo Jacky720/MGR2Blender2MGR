@@ -281,7 +281,7 @@ class wmb3_material(object):
             wmb_fp.seek(textureOffset + i * 8)
             #print("Seeking to textureOffset + i * 8: %s" % hex(textureOffset + i * 8))
             offset = read_uint32(wmb_fp)
-            identifier = "%08x"%read_uint32(wmb_fp)
+            identifier = str(read_uint32(wmb_fp))
             wmb_fp.seek(offset)
             #print("Seeking to offset: %s" % hex(offset))
             textureTypeName = to_string(wmb_fp.read(256))
@@ -885,7 +885,7 @@ class wmb4_texture(object):
     def read(self, wmb_fp):
         super(wmb4_texture, self).__init__()
         self.flags = read_uint32(wmb_fp)
-        self.id = "%08x" % read_uint32(wmb_fp)
+        self.id = str(read_uint32(wmb_fp))
 
 class wmb4_vertexGroup(object):
     """docstring for wmb4_vertexGroup"""

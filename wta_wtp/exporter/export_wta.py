@@ -139,7 +139,7 @@ def main(context, export_filepath):
         wta_fp.write(to_bytes(unknownArray1[i]))
     wta_fp.write(padding)
     for i in range(textureCount):
-        wta_fp.write(to_bytes(wtaTextureIdentifier[i]))
+        wta_fp.write(to_bytes(int(wtaTextureIdentifier[i])))
     wta_fp.write(padding)
     for i in range(textureCount):
         wta_fp.write(to_bytes(unknownArray2[(i*5)]))
