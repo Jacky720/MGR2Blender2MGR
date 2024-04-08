@@ -223,6 +223,7 @@ def construct_mesh(mesh_data, collection_name):
         # can't ditch these two, they're used later during import
         obj['Materials'] = mesh_data[15]
         obj['VertexIndexStart'] = mesh_data[17]
+        obj['VertexIndexCount'] = mesh_data[20]
         if mesh_data[19] is not None: # scr import, TODO expand for props
             transform = mesh_data[19][2:11]
             #print(mesh_data[19])
@@ -734,7 +735,8 @@ def format_wmb_mesh(wmb, collection_name, scr_header=None):
                 wmb.boneSetArray[batchData.boneSetsIndex] if batchData.boneSetsIndex > -1 else None, # boneSet
                 meshInfo[5], # vertexStart
                 batch.batchGroup,       # batch group, which of the four supplements
-                scr_header   # header data for SCR transformations
+                scr_header,  # header data for SCR transformations
+                meshInfo[6]  # vertexCount
             ], collection_name)
             meshes.append(obj)
     

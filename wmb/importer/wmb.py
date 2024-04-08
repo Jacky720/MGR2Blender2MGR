@@ -1675,6 +1675,8 @@ class WMB(object):
                         print(meshVertices[i].boneWeights) 
                 else:
                     self.hasBone = False
+        if wmb4:
+            return usedVertices, faces, usedVertexIndexArray, boneWeightInfos, vertex_colors, vertexStart, vertexCount
         return usedVertices, faces, usedVertexIndexArray, boneWeightInfos, vertex_colors, vertexStart
 
 def load_data(wmb_fp, pointer, chunkClass, other=None):
