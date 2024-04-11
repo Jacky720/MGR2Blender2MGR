@@ -1178,7 +1178,7 @@ class wmb4_mystery(object):
     
         def read(self, wmb_fp):
             self.mysteryA = read_uint32(wmb_fp)
-            self.mysteryB = read_uint32(wmb_fp)
+            self.mysteryB = read_int32(wmb_fp)
             self.mysteryC = read_int16(wmb_fp)
             self.mysteryC2 = read_int16(wmb_fp)
             self.mysteryDPointer = read_uint32(wmb_fp)
