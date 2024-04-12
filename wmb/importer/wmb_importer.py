@@ -886,8 +886,16 @@ def import_unknowWorldDataArray(wmb):
     bpy.context.scene['unknownWorldData'] = unknownWorldDataDict
 
 def load_mysterychunk(chunk, collection_name):
+    col = bpy.data.collections.new("looseCoords")
+    bpy.context.scene.collection.children.link(col)
+    print("Processing mystery chunk!")
     def mset(name, val): # short for mystery should rename
         bpy.data.collections["WMB"][name] = val # formerly collection name
+    def makeobj(coords, name="Holder of Place"):
+        target = bpy.data.objects.new(name, None)
+        target.empty_display_size = 0.15
+        target.location = coords
+        bpy.data.collections["looseCoords"].objects.link(target)
     
     mset("mystery", True)
     
@@ -908,14 +916,21 @@ def load_mysterychunk(chunk, collection_name):
     for i, three in enumerate(chunk.mystery3):
         for j, content in enumerate(three.vectors):
             mset("3-%2d-%2d-0"%(i,j), content.mysteryA)
+            #makeobj(content.mysteryA[:3], "3-%2d-%2d-0"%(i,j))
             mset("3-%2d-%2d-1"%(i,j), content.mysteryB)
+            #makeobj(content.mysteryB[:3], "3-%2d-%2d-1"%(i,j))
             mset("3-%2d-%2d-2"%(i,j), content.mysteryC)
+            #makeobj(content.mysteryC[:3], "3-%2d-%2d-2"%(i,j))
             mset("3-%2d-%2d-3"%(i,j), content.mysteryD)
+            #makeobj(content.mysteryD[:3], "3-%2d-%2d-3"%(i,j))
     
     for i, four in enumerate(chunk.mystery4):
         mset("4-%2d-A"%i, four.posA)
+        #makeobj(four.posA, "4-%2d-A"%i)
         mset("4-%2d-B"%i, four.posB)
+        #makeobj(four.posB, "4-%2d-B"%i)
         mset("4-%2d-C"%i, four.posC)
+        #makeobj(four.posC, "4-%2d-C"%i)
         mset("4-%2d-D"%i, four.mysteryA) # always 0 or 1??
         mset("4-%2d-E"%i, four.mysteryB)
         mset("4-%2d-startVertex"%i, four.startIndexA)
@@ -952,6 +967,7 @@ def load_mysterychunk(chunk, collection_name):
         sixAFlat = []
         for vec in six.mysteryA:
             sixAFlat.extend([vec.x, vec.y, vec.z, vec.w])
+            #makeobj([vec.x, vec.z, vec.y], "6-%2d-A-%2d" % (i, len(sixAFlat) // 4))
         mset("6-%2d-A"%i, sixAFlat)
         mset("6-%2d-B"%i, six.mysteryB)
     myList = [x.mysteryB for x in chunk.mystery6]
@@ -960,11 +976,13 @@ def load_mysterychunk(chunk, collection_name):
     
     for i, seven in enumerate(chunk.mystery7):
         mset("7-%2d-A"%i, seven.unknownA)
+        #makeobj(seven.unknownA[:3], "7-%2d-A"%i)
         mset("7-%2d-B"%i, seven.unknownB)
-        mset("7-%2d-C"%i, seven.unknownC)
-        mset("7-%2d-D"%i, seven.unknownD)
-        mset("7-%2d-E"%i, seven.unknownE)
-        mset("7-%2d-F"%i, seven.unknownF)
+        #makeobj(seven.unknownB[:3], "7-%2d-B"%i)
+        mset("7-%2d-startVector"%i, seven.unknownC)
+        mset("7-%2d-vectorCount"%i, seven.unknownD)
+        mset("7-%2d-startShort"%i, seven.unknownE)
+        mset("7-%2d-shortCount"%i, seven.unknownF)
     myList = [x.unknownC for x in chunk.mystery7]
     print("7C:")
     print(min(myList), max(myList), myList)
@@ -982,6 +1000,7 @@ def load_mysterychunk(chunk, collection_name):
         eightVectorsFlat = []
         for vec in eight.vectors:
             eightVectorsFlat.extend(vec)
+            #makeobj(vec, "8-%2d-%2d"%(i, len(eightVectorsFlat)//3))
         mset("8-%2d-vectors"%i, eightVectorsFlat)
         mset("8-%2d-A"%i, eight.mysteryA)
         mset("8-%2d-B"%i, eight.mysteryB)
