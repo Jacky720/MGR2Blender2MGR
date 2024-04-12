@@ -1217,7 +1217,7 @@ class c_mystery(object): # wmb4
             vectorGroups = []
             for i, vals in enumerate(values):
                 vectorGroups.append([])
-                for j in range(int(len(vals)/4)):
+                for j in range(len(vals)//4):
                     vectorGroups[-1].append([[], [], [], []])
                 for key, val in vals.items():
                     splitkey = key.split("-")
