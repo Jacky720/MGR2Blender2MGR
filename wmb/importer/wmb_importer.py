@@ -944,6 +944,7 @@ def load_mysterychunk(chunk, collection_name):
     for i, five in enumerate(chunk.mystery5):
         mset("5-%2d-A"%i, five.mysteryA)
         mset("5-%2d-B"%i, five.mysteryB)
+        mset("5-%2d-B2"%i, five.mysteryB2)
         mset("5-%2d-C"%i, five.mysteryC)
         mset("5-%2d-C2"%i, five.mysteryC2)
         
