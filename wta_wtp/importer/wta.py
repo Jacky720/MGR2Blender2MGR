@@ -22,8 +22,8 @@ class WTA(object):
             self.unknownArray1 = [0] * self.textureCount
             self.unknownArray2 = []
             print(self.textureCount)
-            wta_fp.seek(self.textureOffsetArrayOffset)
             for i in range(self.textureCount):
+                wta_fp.seek(self.textureOffsetArrayOffset + i * 4)
                 self.wtaTextureOffset[i] = read_uint32(wta_fp)
                 wta_fp.seek(self.textureSizeArrayOffset + i * 4)
                 self.wtaTextureSize[i] =  read_uint32(wta_fp) 
