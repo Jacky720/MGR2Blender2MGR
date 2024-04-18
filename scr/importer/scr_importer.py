@@ -83,6 +83,7 @@ class ImportSCR:
                 prop_category = ly2.read(2).decode("ascii")
                 if prop_category not in {"ba", "bh", "bm"}:
                     print("Prop category (%s) not in data001, skipping" % prop_category)
+                    ly2.read(10)
                     continue
                 prop_id = "%04x" % struct.unpack("<H", ly2.read(2))[0]
                 prop_name = prop_category + prop_id
