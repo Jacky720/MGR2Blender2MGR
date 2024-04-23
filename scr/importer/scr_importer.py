@@ -99,6 +99,7 @@ class ImportSCR:
                 else:
                     # no i'm not making an extra cpk extractor
                     print("Could not find %s to extract, skipping" % prop_name)
+                    ly2.read(8)
                     continue
                 
                 (instancesPointer, instancesCount) = struct.unpack("<II", ly2.read(8))
