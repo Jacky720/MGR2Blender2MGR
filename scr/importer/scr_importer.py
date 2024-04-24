@@ -15,13 +15,11 @@ class ImportSCR:
         head = os.path.split(file_path)[0]
         if os.path.exists(file_path): # not always
           with open(file_path, 'rb') as f:
-            id = f.read(4)
+            header = struct.unpack('<4s2hI', f.read(12))
             print('ID read')
-            if id != b'SCR\x00':
+            if header[0] != b'SCR\x00':
                 raise ValueError("Wrong file type")
     
-            f.seek(0)
-            header = struct.unpack('<4s2hI', f.read(12))
             num_models = header[2]
             offset_offsets_models = header[3]
         
