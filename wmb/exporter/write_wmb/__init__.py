@@ -232,7 +232,10 @@ def create_wmb_header(wmb_file, data, wmb4=False):
     else:
         write_uInt32(wmb_file, data.vertexFormat)
         
-        write_Int16(wmb_file, 0 if data.numBones > 0 else -1) # TODO should be unsigned?
+        if data.numBones > 0 or data.vertexFormat == 0x10307: # melon has referencebone?
+            write_Int16(wmb_file, 0)
+        else:
+            write_Int16(wmb_file, -1)
         if data.vertexFormat > 0x107: # TODO more precise
             write_Int16(wmb_file, -1)
         else:

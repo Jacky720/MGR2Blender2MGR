@@ -85,6 +85,32 @@ class c_batches(object):
                 
                 if wmb4:
                     batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
+                    if obj.name == "0-bh0020-0": # hq outside
+                        bpy.data.collections["WMB"]["4- 0-startIndex"] = batches[-1].indexStart
+                        bpy.data.collections["WMB"]["4- 0-indexCount"] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["4- 0-startVertex"] = batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["4- 0-vertexCount"] = batches[-1].numVertexes
+                    elif obj.name == "0-bh0020-2": # low-poly outside
+                        print("Outside:", batches[-1].indexStart, batches[-1].numIndexes)
+                        bpy.data.collections["WMB"]["7- 1-startShort"] = 0#batches[-1].indexStart
+                        bpy.data.collections["WMB"]["7- 1-shortCount"] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["7- 1-startVector"] = 0#batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["7- 1-vectorCount"] = batches[-1].numVertexes
+                    elif obj.name == "1-pulp-0": # hq inside
+                        bpy.data.collections["WMB"]["4- 1-startIndex"] = batches[-1].indexStart
+                        bpy.data.collections["WMB"]["4- 1-indexCount"] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["4- 1-startVertex"] = batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["4- 1-vertexCount"] = batches[-1].numVertexes
+                        bpy.data.collections["WMB"]["4- 2-startIndex"] = batches[-1].indexStart
+                        bpy.data.collections["WMB"]["4- 2-indexCount"] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["4- 2-startVertex"] = batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["4- 2-vertexCount"] = batches[-1].numVertexes
+                    elif obj.name == "1-pulp-1": # low-poly inside
+                        print("Inside:", batches[-1].indexStart, batches[-1].numIndexes)
+                        bpy.data.collections["WMB"]["7- 0-startShort"] = 0#batches[-1].indexStart
+                        bpy.data.collections["WMB"]["7- 0-shortCount"] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["7- 0-startVector"] = 0#batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["7- 0-vectorCount"] = batches[-1].numVertexes
                 else:
                     batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, cur_numVertexes, obj_boneSetIndex))
                 cur_indexStart += batches[-1].numIndexes
@@ -944,7 +970,7 @@ class c_mesh(object):
                                     materials.append(matID)
                                     
             materials.sort()
-            if self.name == "lowerLeg_dam1_LBODY_DEC":
+            if self.name == "pulp":
                 materials = materials[:1]
             return materials
 
@@ -1565,6 +1591,8 @@ class c_vertexGroup(object):
                 print('   [>] Generating vertex data for object', bvertex_obj_obj.name)
                 loops = get_blenderLoops(self, bvertex_obj_obj)
                 sorted_loops = sorted(loops, key=lambda loop: loop.vertex_index)
+                
+                vector4list = []
 
                 if self.vertexFlags not in {0, 1, 4, 5, 12, 14} or wmb4:
                     boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
@@ -1720,6 +1748,8 @@ class c_vertexGroup(object):
                         color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
 
                     vertexes.append([position, tangents, normal, uv_maps, boneIndexes, boneWeights, color])
+                    vector4list.extend(position)
+                    vector4list.append(1.0)
 
                     
                     ##################################################
@@ -1784,6 +1814,11 @@ class c_vertexGroup(object):
                     
                     vertexExData = [normal, uv_maps, color]
                     vertexesExData.append(vertexExData)
+                
+                if bvertex_obj_obj.name == "0-bh0020-2":
+                    bpy.data.collections["WMB"]["6- 1-A"] = vector4list
+                elif bvertex_obj_obj.name == "1-pulp-1":
+                    bpy.data.collections["WMB"]["6- 0-A"] = vector4list
             #print(hex(len(vertexes)))
             
             return vertexes, vertexesExData
@@ -1791,7 +1826,15 @@ class c_vertexGroup(object):
         def get_indexes(self):
             indexesOffset = 0
             indexes = []
+            startOutside = -1
+            startInside = -1
             for obj in self.blenderObjects:
+                if obj.name == "0-bh0020-2":
+                    startOutside = len(indexes)
+                    numOutside = len(obj.data.loops)
+                elif obj.name == "1-pulp-1":
+                    startInside = len(indexes)
+                    numInside = len(obj.data.loops)
                 for loop in obj.data.loops:
                     indexes.append(loop.vertex_index + indexesOffset)
                 if not wmb4:
@@ -1805,7 +1848,14 @@ class c_vertexGroup(object):
                     flip_counter = 0
                     continue
                 flip_counter += 1
-
+            
+            if startOutside >= 0:
+                print("Outside:", startOutside, numOutside)
+                bpy.data.collections["WMB"]["6- 1-B"] = indexes[startOutside:(startOutside + numOutside)]
+            if startInside >= 0:
+                print("Inside:", startInside, numInside)
+                bpy.data.collections["WMB"]["6- 0-B"] = indexes[startInside:(startInside + numInside)]
+            
             return indexes
 
         self.vertexSize = 32 if wmb4 else 28
