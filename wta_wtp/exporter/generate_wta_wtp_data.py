@@ -18,8 +18,8 @@ def generate(context):
 
         # Check if identifier is 8 chars long
         if len( texture.texture_identifier) != 8:
-            print('[!] WTA/WTP Export Error: A texture identifier is not characters long.')
-            ShowMessageBox('A texture identifier is not characters long.', 'WTA/WTP Export Error', 'ERROR')
+            print('[!] WTA/WTP Export Error: A texture identifier is not 8 characters long.')
+            ShowMessageBox('A texture identifier is not 8 characters long.', 'WTA/WTP Export Error', 'ERROR')
             return None, None, None
 
         # Check if identifier is valid hex
@@ -44,7 +44,7 @@ def generate(context):
         texture_paths_array.append(texture.texture_path)
 
         # Assign Albedo & EnvMap Indexes
-        if texture.texture_map_type in ['g_AlbedoMap', 'g_EnvMap']:
+        if texture.texture_map_type in ['g_EnvMap'] or 'g_AlbedoMap' in texture.texture_map_type:
             albedo_indexes.append(true_index)
         
         true_index += 1
