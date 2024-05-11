@@ -61,15 +61,15 @@ class MotHeader:
 	
 	def writeToFile(self, file: BufferedReader):
 		write_uInt32(file, self.magic)
-		write_uInt32(file, self.hash)
+		#write_uInt32(file, self.hash)
 		write_uInt16(file, self.flag)
 		write_Int16(file, self.frameCount)
 		write_uInt32(file, self.recordsOffset)
 		write_uInt32(file, self.recordsCount)
-		write_uInt32(file, self.unknown)
+		#write_uInt32(file, self.unknown)
 		animationName = self.animationName.encode("utf-8")
 		animationName += b"\0" * (20 - len(animationName))
-		file.write(animationName)
+		#file.write(animationName)
 
 class MotRecord:
 	boneIndex: int
