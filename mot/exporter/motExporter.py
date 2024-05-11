@@ -143,7 +143,7 @@ def makeRecords(animObjs: List[AnimationObject]) -> List[MotRecord]:
     records: List[MotRecord] = []
     for animObj in animObjs:
         record = MotRecord()
-        record.boneIndex = animObj.bone.bone["ID"] if animObj.bone else -1
+        record.boneIndex = int(animObj.bone.bone.name[4:], 10) if animObj.bone else -1
         if animObj.property == "location":
             record.propertyIndex = animObj.channel
         elif animObj.property == "rotation":
