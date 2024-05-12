@@ -223,10 +223,10 @@ def exportMot(path: str, patchExisting: bool):
         print(f"Using animation name '{animationName}'")
     header.animationName = animationName
     header.recordsCount = len(records)
-    header.recordsOffset = 44
+    header.recordsOffset = 16
 
     # determine interpolation offsets relative to record position
-    offset = 44 + (len(records) + 1) * 12
+    offset = 16 + (len(records) + 1) * 12
     for i, record in enumerate(records):
         if record.interpolation is None:
             continue
