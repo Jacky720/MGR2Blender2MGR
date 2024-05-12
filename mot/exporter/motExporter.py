@@ -96,8 +96,7 @@ def makeBakedInterpolation(animObj: AnimationObject, record: MotRecord):
 def makeBezierInterpolation(animObj: AnimationObject, record: MotRecord):
     interpolation = MotInterpolSplines()
     interpolation.splines = []
-    for i in range(len(animObj.curve.keyframe_points)):
-        keyFrame = animObj.curve.keyframe_points[i]
+    for i, keyFrame in enumerate(animObj.curve.keyframe_points):
         spline = Spline()
         spline.frame = round(keyFrame.co[0])
         spline.value = keyFrame.co[1] + animObj.valueOffset
@@ -107,6 +106,9 @@ def makeBezierInterpolation(animObj: AnimationObject, record: MotRecord):
         else:
             # get handles
             prevKeyFrame = animObj.curve.keyframe_points[i - 1]
+            # THIS IS INCORRECT
+            split.frame -= round(prevKeyFrame.co[0])
+            # THAT WAS INCORRECT
             inHandle = Vector(keyFrame.handle_left)
             # normalize to x range 0-1
             xDist = keyFrame.co[0] - prevKeyFrame.co[0]
