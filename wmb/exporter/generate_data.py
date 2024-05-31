@@ -978,7 +978,7 @@ class c_mesh(object):
                                     materials.append(matID)
                                     
             materials.sort()
-            if self.name == "lowerLeg_dam1_LBODY_DEC":
+            if obj['ID'] == 0:
                 materials = materials[:1]
             return materials
 

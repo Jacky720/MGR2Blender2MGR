@@ -877,8 +877,8 @@ class wmb4_mesh(object):
         self.materials = load_data_array(wmb_fp, self.materialsPointer, self.materialsCount, uint16)
         if DEBUG_MESH_PRINT:
             print("Materials:", self.materialsCount, self.materials)
-        if self.name == "lowerLeg_dam1_LBODY_DEC":
-            self.materials = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        # if self.name == "lowerLeg_dam1_LBODY_DEC":
+        #     self.materials = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 
 class wmb4_texture(object):
     """The WMB4 texture is delightfully simple."""
@@ -1585,6 +1585,12 @@ class WMB(object):
             for mesh in self.meshArray:
                 for materialIndex, material in enumerate(mesh.materials):
                     self.materialArray[material].materialName = mesh.name + "-%d" % materialIndex
+            
+            # Hack (index and material used differently than the loop immediately above)
+            for materialIndex, material in enumerate(self.materialArray):
+                if material.materialName == "UnusedMaterial":
+                    self.meshArray[0].materials.append(materialIndex)
+                    self.materialArray[materialIndex].materialName = self.meshArray[0].name + "-x-%d" % materialIndex
             
             self.mystery = load_data(wmb_fp, self.wmb_header.unknownPointer, wmb4_mystery)
             
