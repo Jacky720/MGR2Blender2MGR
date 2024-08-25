@@ -232,7 +232,10 @@ def create_wmb_header(wmb_file, data, wmb4=False):
     else:
         write_uInt32(wmb_file, data.vertexFormat)
         
-        write_Int16(wmb_file, 0 if data.numBones > 0 else -1) # TODO should be unsigned?
+        if data.numBones > 0 or data.vertexFormat == 0x10307: # melon has referencebone?
+            write_Int16(wmb_file, 0)
+        else:
+            write_Int16(wmb_file, -1)
         if data.vertexFormat > 0x107: # TODO more precise
             write_Int16(wmb_file, -1)
         else:
@@ -472,7 +475,7 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
         write_float(wmb_file, vec[1])
         write_float(wmb_file, vec[2])
     
-    def write_vector4(wmb_file, vec):
+    def write_vector4(wmb_file, vec): # wait, there are no vector4s? they were made up by the la-li-lu-le-lo?
         write_vector3(wmb_file, vec) # :)
         write_float(wmb_file, vec[3])
     
@@ -514,9 +517,10 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
         pos = wmb_file.tell()
         wmb_file.seek(mystery3["offset"])
         for vecGroup in mystery3["content"]:
-            for vec in vecGroup:
+            for vec in vecGroup[:5]:
                 #print(vec)
-                write_vector4(wmb_file, vec)
+                write_vector3(wmb_file, vec)
+            write_uInt32(wmb_file, vecGroup[-1])
         wmb_file.seek(pos)
     
     subchunk = data.mystery.mystery[3]["content"]
@@ -524,8 +528,11 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
     for mystery4 in subchunk:
         write_vector3(wmb_file, mystery4["A"])
         write_vector3(wmb_file, mystery4["B"])
-        write_vector3(wmb_file, mystery4["C"])
+        write_uInt32(wmb_file, mystery4["C"])
         write_uInt32(wmb_file, mystery4["D"])
+        write_uInt16(wmb_file, mystery4["E"])
+        write_uInt16(wmb_file, mystery4["E2"])
+        write_uInt32(wmb_file, mystery4["F"])
         write_uInt32(wmb_file, mystery4["offset"])
         write_uInt32(wmb_file, mystery4["startVertex"])
         write_uInt32(wmb_file, mystery4["vertexCount"])
@@ -533,7 +540,7 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
         write_uInt32(wmb_file, mystery4["indexCount"])
         pos = wmb_file.tell()
         wmb_file.seek(mystery4["offset"])
-        for val in mystery4["E"]: # 20
+        for val in mystery4["array"]: # 20
             write_uInt32(wmb_file, val)
         wmb_file.seek(pos)
     
@@ -580,12 +587,14 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
     subchunk = data.mystery.mystery[6]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[6])
     for mystery7 in subchunk:
-        write_vector4(wmb_file, mystery7["A"])
-        write_vector4(wmb_file, mystery7["B"])
-        write_uInt32(wmb_file, mystery7["startVector"])
-        write_uInt32(wmb_file, mystery7["vectorCount"])
-        write_uInt32(wmb_file, mystery7["startShort"])
-        write_uInt32(wmb_file, mystery7["shortCount"])
+        write_vector3(wmb_file, mystery7["A"])
+        write_vector3(wmb_file, mystery7["B"])
+        write_uInt32(wmb_file, mystery7["C"])
+        write_float(wmb_file, mystery7["D"])
+        write_uInt32(wmb_file, mystery7["startVertex"])
+        write_uInt32(wmb_file, mystery7["vertexCount"])
+        write_uInt32(wmb_file, mystery7["startIndex"])
+        write_uInt32(wmb_file, mystery7["indexCount"])
     
     subchunk = data.mystery.mystery[7]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[7])

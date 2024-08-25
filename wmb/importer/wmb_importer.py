@@ -885,7 +885,7 @@ def load_mysterychunk(chunk, collection_name):
     
     for i, one in enumerate(chunk.mystery1):
         mset("1-%2d-name"%i, one.name)
-        mset("1-%2d-parent"%i, one.mysteryA)
+        mset("1-%2d-parent"%i, one.parent)
         mset("1-%2d-B"%i, one.mysteryB)
     
     for i, two in enumerate(chunk.mystery2):
@@ -899,29 +899,34 @@ def load_mysterychunk(chunk, collection_name):
     
     for i, three in enumerate(chunk.mystery3):
         for j, content in enumerate(three.vectors):
-            mset("3-%2d-%2d-0"%(i,j), content.mysteryA)
+            mset("3-%2d-%2d-A"%(i,j), content.mysteryA)
             #makeobj(content.mysteryA[:3], "3-%2d-%2d-0"%(i,j))
-            mset("3-%2d-%2d-1"%(i,j), content.mysteryB)
+            mset("3-%2d-%2d-B"%(i,j), content.mysteryB)
             #makeobj(content.mysteryB[:3], "3-%2d-%2d-1"%(i,j))
-            mset("3-%2d-%2d-2"%(i,j), content.mysteryC)
+            mset("3-%2d-%2d-C"%(i,j), content.mysteryC)
             #makeobj(content.mysteryC[:3], "3-%2d-%2d-2"%(i,j))
-            mset("3-%2d-%2d-3"%(i,j), content.mysteryD)
+            mset("3-%2d-%2d-D"%(i,j), content.mysteryD)
             #makeobj(content.mysteryD[:3], "3-%2d-%2d-3"%(i,j))
+            mset("3-%2d-%2d-E"%(i,j), content.mysteryE)
+            #makeobj(content.mysteryE[:3], "3-%2d-%2d-3"%(i,j))
+            mset("3-%2d-%2d-F"%(i,j), content.mysteryF)
     
     for i, four in enumerate(chunk.mystery4):
         mset("4-%2d-A"%i, four.posA)
         #makeobj(four.posA, "4-%2d-A"%i)
         mset("4-%2d-B"%i, four.posB)
         #makeobj(four.posB, "4-%2d-B"%i)
-        mset("4-%2d-C"%i, four.posC)
-        #makeobj(four.posC, "4-%2d-C"%i)
-        mset("4-%2d-D"%i, four.mysteryA) # always 0 or 1??
-        mset("4-%2d-E"%i, four.mysteryB)
-        mset("4-%2d-startVertex"%i, four.startIndexA)
-        mset("4-%2d-vertexCount"%i, four.indexCountA)
-        mset("4-%2d-startIndex"%i, four.startIndexB)
-        mset("4-%2d-indexCount"%i, four.indexCountB)
-    _4A = ["%d-%d %d-%d" % (x.startIndexA, x.startIndexA+x.indexCountA, x.startIndexB, x.startIndexB+x.indexCountB) for x in chunk.mystery4]
+        mset("4-%2d-C"%i, four.mysteryC)
+        mset("4-%2d-D"%i, four.mysteryD)
+        mset("4-%2d-E"%i, four.mysteryE)
+        mset("4-%2d-E2"%i, four.mysteryE2)
+        mset("4-%2d-F"%i, four.mysteryF) # always 0 or 1??
+        mset("4-%2d-array"%i, four.twentyElements)
+        mset("4-%2d-startVertex"%i, four.startVertex)
+        mset("4-%2d-vertexCount"%i, four.vertexCount)
+        mset("4-%2d-startIndex"%i, four.startIndex)
+        mset("4-%2d-indexCount"%i, four.indexCount)
+    _4A = ["%d-%d %d-%d" % (x.startVertex, x.startVertex+x.vertexCount, x.startIndex, x.startIndex+x.indexCount) for x in chunk.mystery4]
     print("4 Vertexes and indexes:")
     print("\n".join(_4A))
     
@@ -964,28 +969,19 @@ def load_mysterychunk(chunk, collection_name):
         #makeobj(seven.unknownA[:3], "7-%2d-A"%i)
         mset("7-%2d-B"%i, seven.unknownB)
         #makeobj(seven.unknownB[:3], "7-%2d-B"%i)
-        mset("7-%2d-startVector"%i, seven.unknownC)
-        mset("7-%2d-vectorCount"%i, seven.unknownD)
-        mset("7-%2d-startShort"%i, seven.unknownE)
-        mset("7-%2d-shortCount"%i, seven.unknownF)
-    myList = [x.unknownC for x in chunk.mystery7]
-    print("7C:")
-    print(min(myList), max(myList), myList)
-    myList = [x.unknownD for x in chunk.mystery7]
-    print("7D:")
-    print(min(myList), max(myList), myList)
-    myList = [x.unknownE for x in chunk.mystery7]
-    print("7E:")
-    print(min(myList), max(myList), myList)
-    myList = [x.unknownF for x in chunk.mystery7]
-    print("7F:")
-    print(min(myList), max(myList), myList)
+        mset("7-%2d-C"%i, seven.unknownC)
+        mset("7-%2d-D"%i, seven.unknownD)
+        
+        mset("7-%2d-startVertex"%i, seven.startVertex)
+        mset("7-%2d-vertexCount"%i, seven.vertexCount)
+        mset("7-%2d-startIndex"%i, seven.startIndex)
+        mset("7-%2d-indexCount"%i, seven.indexCount)
     
     for i, eight in enumerate(chunk.mystery8):
         eightVectorsFlat = []
         for vec in eight.vectors:
             eightVectorsFlat.extend(vec)
-            #makeobj(vec, "8-%2d-%2d"%(i, len(eightVectorsFlat)//3))
+            makeobj(vec, "8-%2d-%2d"%(i, len(eightVectorsFlat)//3))
         mset("8-%2d-vectors"%i, eightVectorsFlat)
         mset("8-%2d-A"%i, eight.mysteryA)
         mset("8-%2d-B"%i, eight.mysteryB)
