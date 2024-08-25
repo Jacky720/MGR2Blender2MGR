@@ -1070,73 +1070,52 @@ class wmb4_vertexExData(object):
             print("How the FUCK did you get here, the function call is *directly* inside a check for vertexFormat matching... Somehow, it's", hex(vertexFormat))
             return
 
+
+def read_vector3(wmb_fp):
+    X = read_float(wmb_fp)
+    Y = read_float(wmb_fp)
+    Z = read_float(wmb_fp)
+    return [X, Y, Z]
+
 class wmb4_mystery(object):
     """Probably for some form of cut info. Present on Sundowner."""
     class mystery1Template(object):
         def read(self, wmb_fp):
             self.namePointer = read_uint32(wmb_fp)
-            self.mysteryA = read_int16(wmb_fp)
+            self.parent = read_int16(wmb_fp)
             self.mysteryB = read_int16(wmb_fp)
             self.name = load_data(wmb_fp, self.namePointer, filestring)
     
     class mystery2Template(object):
         def read(self, wmb_fp):
-            posAX = read_float(wmb_fp)
-            posAY = read_float(wmb_fp)
-            posAZ = read_float(wmb_fp)
-            self.posA = [posAX, posAY, posAZ]
+            self.posA = read_vector3(wmb_fp)
             flagA1 = read_int16(wmb_fp)
             flagA2 = read_int16(wmb_fp)
             self.flagA = [flagA1, flagA2]
             
-            posBX = read_float(wmb_fp)
-            posBY = read_float(wmb_fp)
-            posBZ = read_float(wmb_fp)
-            self.posB = [posBX, posBY, posBZ]
+            self.posB = read_vector3(wmb_fp)
             flagB1 = read_int16(wmb_fp)
             flagB2 = read_int16(wmb_fp)
             self.flagB = [flagB1, flagB2]
             
-            posCX = read_float(wmb_fp)
-            posCY = read_float(wmb_fp)
-            posCZ = read_float(wmb_fp)
-            self.posC = [posCX, posCY, posCZ]
+            self.posC = read_vector3(wmb_fp)
             flagC1 = read_int16(wmb_fp)
             flagC2 = read_int16(wmb_fp)
             self.flagC = [flagC1, flagC2]
             
-            posDX = read_float(wmb_fp)
-            posDY = read_float(wmb_fp)
-            posDZ = read_float(wmb_fp)
-            self.posD = [posDX, posDY, posDZ]
+            self.posD = read_vector3(wmb_fp)
     
     class mystery3Template(object):
         class vectorsTemplate(object):
             def read(self, wmb_fp):
                 # vectors, but lists are easier to use
-                self.mysteryA = [0.0] * 4
-                self.mysteryA[0] = read_float(wmb_fp)
-                self.mysteryA[1] = read_float(wmb_fp)
-                self.mysteryA[2] = read_float(wmb_fp)
-                self.mysteryA[3] = read_float(wmb_fp)
+                self.mysteryA = read_vector3(wmb_fp)
+                self.mysteryB = read_vector3(wmb_fp)
+                self.mysteryC = read_vector3(wmb_fp)
+                self.mysteryD = read_vector3(wmb_fp)
+                self.mysteryE = read_vector3(wmb_fp)
                 
-                self.mysteryB = [0.0] * 4
-                self.mysteryB[0] = read_float(wmb_fp)
-                self.mysteryB[1] = read_float(wmb_fp)
-                self.mysteryB[2] = read_float(wmb_fp)
-                self.mysteryB[3] = read_float(wmb_fp)
-                
-                self.mysteryC = [0.0] * 4
-                self.mysteryC[0] = read_float(wmb_fp)
-                self.mysteryC[1] = read_float(wmb_fp)
-                self.mysteryC[2] = read_float(wmb_fp)
-                self.mysteryC[3] = read_float(wmb_fp)
-                
-                self.mysteryD = [0.0] * 4
-                self.mysteryD[0] = read_float(wmb_fp)
-                self.mysteryD[1] = read_float(wmb_fp)
-                self.mysteryD[2] = read_float(wmb_fp)
-                self.mysteryD[3] = read_float(wmb_fp)
+                self.mysteryF = read_uint32(wmb_fp)
                 
         
         def read(self, wmb_fp):
@@ -1147,27 +1126,21 @@ class wmb4_mystery(object):
     class mystery4Template(object):
         
         def read(self, wmb_fp):
-            posAX = read_float(wmb_fp)
-            posAY = read_float(wmb_fp)
-            posAZ = read_float(wmb_fp)
-            self.posA = [posAX, posAY, posAZ]
-            posBX = read_float(wmb_fp)
-            posBY = read_float(wmb_fp)
-            posBZ = read_float(wmb_fp)
-            self.posB = [posBX, posBY, posBZ]
-            posCX = read_float(wmb_fp)
-            posCY = read_float(wmb_fp)
-            posCZ = read_float(wmb_fp)
-            self.posC = [posCX, posCY, posCZ]
-            self.mysteryA = read_uint32(wmb_fp)
+            self.posA = read_vector3(wmb_fp)
+            self.posB = read_vector3(wmb_fp)
+            self.mysteryC = read_uint32(wmb_fp)
+            self.mysteryD = read_uint32(wmb_fp)
+            self.mysteryE = read_uint16(wmb_fp)
+            self.mysteryE2 = read_uint16(wmb_fp)
+            self.mysteryF = read_uint32(wmb_fp) # always 0 or 1?
             
-            self.mysteryBPointer = read_uint32(wmb_fp)
-            self.startIndexA = read_uint32(wmb_fp)
-            self.indexCountA = read_uint32(wmb_fp)
-            self.startIndexB = read_uint32(wmb_fp)
-            self.indexCountB = read_uint32(wmb_fp)
+            self.twentyElementsPointer = read_uint32(wmb_fp)
+            self.startVertex = read_uint32(wmb_fp)
+            self.vertexCount = read_uint32(wmb_fp)
+            self.startIndex = read_uint32(wmb_fp)
+            self.indexCount = read_uint32(wmb_fp)
             
-            self.mysteryB = load_data_array(wmb_fp, self.mysteryBPointer, 20, uint32)
+            self.twentyElements = load_data_array(wmb_fp, self.twentyElementsPointer, 20, uint32)
     
     class mystery5Template(object):
         class mysteryDTemplate(object):
@@ -1203,28 +1176,21 @@ class wmb4_mystery(object):
     
     class mystery7Template(object):
         def read(self, wmb_fp):
-            unknownAX = read_float(wmb_fp)
-            unknownAY = read_float(wmb_fp)
-            unknownAZ = read_float(wmb_fp)
-            unknownAW = read_float(wmb_fp)
-            self.unknownA = [unknownAX, unknownAY, unknownAZ, unknownAW]
-            unknownBX = read_float(wmb_fp)
-            unknownBY = read_float(wmb_fp)
-            unknownBZ = read_float(wmb_fp)
-            unknownBW = read_float(wmb_fp)
-            self.unknownB = [unknownBX, unknownBY, unknownBZ, unknownBW]
-            
+            self.unknownA = read_vector3(wmb_fp)
+            self.unknownB = read_vector3(wmb_fp)
             self.unknownC = read_uint32(wmb_fp)
-            self.unknownD = read_uint32(wmb_fp)
-            self.unknownE = read_uint32(wmb_fp)
-            self.unknownF = read_uint32(wmb_fp)
+            self.unknownD = read_float(wmb_fp)
+            
+            self.startVertex = read_uint32(wmb_fp)
+            self.vertexCount = read_uint32(wmb_fp)
+            self.startIndex = read_uint32(wmb_fp)
+            self.indexCount = read_uint32(wmb_fp)
     
     class mystery8Template(object):
         def read(self, wmb_fp):
             self.vectors = []
             for i in range(5):
-                vector = [read_float(wmb_fp),read_float(wmb_fp),read_float(wmb_fp)]
-                self.vectors.append(vector)
+                self.vectors.append(read_vector3(wmb_fp))
             self.mysteryA = read_uint32(wmb_fp) # so close to being more vector
             mysteryBX = read_float(wmb_fp)
             mysteryBY = read_float(wmb_fp)

@@ -1254,13 +1254,13 @@ class c_mystery(object): # wmb4
             vectorGroups = []
             for i, vals in enumerate(values):
                 vectorGroups.append([])
-                for j in range(len(vals)//4):
-                    vectorGroups[-1].append([[], [], [], []])
+                for j in range(len(vals)//6):
+                    vectorGroups[-1].append([[], [], [], [], [], 0])
                 for key, val in vals.items():
                     splitkey = key.split("-")
                     j = int(splitkey[0])
-                    k = int(splitkey[1])
-                    vectorGroups[i][j][k] = list(val)
+                    k = "ABCDEF".index(splitkey[1])
+                    vectorGroups[i][j][k] = list(val) if k < 5 else int(val)
                     #print(key)
                 #print(vectorGroups[-1])
             currentOffset += 8 * len(vectorGroups)
@@ -1270,7 +1270,7 @@ class c_mystery(object): # wmb4
                 appendVal = {}
                 appendVal["content"] = vals
                 appendVal["offset"] = currentOffset
-                currentOffset += 64 * len(vals) # 4 vector4's/group
+                currentOffset += 64 * len(vals) # 5 vector3's + 1 int/group
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
@@ -1280,8 +1280,8 @@ class c_mystery(object): # wmb4
             currentOffset += 60 * len(values)
             for vals in values:
                 appendVal = vals
-                appendVal["offset"] = currentOffset if (len(vals["E"]) > 0) else 0
-                currentOffset += 4 * len(vals["E"])
+                appendVal["offset"] = currentOffset if (len(vals["array"]) > 0) else 0
+                currentOffset += 4 * len(vals["array"])
                 mysteryValues.append(appendVal)
             
             if (currentOffset % 16) > 0:
