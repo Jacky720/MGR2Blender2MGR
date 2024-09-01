@@ -1204,7 +1204,7 @@ class wmb4_mystery(object):
     class mystery9Template(object):
         def read(self, wmb_fp):
             self.mysteryA = read_int16(wmb_fp)
-            self.mysteryB = read_int16(wmb_fp)
+            self.mysteryParent = read_int16(wmb_fp)
             self.mysteryC = read_int16(wmb_fp)
             self.mysteryD = read_int16(wmb_fp)
             self.mysteryE = read_uint32(wmb_fp)
@@ -1601,12 +1601,12 @@ class WMB(object):
         # After this loop, facesRaw now points to indexes in usedVertices (below)
         for i, vertex in enumerate(facesRaw):
             facesRaw[i] = mappingDict[vertex]
-        faces = [0] * int(faceRawCount / 3)
+        faces = [0] * (faceRawCount // 3)
         usedVertices = [0] * len(usedVertexIndexArray)
         boneWeightInfos = [[],[]]
         #print("Iterating over 0, faceRawCount, 3, length %d" % 0, faceRawCount, 3)
         for i in range(0, faceRawCount, 3):
-            faces[int(i/3)] = ( facesRaw[i], facesRaw[i + 1], facesRaw[i + 2] )
+            faces[i // 3] = ( facesRaw[i], facesRaw[i + 1], facesRaw[i + 2] )
         meshVertices = vertexGroup.vertexArray[vertexStart : vertexStart + vertexCount]
 
         if self.hasBone:
