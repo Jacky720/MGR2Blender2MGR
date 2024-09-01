@@ -7,6 +7,9 @@ from time import time
 import numpy as np
 import mathutils as mu
 
+BALLIN = False
+collision_source_mesh = "16-chestBody_mesh-0"
+
 def getRealName(name):
     splitname = name.split('-')
     splitname.pop(0)
@@ -85,6 +88,24 @@ class c_batches(object):
                 
                 if wmb4:
                     batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
+                    if BALLIN and obj['batchGroup'] == 0:
+                        ballin_index = len(batches) - 1
+                        bpy.data.collections["WMB"]["4-%2d-startIndex" % ballin_index] = 0#batches[-1].indexStart
+                        bpy.data.collections["WMB"]["4-%2d-indexCount" % ballin_index] = batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["4-%2d-startVertex" % ballin_index] = 0#batches[-1].vertexStart
+                        bpy.data.collections["WMB"]["4-%2d-vertexCount" % ballin_index] = batches[-1].numVertexes
+                        bpy.data.collections["WMB"]["5-%2d-A"%obj_vertexGroupIndex] = obj_vertexGroupIndex
+                        bpy.data.collections["WMB"]["5-%2d-B"%obj_vertexGroupIndex] = 0
+                        bpy.data.collections["WMB"]["5-%2d-B2"%obj_vertexGroupIndex] = 0
+                        bpy.data.collections["WMB"]["5-%2d-C"%obj_vertexGroupIndex] = -1
+                        bpy.data.collections["WMB"]["5-%2d-C2"%obj_vertexGroupIndex] = 0
+                        add_item_index = 0
+                        while bpy.data.collections["WMB"].get("5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)) is not None:
+                            add_item_index += 1
+                        bpy.data.collections["WMB"]["5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)] = [ballin_index]
+                    if BALLIN and obj.name == collision_source_mesh:
+                        bpy.data.collections["WMB"]["7- 0-shortCount"] += batches[-1].numIndexes
+                        bpy.data.collections["WMB"]["7- 0-vectorCount"] += batches[-1].numVertexes
                 else:
                     batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, cur_numVertexes, obj_boneSetIndex))
                 cur_indexStart += batches[-1].numIndexes
@@ -1565,6 +1586,8 @@ class c_vertexGroup(object):
                 print('   [>] Generating vertex data for object', bvertex_obj_obj.name)
                 loops = get_blenderLoops(self, bvertex_obj_obj)
                 sorted_loops = sorted(loops, key=lambda loop: loop.vertex_index)
+                
+                vector4List = []
 
                 if self.vertexFlags not in {0, 1, 4, 5, 12, 14} or wmb4:
                     boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
@@ -1720,7 +1743,8 @@ class c_vertexGroup(object):
                         color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
 
                     vertexes.append([position, tangents, normal, uv_maps, boneIndexes, boneWeights, color])
-
+                    vector4List.extend(position)
+                    vector4List.append(1.0)
                     
                     ##################################################
                     ###### Now lets do the extra data shit ###########
@@ -1784,6 +1808,10 @@ class c_vertexGroup(object):
                     
                     vertexExData = [normal, uv_maps, color]
                     vertexesExData.append(vertexExData)
+                
+                if BALLIN and bvertex_obj_obj.name == collision_source_mesh:# and bvertex_obj_obj['batchGroup'] == 0
+                    bvertex_obj_obj["vertexIndexOffset"] = len(bpy.data.collections["WMB"]["6- 0-A"])
+                    bpy.data.collections["WMB"]["6- 0-A"] = list(bpy.data.collections["WMB"]["6- 0-A"]) + vector4List
             #print(hex(len(vertexes)))
             
             return vertexes, vertexesExData
@@ -1791,7 +1819,11 @@ class c_vertexGroup(object):
         def get_indexes(self):
             indexesOffset = 0
             indexes = []
-            for obj in self.blenderObjects:
+            startIndexes = [-1] * len(self.blenderObjects)
+            numIndexes = [-1] * len(self.blenderObjects)
+            for i, obj in enumerate(self.blenderObjects):
+                startIndexes[i] = len(indexes)
+                numIndexes[i] = len(obj.data.loops)
                 for loop in obj.data.loops:
                     indexes.append(loop.vertex_index + indexesOffset)
                 if not wmb4:
@@ -1806,6 +1838,16 @@ class c_vertexGroup(object):
                     continue
                 flip_counter += 1
 
+            if BALLIN:
+                for i, obj in enumerate(self.blenderObjects):
+                    #if obj['batchGroup'] != 0:
+                    #    continue
+                    if obj.name != collision_source_mesh:
+                        continue
+                    loopsSubset = indexes[startIndexes[i]:(startIndexes[i] + numIndexes[i])]
+                    loopsSubset = [x + obj["vertexIndexOffset"] for x in loopsSubset]
+                    bpy.data.collections["WMB"]["6- 0-B"] = list(bpy.data.collections["WMB"]["6- 0-B"]) + loopsSubset
+            
             return indexes
 
         self.vertexSize = 32 if wmb4 else 28
@@ -2077,6 +2119,52 @@ class c_generate_data(object):
         else:
             
             self.vertexFormat = bpy.data.collections['WMB']['vertexFormat']
+            
+            if BALLIN:
+                # FUCK YOU BALTIMORE
+                # IF YOU'RE DUMB ENOUGH TO MAKE A DYNAMICALLY CUTTABLE MODEL THIS WEEKEND
+                # YOU'RE A BIG ENOUGH SCHMUCK TO DELETE CUT GROUPS WITH RECKLESS ABANDON
+                for key in list(bpy.data.collections["WMB"].keys()):
+                    if key[:1].isnumeric() and not key[:1] in {"1", "4"} and not key[:4] in {"3- 0", "7- 0"}:
+                        del bpy.data.collections["WMB"][key]
+                    elif key.startswith("3"): # actually, fuck you anyway
+                        del bpy.data.collections["WMB"][key]
+                    elif key.startswith("4") and key.endswith("F"):
+                        bpy.data.collections["WMB"][key] = 1
+                    elif key.startswith("4") and key.endswith("array"):
+                        bpy.data.collections["WMB"][key] = []
+                bpy.data.collections["WMB"]["1- 0-B"] = -1
+                bpy.data.collections["WMB"]["1- 0-name"] = "CG_DEFAULT"
+                bpy.data.collections["WMB"]["1- 0-parent"] = -1
+                # group 4 defined dynamically
+                # group 5 defined dynamically
+                # bpy.data.collections["WMB"]["5- 0-A"] = 0
+                # bpy.data.collections["WMB"]["5- 0-B"] = 0
+                # bpy.data.collections["WMB"]["5- 0-B2"] = -1
+                # bpy.data.collections["WMB"]["5- 0-C"] = 0
+                # bpy.data.collections["WMB"]["5- 0-C2"] = 0
+                # bpy.data.collections["WMB"]["5- 0-D- 0"] = []
+                bpy.data.collections["WMB"]["6- 0-A"] = [] # will expand
+                bpy.data.collections["WMB"]["6- 0-B"] = [] # will expand
+                bpy.data.collections["WMB"]["7- 0-startShort"] = 0
+                bpy.data.collections["WMB"]["7- 0-startVector"] = 0
+                bpy.data.collections["WMB"]["7- 0-shortCount"] = 0  # will expand
+                bpy.data.collections["WMB"]["7- 0-vectorCount"] = 0 # will expand
+                bpy.data.collections["WMB"]["8- 0-vectors"] = [1.0] * 15
+                bpy.data.collections["WMB"]["8- 0-A"] = 0 # cut group index
+                bpy.data.collections["WMB"]["8- 0-B"] = [1.0, 0.3] #
+                bpy.data.collections["WMB"]["8- 0-C"] = 1 # always 1
+                bpy.data.collections["WMB"]["8- 0-D"] = 0 # always 0
+                bpy.data.collections["WMB"]["8- 0-E"] = 0 # always 0
+                bpy.data.collections["WMB"]["8- 0-F"] = 0 # a more orderly index, probably for 7
+                bpy.data.collections["WMB"]["8- 0-G"] = 1 # always 1
+                bpy.data.collections["WMB"]["9- 0-A"] = -1 #0
+                bpy.data.collections["WMB"]["9- 0-parent"] = -1 # parent
+                bpy.data.collections["WMB"]["9- 0-C"] = 0 # index in 8?
+                bpy.data.collections["WMB"]["9- 0-D"] = 1 # amount of 8 groups
+                bpy.data.collections["WMB"]["9- 0-E"] = 0 # or 1, doesn't seem to matter
+                # IF YOU CAN SLICE SIX FEET IN THE AIR STRAIGHT UP AND NOT CRASH THE GAME,
+                # YOU GET NO DOWN PAYMENT
 
             self.vertexGroups_Offset = currentOffset
             self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset, True)

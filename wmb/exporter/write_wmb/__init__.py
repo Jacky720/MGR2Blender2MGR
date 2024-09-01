@@ -614,7 +614,7 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
     wmb_file.seek(data.mystery.mysteryOffsets[8])
     for mystery9 in subchunk:
         write_Int16(wmb_file, mystery9["A"])
-        write_Int16(wmb_file, mystery9["B"])
+        write_Int16(wmb_file, mystery9["parent"])
         write_Int16(wmb_file, mystery9["C"])
         write_Int16(wmb_file, mystery9["D"])
         write_uInt32(wmb_file, mystery9["E"])
