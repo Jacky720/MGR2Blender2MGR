@@ -974,7 +974,7 @@ def load_mysterychunk(chunk, collection_name):
         for vec in six.mysteryA:
             sixAFlat.extend([vec.x, vec.y, vec.z, vec.w])
             offsetted = chunk.mystery7[i].unknownA
-            makeobj([vec.x + offsetted[0], vec.z + offsetted[2], vec.y + offsetted[1]], "6-%2d-A-%2d" % (i, len(sixAFlat) // 4))
+            #makeobj([vec.x + offsetted[0], vec.z + offsetted[2], vec.y + offsetted[1]], "6-%2d-A-%2d" % (i, len(sixAFlat) // 4))
         mset("6-%2d-A"%i, sixAFlat)
         mset("6-%2d-B"%i, six.mysteryB)
     myList = [x.mysteryB for x in chunk.mystery6]
