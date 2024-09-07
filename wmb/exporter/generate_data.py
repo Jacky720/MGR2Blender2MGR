@@ -293,8 +293,8 @@ class c_b_boneSets(object):
                 boneMap.append(val)
         
         #fuck it
-        #if wmb4:
-        #    return
+        if wmb4:
+            return
         
         
         # Get boneSets
