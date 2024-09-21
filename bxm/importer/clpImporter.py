@@ -218,6 +218,15 @@ class AddClothWK(bpy.types.Operator):
                 if 'ID' in bone:
                     cloth_wk_item = cloth_wk.add()
                     cloth_wk_item.no = str(bone['ID'])
+                    if bone.parent is None:
+                        continue
+                    cloth_wk_item.no_up = str(bone.parent['ID'])
+                    for other_cloth_item in cloth_wk:
+                        if other_cloth_item.no != cloth_wk_item.no_up:
+                            continue
+                        if other_cloth_item.no_down == '4095':
+                            other_cloth_item.no_down = cloth_wk_item.no
+                        break
         else:
             return {'CANCELLED'}
 
