@@ -1706,35 +1706,37 @@ class c_vertexGroup(object):
                     if self.vertexFlags in {7, 10, 11} or (wmb4 and vertexFormat & 0x30 == 0x30):
                         # Bone Indices
                         for groupRef in bvertex.groups:
-                            if len(boneIndexes) < 4:
-                                boneGroupName = bvertex_obj_obj.vertex_groups[groupRef.group].name
-                                boneID = getBoneIndexByName("WMB", boneGroupName)
-                                if boneID is None: # nonexistent group epic fail
-                                    continue
-                                if not wmb4:
-                                    boneMapIndx = self.boneMap.index(boneID)
-                                    boneSetIndx = boneSet.index(boneMapIndx)
-                                    boneIndexes.append(boneSetIndx)
-                                else:
-                                    try:
-                                        boneSetIndx = boneSet.index(boneID)
-                                    except: # bone not in set? well fuck that
-                                        for obj in bpy.data.collections['WMB'].all_objects:
-                                            if obj.type == 'ARMATURE':
-                                            
-                                                allbonesets = list(obj.data["boneSetArray"])
-                                                boneSet = list(allbonesets[bvertex_obj_obj["boneSetIndex"]])
-                                                if boneID not in boneSet:
-                                                    boneSet.append(boneID)
-                                                allbonesets[bvertex_obj_obj["boneSetIndex"]] = boneSet
-                                                obj.data["boneSetArray"] = allbonesets
-                                                boneSetIndx = boneSet.index(boneID) # i swear to god # !!!
-                                    
-                                    if boneSetIndx < 0 or boneSetIndx > 255:
-                                        print("Hmm, boneID of", boneSetIndx, "could be a problem...")
-                                        print(boneSet)
-                                    
-                                    boneIndexes.append(boneSetIndx)
+                            if len(boneIndexes) >= 4:
+                                break
+                            boneGroupName = bvertex_obj_obj.vertex_groups[groupRef.group].name
+                            boneID = getBoneIndexByName("WMB", boneGroupName)
+                            if boneID is None: # nonexistent group epic fail
+                                continue
+                            if not wmb4:
+                                boneMapIndx = self.boneMap.index(boneID)
+                                boneSetIndx = boneSet.index(boneMapIndx)
+                                boneIndexes.append(boneSetIndx)
+                            else:
+                                if boneID in boneSet:
+                                    boneSetIndx = boneSet.index(boneID)
+                                else: # bone not in set? well fuck that
+                                    for obj in bpy.data.collections['WMB'].all_objects:
+                                        if obj.type != 'ARMATURE':
+                                            continue
+                                        allbonesets = list(obj.data["boneSetArray"])
+                                        boneSet = list(allbonesets[bvertex_obj_obj["boneSetIndex"]])
+                                        if boneID not in boneSet:
+                                            boneSet.append(boneID)
+                                        allbonesets[bvertex_obj_obj["boneSetIndex"]] = boneSet
+                                        obj.data["boneSetArray"] = allbonesets
+                                        boneSetIndx = boneSet.index(boneID) # i swear to god # !!!
+                                        break
+                                
+                                if boneSetIndx < 0 or boneSetIndx > 255:
+                                    print("Hmm, boneID of", boneSetIndx, "could be a problem...")
+                                    print(boneSet)
+                                
+                                boneIndexes.append(boneSetIndx)
                         
                         if len(boneIndexes) == 0:
                             print(len(vertexes) ,"- Vertex Weights Error: Vertex has no assigned groups. At least 1 required. Try using Blender's [Select -> Select All By Trait > Ungrouped Verts] function to find them.")
@@ -1744,10 +1746,16 @@ class c_vertexGroup(object):
                         
                         # Bone Weights
                         weights = [group.weight for group in bvertex.groups]
-                        weightsSum = sum(weights)
 
                         if len(weights) >  4:
                             print(len(vertexes), "- Vertex Weights Error: Vertex has weights assigned to more than 4 groups. Try using Blender's [Weights -> Limit Total] function.")
+                            weights = weights[:4]
+                        
+                        if any([x < 0 for x in weights]):
+                            print(len(vertexes), "- Vertex Weights Error: Vertex has negative bone weights.")
+                            weights = [x if x > 0 else 0 for x in weights]
+                        
+                        weightsSum = sum(weights)
 
                         normalized_weights = []                                             # Force normalize the weights as Blender's normalization sometimes get some rounding issues.
                         for val in weights:
@@ -1757,23 +1765,45 @@ class c_vertexGroup(object):
                                 normalized_weights.append(0)
 
                         for val in normalized_weights:
-                            if len(boneWeights) < 4:
-                                weight = math.floor(val * 256.0)
-                                if val == 1.0:
-                                    weight = 255
-                                boneWeights.append(weight)
+                            if len(boneWeights) >= 4:
+                                break
+                            weight = math.floor(val * 256.0)
+                            if weight > 255:
+                                weight = 255
+                            boneWeights.append(weight)
+                        
+                        usableBoneWeightCount = len(boneWeights)
                         
                         while len(boneWeights) < 4:
                             boneWeights.append(0)
+                        
+                        currentShiftWeight = 0
+                        stuckBones = set()
 
                         while sum(boneWeights) < 255:                     # MOAR checks to make sure weights are normalized but in bytes. (A bit cheating but these values should make such a minor impact.)
-                            boneWeights[0] += 1
+                            boneWeights[currentShiftWeight] += 1
+                            if boneWeights[currentShiftWeight] > 255:
+                                boneWeights[currentShiftWeight] = 255
+                                stuckBones.add(currentShiftWeight)
+                                if len(stuckBones) == usableBoneWeightCount: # ok what the fuck, but just avoid the infinite loop
+                                    break
+                            currentShiftWeight = (currentShiftWeight + 1) % usableBoneWeightCount # minimize impact on one particular weight with this stuff
 
+                        stuckBones = set()
+                        
                         while sum(boneWeights) > 255:                     
-                            boneWeights[0] -= 1
+                            boneWeights[currentShiftWeight] -= 1
+                            if boneWeights[currentShiftWeight] < 0:
+                                boneWeights[currentShiftWeight] = 0
+                                stuckBones.add(currentShiftWeight)
+                                if len(stuckBones) == usableBoneWeightCount: # ok what the fuck, but just avoid the infinite loop
+                                    break
+                            currentShiftWeight = (currentShiftWeight + 1) % usableBoneWeightCount # minimize impact on one particular weight with this stuff
 
                         if sum(boneWeights) != 255:                       # If EVEN the FORCED normalization doesn't work, say something :/
-                            print(len(vertexes), "- Vertex Weights Error: Vertex has a total weight not equal to 1.0. Try using Blender's [Weights -> Normalize All] function.") 
+                            print(len(vertexes), "- Vertex Weights Error: Vertex has a total weight not equal to 1.0. Try using Blender's [Weights -> Normalize All] function.")
+                        if not all([0 <= x < 256 for x in boneWeights]):
+                            print(len(vertexes), "- Vertex Weights Error: Vertex weight is outside the standard byte range, absolutely giving up now, enjoy your writing error")
 
                     color = []
                     if self.vertexFlags in {4, 5, 12, 14} or (wmb4 and vertexFormat >= 0x337):
