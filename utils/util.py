@@ -50,7 +50,9 @@ def getUsedMaterials():
     meshOrder = []
     # i hate wmb i hate wmb
     
-    for obj in sorted([x for x in allObjectsInCollectionInOrder('WMB') if x.type == "MESH"], key=lambda mesh: mesh['ID']):
+    # sorted([x for x in allObjectsInCollectionInOrder('WMB') if x.type == "MESH"], key=lambda mesh: mesh['ID'])
+    usedMaterialIDs = set()
+    for obj in [x for x in allObjectsInCollectionInOrder('WMB') if x.type == "MESH"]:
         # fortunately I don't need to do this because I just added a material ID
         """
         mesh_name = obj.name.split("-")[1]
@@ -61,13 +63,23 @@ def getUsedMaterials():
         for slot in obj.material_slots:
             material = slot.material
             if material not in falseMaterials:
+                if 'ID' not in material or material['ID'] in usedMaterialIDs:
+                    material['ID'] = -1
+                else:
+                    usedMaterialIDs.add(material['ID'])
                 falseMaterials.append(material)
         
-    # I'll keep some backwards compatibility for once in my life.
-    if len(falseMaterials) > 0 and ('ID' in falseMaterials[0]):
-        materials = sorted(falseMaterials, key=lambda x: x['ID'])
-    else:
-        materials = falseMaterials
+    maxMaterialID = max([x['ID'] for x in falseMaterials])
+    lessFalseMaterials = []
+    for falseMat in falseMaterials:
+        if falseMat['ID'] == -1:
+            maxMaterialID += 1
+            falseMat['ID'] = maxMaterialID
+        lessFalseMaterials.append(falseMat)
+    
+    materials = sorted(lessFalseMaterials, key=lambda x: x['ID'])
+    for i, mat in enumerate(materials):
+        mat['ID'] = i # fail-safe for skipped/removed IDs
     #for meshname in meshOrder:
     #    materials.extend(falseMaterials[meshname])
     
