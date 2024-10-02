@@ -220,6 +220,7 @@ class c_boneIndexTranslateTable(object):
                 if 'ID' not in bone:
                     ShowMessageBox('Failed to make room in the bone index reverse lookup table for a new bone. Try adding more multiples of 16 in place of -1s in your armature secondLevel property.', 'Too Many Bones', 'ERROR')
                     print("Failed to add ID to bone %s, there are %d bones total but only %d slots in the table." % (bone.name, len(getAllBonesInOrder("WMB")), len(newThirdLevel)))
+                    assert 'ID' in bone
 
         #Print the shit for the XML
         for bone in newBones:
@@ -278,6 +279,10 @@ class c_boneSet(object):
             for obj in bpy.data.collections['WMB'].all_objects:
                 if obj.type == 'ARMATURE':
                     for boneSet in obj.data['boneSetArray']:
+                        if max(boneSet) > 255:
+                            ShowMessageBox("Bone index %d outside of byte range, please reduce the number of bones in your model." % max(boneSet), "Too Many Bones", "ERROR")
+                            print("Bone index %d outside of byte range, please reduce the number of bones in your model." % max(boneSet))
+                            assert max(boneSet) <= 255
                         b_boneSets.append(boneSet)
             
             return b_boneSets
