@@ -217,6 +217,9 @@ class c_boneIndexTranslateTable(object):
                         print("Added new bone to table", bone.name, "assigning ID", bone['ID'], "at thirdLevel translateTableIndex", k)
                         newBones.append(bone)
                         break
+                if 'ID' not in bone:
+                    ShowMessageBox('Failed to make room in the bone index reverse lookup table for a new bone. Try adding more multiples of 16 in place of -1s in your armature secondLevel property.', 'Too Many Bones', 'ERROR')
+                    print("Failed to add ID to bone %s, there are %d bones total but only %d slots in the table." % (bone.name, len(getAllBonesInOrder("WMB")), len(newThirdLevel)))
 
         #Print the shit for the XML
         for bone in newBones:
