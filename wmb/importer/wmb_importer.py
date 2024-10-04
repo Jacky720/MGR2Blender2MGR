@@ -56,6 +56,7 @@ def construct_armature(name, bone_data_array, firstLevel, secondLevel, thirdLeve
     for bone_data in bone_data_array:
         #print(bone_data[1])
         bone = amt.edit_bones.new(bone_data[1])
+        #print("Creating bone", bone.name)
         bone.head = Vector(bone_data[4]) #- Vector((0 , 0.01, 0))  
         bone.tail = Vector(bone_data[4]) + Vector((0 , 0.01, 0))                
         bone['ID'] = bone_data[6]
@@ -74,13 +75,15 @@ def construct_armature(name, bone_data_array, firstLevel, secondLevel, thirdLeve
             # this doesn't work on animations but i like it so fixing in the tpose code
             if bone.parent.tail == bone.parent.head + Vector((0, 0.01, 0)):
                 bone.parent.tail = bone.head
-                if bone.parent.tail == bone.parent.head:
+                dist = bone.parent.head - bone.parent.tail
+                if abs(dist.x) + abs(dist.y) + abs(dist.z) < 0.01:
                     bone.parent.tail += Vector((0, 0.01, 0))
     
     # mot posing stuff
     bpy.ops.object.mode_set(mode='POSE')
 
     for pose_bone in ob.pose.bones:
+        #print("Posing", pose_bone.name)
         rot_mat = Matrix.Rotation(pose_bone.bone["localRotation"][2], 4, 'Z') @ Matrix.Rotation(pose_bone.bone["localRotation"][1], 4, 'Y') @ Matrix.Rotation(pose_bone.bone["localRotation"][0], 4, 'X')
 
         pose_bone.matrix_basis = rot_mat @ pose_bone.matrix_basis
@@ -105,6 +108,7 @@ def construct_armature(name, bone_data_array, firstLevel, secondLevel, thirdLeve
     
     bpy.ops.object.mode_set(mode='OBJECT')
     ob.rotation_euler = (math.radians(90),0,0)
+    #print("Created bones:", [bone.name for bone in amt.bones])
     
     # split armature
     return ob
@@ -1138,6 +1142,7 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
             for bone in amt.data.bones:
                 if bone["ID"] in wmb4_bonenames:
                     oldBoneName = bone.name
+                    #print("Renaming %s to %s" % (bone.name, wmb4_bonenames[bone["ID"]]))
                     bone.name = wmb4_bonenames[bone["ID"]]
                     for mesh in [x for x in col.objects if x.type == "MESH"]:
                         for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
