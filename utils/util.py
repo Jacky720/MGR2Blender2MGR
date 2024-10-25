@@ -68,7 +68,12 @@ def getUsedMaterials():
                 else:
                     usedMaterialIDs.add(material['ID'])
                 falseMaterials.append(material)
-        
+    
+    # fix gaps
+    allMaterialIDs = sorted([x['ID'] for x in falseMaterials if x['ID'] > -1])
+    for falseMat in falseMaterials if falseMat['ID'] > -1:
+        falseMat['ID'] = allMaterialIDs.index(falseMat['ID'])
+    
     maxMaterialID = max([x['ID'] for x in falseMaterials])
     lessFalseMaterials = []
     for falseMat in falseMaterials:

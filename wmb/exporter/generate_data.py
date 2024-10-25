@@ -1964,7 +1964,7 @@ class c_vertexGroups(object):
         allMeshes = sorted(allMeshes, key=lambda batch: batch['ID']) # sort
         
         for obj in allMeshes:
-            obj['ID'] = allIDs.index(obj['ID']) # masterstroke
+            obj['ID'] = allIDs.index(obj['ID']) # masterstroke, fix the several-hundred sized gaps
         
         print("New IDs generated:")
         print([(obj.name, obj['ID']) for obj in allMeshes])
@@ -2002,6 +2002,11 @@ class c_vertexGroups(object):
             obj['meshGroupIndex'] = i
             allMeshGroupIDs.add(obj['meshGroupIndex'])
             meshGroupIDsByName[getRealName(obj.name)] = obj['meshGroupIndex']
+        
+        # fix gaps
+        meshGroupIDList = sorted(list(allMeshGroupIDs))
+        for obj in allMeshes:
+            obj['meshGroupIndex'] = meshGroupIDList.index(obj['meshGroupIndex'])
         
         print("New mesh group IDs generated:")
         print([(obj.name, obj['meshGroupIndex']) for obj in allMeshes])
