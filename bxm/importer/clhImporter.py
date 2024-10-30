@@ -76,7 +76,8 @@ def importCLH(filepath):
         cloth_at_wk_item.radius = float(xml_cloth_at_wk.find("radius").text)
         cloth_at_wk_item.offset1 = [float(x) for x in xml_cloth_at_wk.find("offset1").text.split()]
         cloth_at_wk_item.offset2 = [float(x) for x in xml_cloth_at_wk.find("offset2").text.split()]
-        cloth_at_wk_item.capsule = bool(int(xml_cloth_at_wk.find("capsule").text))
+        if xml_cloth_at_wk.find("capsule") is not None:
+            cloth_at_wk_item.capsule = bool(int(xml_cloth_at_wk.find("capsule").text))
 
 def exportCLH(filepath):
     xml = ET.Element("CLOTH_AT")
