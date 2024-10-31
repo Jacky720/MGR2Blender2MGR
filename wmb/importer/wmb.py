@@ -12,7 +12,7 @@ from ...wta_wtp.importer.wta import *
 DEBUG_HEADER_PRINT = True
 DEBUG_VERTEXGROUP_PRINT = False
 #DEBUG_VERTEX_PRINT = # Don't even *think* about it.
-DEBUG_BATCHES_PRINT = True
+DEBUG_BATCHES_PRINT = False # broken
 DEBUG_BATCHSUPPLEMENT_PRINT = False
 DEBUG_BONE_PRINT = False # do not recommend, there can be lots of bones
 DEBUG_BITT_PRINT = False # nothing at all
@@ -1341,7 +1341,7 @@ class WMB(object):
         if wta_fp:
             self.wta = WTA(wta_fp)
             wta_fp.close()
-
+        
         if os.path.exists(wmb_path):
             wmb_fp = open(wmb_path, "rb")
         else:

@@ -12,7 +12,7 @@ from ...col.exporter.col_ui_manager import enableCollisionTools
 from ...utils.visibilitySwitcher import enableVisibilitySelector
 from ...utils.util import setExportFieldsFromImportFile, ShowMessageBox
 
-def importDtt(only_extract, filepath):
+def importDtt(only_extract, filepath, transform=None):
     head = os.path.split(filepath)[0]
     tail = os.path.split(filepath)[1]
     tailless_tail = tail[:-4]
@@ -45,9 +45,13 @@ def importDtt(only_extract, filepath):
         if not os.path.exists(scr_filepath): # try based on the dat name
             scr_filepath = os.path.join(extract_dir, tailless_tail + '.dat', tailless_tail + '.scr')
         if not os.path.exists(scr_filepath):
-            print("Could not find model file in DAT! Please import WMB manually.")
-            ShowMessageBox("Could not find model file in DAT! Please import WMB manually.", "No Model Found", "ERROR")
-            only_extract = True
+            ly2_filepath = scr_filepath[:-4] + ".ly2"
+            if os.path.exists(ly2_filepath): # props only
+                print("Found prop list, loading that")
+            else:
+                print("Could not find model file in DAT! Please import WMB manually.")
+                ShowMessageBox("Could not find model file in DAT! Please import WMB manually.", "No Model Found", "ERROR")
+                only_extract = True
 
     # WTA/WTP
     wtaPath = os.path.join(extract_dir, tailless_tail + '.dat', tailless_tail + '.wta')
@@ -77,7 +81,7 @@ def importDtt(only_extract, filepath):
     else:
         # WMB
         from ...wmb.importer import wmb_importer
-        wmb_importer.main(only_extract, wmb_filepath)
+        wmb_importer.main(only_extract, wmb_filepath, transform)
 
     # COL
     col_filepath = os.path.join(extract_dir, tailless_tail + '.dat', tailless_tail + '.col')

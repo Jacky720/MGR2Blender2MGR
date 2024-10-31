@@ -44,7 +44,7 @@ def drawMultilineLabel(context, text, parent):
     for text_line in text_lines:
         col.label(text=text_line)
 
-def getUsedMaterials():
+def getUsedMaterials(collectionName='WMB'):
     materials = []
     falseMaterials = [] # {}
     meshOrder = []
