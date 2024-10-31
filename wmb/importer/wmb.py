@@ -133,7 +133,7 @@ class WMB_Header(object):
                 print(" material          ", hex(self.materialPointer).rjust(7, " "), str(self.materialCount).rjust(6, " "))
                 print(" texture           ", hex(self.texturePointer).rjust(7, " "), str(self.textureCount).rjust(6, " "))
                 print(" mesh              ", hex(self.meshPointer).rjust(7, " "), str(self.meshCount).rjust(6, " "))
-                print(" ??????            ", hex(self.unknownPointer).rjust(7, " "))
+                print(" slicing           ", hex(self.unknownPointer).rjust(7, " "))
 
 
 
