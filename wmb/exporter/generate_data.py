@@ -1958,13 +1958,15 @@ class c_vertexGroups(object):
                 obj['ID'] = 900
             if 'batchGroup' in obj:
                 obj['ID'] += 1000 * obj['batchGroup'] # make sure it's sorted by batch group
-            obj['ID'] += i # thwart meshes with the same ID, might technically change some ordering
+            # obj['ID'] += i # avoid duplicate items, more trouble than it's worth
         
         allIDs = sorted([obj['ID'] for obj in allMeshes])
         allMeshes = sorted(allMeshes, key=lambda batch: batch['ID']) # sort
         
         for obj in allMeshes:
-            obj['ID'] = allIDs.index(obj['ID']) # masterstroke, fix the several-hundred sized gaps
+            newID = allIDs.index(obj['ID'])
+            allIDs[newID] = -1 # prevent duplicate objects getting the same index
+            obj['ID'] = newID # masterstroke, fix the several-hundred sized gaps
         
         print("New IDs generated:")
         print([(obj.name, obj['ID']) for obj in allMeshes])
