@@ -92,14 +92,14 @@ def menu_func_import(self, context):
     yorha_icon = pcoll["yorha"]
     self.layout.operator(ImportNierDtt.bl_idname, text="DTT File for Nier:Automata (.dtt)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata (.wmb)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierDat.bl_idname, text="DAT File for Nier:Automata (col+lay) (.dat)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierCol.bl_idname, text="Collision File for Nier:Automata (.col)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierLay.bl_idname, text="Layout File for Nier:Automata (.lay)", icon_value=yorha_icon.icon_id)
+    self.layout.operator(ImportNierDat.bl_idname, text="DAT Extract for Nier:Automata (.dat)", icon_value=yorha_icon.icon_id)
+    #self.layout.operator(ImportNierCol.bl_idname, text="Collision File for Nier:Automata (.col)", icon_value=yorha_icon.icon_id)
+    #self.layout.operator(ImportNierLay.bl_idname, text="Layout File for Nier:Automata (.lay)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
-    self.layout.operator(ImportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=yorha_icon.icon_id)
+    #self.layout.operator(ImportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=yorha_icon.icon_id)
+    #self.layout.operator(ImportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportNierMot.bl_idname, text="Motion File for Nier:Automata (.mot)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierYaxXml.bl_idname, text="YAX XML for Nier:Automata (.xml)", icon_value=yorha_icon.icon_id)
+    #self.layout.operator(ImportNierYaxXml.bl_idname, text="YAX XML for Nier:Automata (.xml)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta/.wtp)", icon_value=yorha_icon.icon_id)
 
 def menu_func_export(self, context):
@@ -107,13 +107,13 @@ def menu_func_export(self, context):
     raiden_icon = pcoll["raiden"]
     emil_icon = pcoll["emil"]
     self.layout.operator_context = 'INVOKE_DEFAULT'
-    self.layout.operator(ExportNierWmb.bl_idname, text="WMB3 File for NieR:Automata (.wmb)", icon_value=emil_icon.icon_id)
+    #self.layout.operator(ExportNierWmb.bl_idname, text="WMB3 File for NieR:Automata (.wmb)", icon_value=emil_icon.icon_id)
     self.layout.operator(ExportMGRRWmb.bl_idname, text="WMB4 File for MGR: Revengeance (.wmb)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportNierCol.bl_idname, text="Collision File for NieR:Automata (.col)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportNierLay.bl_idname, text="Layout File for NieR:Automata (.lay)", icon_value=emil_icon.icon_id)
+    #self.layout.operator(ExportNierCol.bl_idname, text="Collision File for NieR:Automata (.col)", icon_value=emil_icon.icon_id)
+    #self.layout.operator(ExportNierLay.bl_idname, text="Layout File for NieR:Automata (.lay)", icon_value=emil_icon.icon_id)
     self.layout.operator(ExportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
-    self.layout.operator(ExportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=emil_icon.icon_id)
+    #self.layout.operator(ExportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=emil_icon.icon_id)
+    #self.layout.operator(ExportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=emil_icon.icon_id)
     self.layout.operator(ExportNierMot.bl_idname, text="Motion File for NieR:Automata (.mot)", icon_value=emil_icon.icon_id)
 
 def menu_func_utils(self, context):
