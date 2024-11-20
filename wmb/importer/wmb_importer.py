@@ -392,6 +392,8 @@ def construct_materials(texture_dir, material, material_index=-1):
             rough_link = links.new(albedo_invert_nodes[0].outputs['Color'], principled.inputs['Roughness'])
         elif shader_name[4] != "0":
             alpha_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Alpha'])
+        else: # disable alpha
+            albedo_nodes[0].image.alpha_mode = "NONE"
     elif len(albedo_mixRGB_nodes) > 0:
         # first mixer node has two input albedos
         # subsequently each has one albedo and one mixer node
