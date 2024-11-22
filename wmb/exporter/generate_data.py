@@ -1653,7 +1653,9 @@ class c_vertexGroup(object):
                 
                 # used for child constraints, again
                 bone = None
-                if wmb4 and "Child Of" in bvertex_obj_obj.constraints:
+                if (wmb4 
+                   and "Child Of" in bvertex_obj_obj.constraints
+                   and bvertex_obj_obj.constraints["Child Of"].target is not None):
                     bone = amt.data.bones[bvertex_obj_obj.constraints["Child Of"].subtarget]
                 
                 missingBones = set()
