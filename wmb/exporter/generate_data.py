@@ -66,7 +66,7 @@ class c_batch_supplements(object): # wmb4
             batchDatum[1] = batch['meshGroupIndex']
             batchDatum[2] = batch.material_slots[0].material['ID']
             batchDatum[3] = batch['boneSetIndex']
-            if not batch['batchGroup'] or batch['batchGroup'] < 0:
+            if 'batchGroup' not in batch or batch['batchGroup'] < 0:
                 batch['batchGroup'] = 0
             self.batchData[batch['batchGroup']].append(batchDatum)
         
