@@ -1638,6 +1638,8 @@ class c_vertexGroup(object):
         def get_vertexesData(self):
             vertexes = []
             vertexesExData = []
+            # used for child constraints, define here to optimize
+            amt = [x for x in allObjectsInCollectionInOrder('WMB') if x.type == "ARMATURE"][0]
             for bvertex_obj in blenderVertices:
                 bvertex_obj_obj = bvertex_obj[1]
                 print('   [>] Generating vertex data for object', bvertex_obj_obj.name)
