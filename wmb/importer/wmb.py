@@ -1584,6 +1584,9 @@ class WMB(object):
         vertex_colors = []
         
         facesRaw = vertexGroup.faceRawArray[faceRawStart : faceRawStart + faceRawCount ]
+        if len(facesRaw) < faceRawCount:
+            faceRawCount = len(facesRaw)
+            print("\n\n===== ERROR: Insufficient faces found in faceRawArray, reducing faceCount to match =====\n\n")
         if not wmb4:
             facesRaw = [index - 1 for index in facesRaw]
         usedVertexIndexArray = sorted(list(set(facesRaw))) # oneliner to remove duplicates
