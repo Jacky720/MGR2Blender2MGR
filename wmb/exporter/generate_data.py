@@ -1639,7 +1639,8 @@ class c_vertexGroup(object):
             vertexes = []
             vertexesExData = []
             # used for child constraints, define here to optimize
-            amt = [x for x in allObjectsInCollectionInOrder('WMB') if x.type == "ARMATURE"][0]
+            possibleArmatures = [x for x in allObjectsInCollectionInOrder('WMB') if x.type == "ARMATURE"]
+            amt = possibleArmatures[0] if len(possibleArmatures) > 0 else None
             for bvertex_obj in blenderVertices:
                 bvertex_obj_obj = bvertex_obj[1]
                 print('   [>] Generating vertex data for object', bvertex_obj_obj.name)
