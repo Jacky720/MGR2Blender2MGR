@@ -2100,6 +2100,10 @@ class c_generate_data(object):
         hasArmature = False
         hasColTreeNodes = False
         hasUnknownWorldData = False
+        
+        if collectionName == 'WMB':
+            collectionName = bpy.data.collections['WMB'].children[0].name
+            print("\n\n===== Exporting collection %s, please remove other collections to ensure stable export =====\n\n" % collectionName)
 
         for obj in bpy.data.collections[collectionName].all_objects:
             if obj.type == 'ARMATURE':

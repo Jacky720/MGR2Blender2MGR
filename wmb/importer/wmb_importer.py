@@ -701,7 +701,7 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
         
     if wmb.wmb_header.magicNumber == b'WMB4':
         # very important, should be somewhere else
-        bpy.data.collections['WMB']['vertexFormat'] = wmb.wmb_header.vertexFormat
+        # bpy.data.collections['WMB']['vertexFormat'] = wmb.wmb_header.vertexFormat
         if wmb.mystery is not None:
             load_mysterychunk(wmb.mystery, collection_name)
         else:
