@@ -490,7 +490,25 @@ def construct_materials(texture_dir, material, material_index=-1):
         normalmap_shader.hide = True
     # Normal Links
     if len(normal_nodes) == 1:
-        normal_link = links.new(normal_nodes[0].outputs['Color'], normalmap_shader.inputs['Color'])
+        #normal_link = links.new(normal_nodes[0].outputs['Color'], normalmap_shader.inputs['Color'])
+        # RGB Curve code by Naq
+        # Creating new node
+        invert_node = nodes.new("ShaderNodeRGBCurve")
+        invert_node.name = "invert"
+        invert_node.label = "Invert Green Channel"
+        invert_node.location = 250, normal_nodes[0].location[1]
+        invert_node.hide = True
+        #node.label = texture_nrm.name
+
+        # Let's invert the green channel
+        green_channel = invert_node.mapping.curves[1] # Second curve is for green
+        green_channel.points[0].location.y = 1
+        green_channel.points[1].location.y = 0
+
+
+        # Connecting
+        links.new(normal_nodes[0].outputs["Color"], invert_node.inputs["Color"])
+        links.new(invert_node.outputs["Color"], normalmap_shader.inputs["Color"])
     elif len(normal_mixRGB_nodes) > 0:
         normal_link = links.new(normal_nodes[0].outputs['Color'], normal_mixRGB_nodes[0].inputs['Color2'])
         for i, node in enumerate(normal_mixRGB_nodes):
