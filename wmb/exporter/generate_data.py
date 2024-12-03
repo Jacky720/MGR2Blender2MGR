@@ -1048,10 +1048,10 @@ class c_mesh(object):
         self.name = getRealName(obj.name)
         
         if wmb4:
-            # TODO this is awful add a separate parameter
+            # TODO this is just broken add a separate parameter
             # detects SCR export
-            if collectionName != 'WMB':
-                self.name = 'SCR_MESH'
+            # if collectionName != 'WMB':
+            #     self.name = 'SCR_MESH'
             self.batches0 = []
             self.batches1 = []
             self.batches2 = []
