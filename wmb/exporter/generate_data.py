@@ -331,8 +331,8 @@ class c_b_boneSets(object):
                 boneMap.append(val)
         
         #fuck it
-        #if wmb4:
-        #    return
+        if bpy.data.collections["WMB"]['mystery']:
+            return
         
         
         # Get boneSets
