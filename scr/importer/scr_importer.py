@@ -1,6 +1,7 @@
 import bpy
 import os
 import struct
+import math
 from pathlib import Path
 import shutil
 # Replace the import statement below with the correct path to your WMB importer
@@ -96,9 +97,8 @@ class ImportSCR:
                     prop_path = head + "/../../../" + prop_category + "/" + prop_name + ".dtt"
                 else:
                     # no i'm not making an extra cpk extractor
-                    print("Could not find %s to extract, skipping" % prop_name)
-                    ly2.read(8)
-                    continue
+                    print("Could not find %s to extract, loading as empty" % prop_name)
+                    import_mode = "none"
                 
                 (instancesPointer, instancesCount) = struct.unpack("<II", ly2.read(8))
                 resumePos = ly2.tell()
@@ -117,6 +117,15 @@ class ImportSCR:
                         datImportOperator.importDtt(False, prop_path, prop_transform)
                     elif import_mode == "wmb":
                         wmb_importer.main(False, prop_path, prop_transform)
+                    elif import_mode == "none":
+                        #print(" Loading empty model %s" % prop_name)
+                        target = bpy.data.objects.new(prop_name, None)
+                        target.location = [posX, -posZ, posY]
+                        target.rotation_euler = [rotX + math.radians(90), rotZ, rotY]
+                        target.scale = [scaleX, scaleZ, scaleY]
+                        newCol = bpy.data.collections.new(prop_name)
+                        bpy.data.collections["WMB"].children.link(newCol)
+                        newCol.objects.link(target)
                     
                     if j == 0:
                         bpy.data.collections[prop_name]["flags"] = instanceFlags
