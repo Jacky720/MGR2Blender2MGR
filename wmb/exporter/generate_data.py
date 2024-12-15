@@ -1676,6 +1676,11 @@ class c_vertexGroup(object):
                     bvertex = bvertex_obj[0][loop.vertex_index]
                     # XYZ Position
                     position = [bvertex.co.x, bvertex.co.y, bvertex.co.z]
+                    
+                    if bone:
+                        position[0] -= bone.head_local.x
+                        position[1] -= bone.head_local.y
+                        position[2] -= bone.head_local.z
 
                     # Tangents
                     loopTangent = loop.tangent * 127
