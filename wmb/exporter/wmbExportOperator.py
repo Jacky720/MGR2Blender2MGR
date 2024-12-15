@@ -66,6 +66,7 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
     triangulate_meshes: bpy.props.BoolProperty(name="Triangulate Meshes", description="This automatically adds and applies the Triangulate Modifier on all your objects. Only disable if you know your meshes are triangulated and you wish to reduce export times", default=True)
     delete_loose_geometry: bpy.props.BoolProperty(name="Delete Loose Geometry", description="This automatically runs the 'Delete Loose Geometry (All)' operator before exporting. It deletes all loose vertices or edges that could result in unwanted results in-game", default=True)
     delete_unused_vertexgroups: bpy.props.BoolProperty(name="Delete Unused Vertex Groups", description="This authomatically runs the 'Remove Unused Vertex Groups' operator before exporting. It removes all vertex groups (bone weights) which are not applied to any vertices on a mesh, which can reduce the number of bones per boneSet and avoid 'white-out' glitches", default=True)
+    regenerate_slice_data: bpy.props.BoolProperty(name="Re-generate Slice Data", description="This attempts to modify the slice data (documented in custom properties of the WMB collection) to work with model modifications. Disable for minor texture edits that you wish to preserve the original data.", default=True)
 
     def execute(self, context):
         from . import wmb_exporter
@@ -101,7 +102,7 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
         
         try:
             print("Starting export...")
-            wmb_exporter.main(self.filepath, True)
+            wmb_exporter.main(self.filepath, True, BALLIN=self.regenerate_slice_data)
             return wmb_exporter.restore_blend()
         except:
             print(traceback.format_exc())

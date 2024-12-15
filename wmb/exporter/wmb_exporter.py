@@ -35,13 +35,13 @@ def restore_blend():
     return {'FINISHED'}
 
 
-def main(filepath, wmb4=False, collectionName="WMB"):
+def main(filepath, wmb4=False, collectionName="WMB", BALLIN=True):
     start_time = int(time.time())
     prepare_blend()
     
     wmb_file = create_wmb(filepath)
     
-    generated_data = c_generate_data(wmb4, collectionName)
+    generated_data = c_generate_data(wmb4, collectionName, BALLER=BALLIN)
     print('-=# All Data Generated. Writing WMB... #=-')
     create_wmb_header(wmb_file, generated_data, wmb4, collectionName)
     

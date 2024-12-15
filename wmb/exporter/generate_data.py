@@ -7,8 +7,6 @@ from time import time
 import numpy as np
 import mathutils as mu
 
-BALLIN = True
-
 def getRealName(name):
     splitname = name.split('-')
     return '-'.join(splitname[1:-1])
@@ -2097,7 +2095,9 @@ class c_vertexGroups(object):
 
 
 class c_generate_data(object):
-    def __init__(self, wmb4=False, collectionName='WMB'):
+    def __init__(self, wmb4=False, collectionName='WMB', BALLER=True):
+        global BALLIN
+        BALLIN = BALLER
         hasArmature = False
         hasColTreeNodes = False
         hasUnknownWorldData = False
