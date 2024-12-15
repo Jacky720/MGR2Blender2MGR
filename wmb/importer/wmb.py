@@ -77,8 +77,8 @@ class WMB_Header(object):
         elif self.magicNumber == b'WMB4':
             self.version = "%08x" % (read_uint32(wmb_fp))
             self.vertexFormat = read_uint32(wmb_fp)             # Vertex data format, ex. 0x137
-            self.referenceBone = read_uint16(wmb_fp)
-            self.flags = read_int16(wmb_fp)                     # flags & referenceBone
+            self.flags = read_uint16(wmb_fp)
+            self.referenceBone = read_int16(wmb_fp)             # flags & referenceBone
             
             self.bounding_box1 = read_float(wmb_fp)             # bounding_box pos 1
             self.bounding_box2 = read_float(wmb_fp)                     

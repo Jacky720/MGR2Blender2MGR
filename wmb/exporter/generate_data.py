@@ -460,7 +460,14 @@ class c_bones(object):
                 bone = getAllBonesInOrder("WMB")[0]
                 ID = bone['ID']
                 parentIndex = -1
-                localPosition = Vector3(bone['localPosition'][0], bone['localPosition'][1], bone['localPosition'][2])
+                
+                #localPosition = Vector3(bone['localPosition'][0], bone['localPosition'][1], bone['localPosition'][2])
+                trans = bone.head - mu.Vector([0, 0, 0])
+                localPosition = [0, 0, 0]
+                localPosition[0] = trans[0]
+                localPosition[1] = trans[1]
+                localPosition[2] = trans[2] # or list()?
+                
                 localRotation = Vector3(0, 0, 0) # I haven't seen anything here besides 0, 0, 0.
                 localScale = Vector3(1, 1, 1) # Same here but 1, 1, 1. Makes sense. Bones don't "really" have scale.
 
@@ -471,7 +478,7 @@ class c_bones(object):
                 tPosition = localPosition
 
                 blenderName = bone.name
-                bone = [ID, parentIndex, localPosition.xyz, localRotation.xyz, localScale.xyz, position.xyz, rotation.xyz, scale.xyz, tPosition.xyz, blenderName]
+                bone = [ID, parentIndex, localPosition, localRotation.xyz, localScale.xyz, position, rotation.xyz, scale.xyz, tPosition, blenderName]
                 _bones.append(bone)
 
             return _bones
