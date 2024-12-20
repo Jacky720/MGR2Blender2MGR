@@ -31,7 +31,7 @@ def read_header(fp):
 #         )
         return (FileCount, FileTableOffset, ExtensionTableOffset,NameTableOffset,SizeTableOffset,hashMapOffset)
     else:
-        print('[-] error magic number detected')
+        print('[-] wrong magic number detected')
         return False
 
 def get_fileinfo(fp, index, FileTableOffset, ExtensionTableOffset, NameTableOffset, SizeTableOffset):
