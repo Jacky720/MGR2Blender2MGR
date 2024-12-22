@@ -37,7 +37,11 @@ def ImportData(only_extract, filepath, transform=None):
         dtt_filename = dat_unpacker.main(dtt_filepath, os.path.join(extract_dir, filename_without_extension + '.dtt'), dtt_filepath)
     
     if (dat_filename == "" and dtt_filename == ""):
-        print("I have no idea how you manged to select a DAT or DTT if you had neither")
+        print("I have no idea how you managed to select a DAT or DTT if you had neither")
+    if (not os.path.isfile(dat_filepath) and os.path.isfile(dtt_filepath)):
+        print("Did you seriously just type random nonsense into the file select?")
+    if (dat_filename == False and dtt_filename == False):
+        print("Apparently, both the DAT and DTT associated with your selection are empty.")
         
     
     scr_mode = False
