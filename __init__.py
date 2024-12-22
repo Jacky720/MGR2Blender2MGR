@@ -1,9 +1,9 @@
 bl_info = {
-    "name": "Nier2Blender2NieR (NieR:Automata Data Exporter)",
-    "author": "Woeful_Wolf & RaiderB",
+    "name": "MGR2Blender2MGR (Metal Gear Rising Data Exporter)",
+    "author": "Woeful_Wolf, RaiderB, Jacky720, and Gaming with Portals",
     "version": (0, 3, 1),
     "blender": (2, 80, 0),
-    "description": "Import/Export NieR:Automata WMB/WTP/WTA/DTT/DAT/COL/LAY files.",
+    "description": "Import/Export Various Metal Gear Rising Data files.",
     "category": "Import-Export"}
 
 
@@ -90,9 +90,8 @@ def menu_func_import(self, context):
     pcoll = preview_collections["main"]
     raiden_icon = pcoll["raiden"]
     yorha_icon = pcoll["yorha"]
-    self.layout.operator(ImportNierDtt.bl_idname, text="DTT File for Nier:Automata (.dtt)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata (.wmb)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierDat.bl_idname, text="DAT Extract for Nier:Automata (.dat)", icon_value=yorha_icon.icon_id)
+    self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata/MGR:R (.wmb)", icon_value=yorha_icon.icon_id)
+    self.layout.operator(ImportNierDat.bl_idname, text="DAT/DTT File for MGR:R (.dat, .dtt)", icon_value=raiden_icon.icon_id)
     #self.layout.operator(ImportNierCol.bl_idname, text="Collision File for Nier:Automata (.col)", icon_value=yorha_icon.icon_id)
     #self.layout.operator(ImportNierLay.bl_idname, text="Layout File for Nier:Automata (.lay)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
