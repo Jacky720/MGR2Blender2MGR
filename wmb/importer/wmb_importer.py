@@ -154,7 +154,8 @@ def construct_mesh(mesh_data, collection_name):
     #  boneWeightInfoArray, boneSetIndex, meshGroupIndex, vertex_colors,
     #  LOD_name, LOD_level, colTreeNodeIndex, unknownWorldDataIndex,
     #  boundingBox, vertexGroupIndex, batchID?, materialArray?,
-    #  boneSet?, vertexStart?, batchGroup?, wmb4_transform?], collection_name
+    #  boneSet?, vertexStart?, batchGroup?, wmb4_transform?,
+    #  vertexCount?, normals?], collection_name
     name = mesh_data[0]
     matched_objs = 0
     for obj in bpy.data.objects:
@@ -172,6 +173,7 @@ def construct_mesh(mesh_data, collection_name):
     vertices = mesh_data[1]
     faces = mesh_data[2]
     has_bone = mesh_data[3]
+    normals = mesh_data[21] if len(mesh_data) > 21 else None
     weight_infos = [[[],[]]] # A real fan can recognize me even I am a 2 dimensional array
     print("[+] importing %s" % name)
     objmesh = bpy.data.meshes.new(name)
@@ -182,6 +184,8 @@ def construct_mesh(mesh_data, collection_name):
     obj.location = Vector((0,0,0))
     bpy.data.collections.get(collection_name).objects.link(obj)
     objmesh.from_pydata(vertices, [], faces)
+    if normals is not None:
+        objmesh.normals_split_custom_set_from_vertices(normals)
     objmesh.update(calc_edges=True)
 
     if len(mesh_data[7]) != 0:
@@ -238,7 +242,7 @@ def construct_mesh(mesh_data, collection_name):
             obj.rotation_euler = (math.radians(90) + transform[3], transform[5], transform[4])
             obj.scale = Vector((transform[6], transform[7], transform[8]))
 
-    obj.data.flip_normals()
+    # obj.data.flip_normals()
     
     return obj
 
@@ -564,8 +568,10 @@ def add_material_to_mesh(mesh, materials , uvs):
         #print('linking material %s to mesh object %s' % (material.name, mesh.name))
         mesh.data.materials.append(material)
     bpy.context.view_layer.objects.active = mesh
-    bpy.ops.object.mode_set(mode="EDIT")
-    bm = bmesh.from_edit_mesh(mesh.data)
+    # bpy.ops.object.mode_set(mode="EDIT")
+    # bm = bmesh.from_edit_mesh(mesh.data)
+    bm = bmesh.new()
+    bm.from_mesh(mesh.data)
     uv_layer = bm.loops.layers.uv.verify()
     #bm.faces.layers.tex.verify()
     for face in bm.faces:
@@ -590,12 +596,16 @@ def add_material_to_mesh(mesh, materials , uvs):
         else:
             pass#print("Weird, no UV[%d] for %s" % (i, material.name))
 
-    bpy.ops.object.mode_set(mode='OBJECT')
-    mesh.select_set(True)
-    bpy.ops.object.shade_smooth()
+    #bpy.ops.object.mode_set(mode='OBJECT')
+    #mesh.select_set(True)
+    #bpy.ops.object.shade_smooth()
     #mesh.hide = True
-    mesh.select_set(False)
-    
+    #mesh.select_set(False)
+    bm.to_mesh(mesh.data)
+    bm.free()
+    if bpy.app.version < (4, 1):
+        mesh.data.use_auto_smooth = True
+
 def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
     meshes = []
     uvMaps = [[], [], [], [], []]
@@ -781,7 +791,8 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
                 meshInfo[5], # vertexStart
                 batch.batchGroup,       # batch group, which of the four supplements
                 wmb4_transform,  # header data for SCR transformations
-                meshInfo[6]  # vertexCount
+                meshInfo[6], # vertexCount
+                meshInfo[7]  # normals
             ], collection_name)
             meshes.append(obj)
     

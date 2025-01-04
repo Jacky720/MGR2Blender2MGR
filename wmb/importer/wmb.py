@@ -932,10 +932,7 @@ class wmb4_vertex(object):
         SmartIO.float,   # z
         SmartIO.float16, # texture u
         SmartIO.float16, # texture v
-        SmartIO.uint8,   # normal x
-        SmartIO.uint8,   # normal y
-        SmartIO.uint8,   # normal z
-        SmartIO.uint8,   # normal padding
+        SmartIO.uint32,  # normals (11+11+10 bits)
         SmartIO.uint8,   # tangent x
         SmartIO.uint8,   # tangent y
         SmartIO.uint8,   # tangent z
@@ -949,10 +946,7 @@ class wmb4_vertex(object):
         SmartIO.float,   # z
         SmartIO.float16, # texture u
         SmartIO.float16, # texture v
-        SmartIO.uint8,   # normal x
-        SmartIO.uint8,   # normal y
-        SmartIO.uint8,   # normal z
-        SmartIO.uint8,   # normal padding
+        SmartIO.uint32,  # normals (11+11+10 bits)
         SmartIO.uint8,   # tangent x
         SmartIO.uint8,   # tangent y
         SmartIO.uint8,   # tangent z
@@ -967,10 +961,7 @@ class wmb4_vertex(object):
         SmartIO.float,   # z
         SmartIO.float16, # texture u
         SmartIO.float16, # texture v
-        SmartIO.uint8,   # normal x
-        SmartIO.uint8,   # normal y
-        SmartIO.uint8,   # normal z
-        SmartIO.uint8,   # normal padding
+        SmartIO.uint32,  # normals (11+11+10 bits)
         SmartIO.uint8,   # tangent x
         SmartIO.uint8,   # tangent y
         SmartIO.uint8,   # tangent z
@@ -983,10 +974,7 @@ class wmb4_vertex(object):
         SmartIO.float,   # z
         SmartIO.float16, # texture u
         SmartIO.float16, # texture v
-        SmartIO.uint8,   # normal x
-        SmartIO.uint8,   # normal y
-        SmartIO.uint8,   # normal z
-        SmartIO.uint8,   # normal padding
+        SmartIO.uint32,  # normals (11+11+10 bits)
         SmartIO.uint8,   # tangent x
         SmartIO.uint8,   # tangent y
         SmartIO.uint8,   # tangent z
@@ -1001,7 +989,7 @@ class wmb4_vertex(object):
             boneWeight = [0] * 4
             self.positionX, self.positionY, self.positionZ, \
             self.textureU, self.textureV, \
-            self.normalX, self.normalY, self.normalZ, _, \
+            normal, \
             self.tangentX, self.tangentY, self.tangentZ, self.tangentD, \
             boneIndex[0], boneIndex[1], boneIndex[2], boneIndex[3], \
             boneWeight[0], boneWeight[1], boneWeight[2], boneWeight[3] \
@@ -1009,49 +997,64 @@ class wmb4_vertex(object):
             self.boneIndices = boneIndex
             self.boneWeights = [weight/255 for weight in boneWeight]
             # All these values are discarded??
-            self.normalX *= 2/255
-            self.normalY *= 2/255
-            self.normalZ *= 2/255
-            self.tangentX *= 2/255
-            self.tangentY *= 2/255
-            self.tangentZ *= 2/255
-            self.tangentD *= 2/255
-            return
+            # self.tangentX *= 2/255
+            # self.tangentY *= 2/255
+            # self.tangentZ *= 2/255
+            # self.tangentD *= 2/255
+            self.tangentX = (self.tangentX - 127) / 127
+            self.tangentY = (self.tangentY - 127) / 127
+            self.tangentZ = (self.tangentZ - 127) / 127
+            self.tangentD = (self.tangentD - 127) / 127
         
         elif vertexFormat == 0x10307:
             self.positionX, self.positionY, self.positionZ, \
             self.textureU, self.textureV, \
-            self.normalX, self.normalY, self.normalZ, _, \
+            normal, \
             self.tangentX, self.tangentY, self.tangentZ, self.tangentD, \
             self.color, \
             self.textureU2, self.textureV2 \
             = wmb4_vertex.smartRead10307.read(wmb_fp)
             
             self.color = list(struct.unpack("<BBBB", struct.pack("<I", self.color))) # byte me
-            return
             
         elif vertexFormat == 0x10107:
             self.positionX, self.positionY, self.positionZ, \
             self.textureU, self.textureV, \
-            self.normalX, self.normalY, self.normalZ, _, \
+            normal, \
             self.tangentX, self.tangentY, self.tangentZ, self.tangentD, \
             self.color \
             = wmb4_vertex.smartRead10107.read(wmb_fp)
             
             self.color = list(struct.unpack("<BBBB", struct.pack("<I", self.color))) # byte me
-            return
             
         elif vertexFormat == 0x00107:
             self.positionX, self.positionY, self.positionZ, \
             self.textureU, self.textureV, \
-            self.normalX, self.normalY, self.normalZ, _, \
+            normal, \
             self.tangentX, self.tangentY, self.tangentZ, self.tangentD \
             = wmb4_vertex.smartRead00107.read(wmb_fp)
-            return
             
         else:
             print("God fucking DAMMIT Kris, the vertex format is %s." % hex(vertexFormat))
             return
+
+        # split normal to self.normalX, Y, Z
+        self.normalX = normal & ((1 << 11) - 1)
+        self.normalY = (normal >> 11) & ((1 << 11) - 1)
+        self.normalZ = (normal >> 22)
+        if self.normalX & (1 << 10):
+            self.normalX &= ~(1 << 10)
+            self.normalX -= 1 << 10
+        if self.normalY & (1 << 10):
+            self.normalY &= ~(1 << 10)
+            self.normalY -= 1 << 10
+        if self.normalZ & (1 << 9):
+            self.normalZ &= ~(1 << 9)
+            self.normalZ -= 1 << 9
+        # normalize
+        self.normalX /= (1<<10)-1
+        self.normalY /= (1<<10)-1
+        self.normalZ /= (1<<9)-1
 
 class wmb4_vertexExData(object):
     """docstring for wmb4_vertexExData"""
@@ -1605,17 +1608,19 @@ class WMB(object):
         for i, vertex in enumerate(facesRaw):
             facesRaw[i] = mappingDict[vertex]
         faces = [0] * (faceRawCount // 3)
-        usedVertices = [0] * len(usedVertexIndexArray)
+        usedVertices = [None] * len(usedVertexIndexArray)
+        usedNormals = [None] * len(usedVertexIndexArray)
         boneWeightInfos = [[],[]]
         #print("Iterating over 0, faceRawCount, 3, length %d" % 0, faceRawCount, 3)
         for i in range(0, faceRawCount, 3):
-            faces[i // 3] = ( facesRaw[i], facesRaw[i + 1], facesRaw[i + 2] )
+            faces[i // 3] = ( facesRaw[i + 2], facesRaw[i + 1], facesRaw[i] )
         meshVertices = vertexGroup.vertexArray[vertexStart : vertexStart + vertexCount]
 
         if self.hasBone:
             boneWeightInfos = [0] * len(usedVertexIndexArray)
         for newIndex, i in enumerate(usedVertexIndexArray):
             usedVertices[newIndex] = (meshVertices[i].positionX, meshVertices[i].positionY, meshVertices[i].positionZ)
+            usedNormals[newIndex] = (meshVertices[i].normalX, meshVertices[i].normalY, meshVertices[i].normalZ)
 
             # Vertex_Colors are stored in VertexData
             if vertexGroup.vertexFlags in {4, 5, 12, 14} or (wmb4 and self.wmb_header.vertexFormat in {0x10307, 0x10107}):
@@ -1652,7 +1657,7 @@ class WMB(object):
                 else:
                     self.hasBone = False
         if wmb4:
-            return usedVertices, faces, usedVertexIndexArray, boneWeightInfos, vertex_colors, vertexStart, vertexCount
+            return usedVertices, faces, usedVertexIndexArray, boneWeightInfos, vertex_colors, vertexStart, vertexCount, usedNormals
         return usedVertices, faces, usedVertexIndexArray, boneWeightInfos, vertex_colors, vertexStart
 
 def load_data(wmb_fp, pointer, chunkClass, other=None):
