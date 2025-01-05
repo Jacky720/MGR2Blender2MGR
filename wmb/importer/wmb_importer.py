@@ -367,7 +367,7 @@ def construct_materials(texture_dir, material, material_index=-1):
             else:
                 albedo_image.image = bpy.data.images.get(textureID + ".dds")
             albedo_image.hide = True
-                
+            
             invert_shader = nodes.new(type="ShaderNodeInvert")
             albedo_invert_nodes.append(invert_shader)
             invert_shader.location = 600, (i-1)*-60
@@ -394,6 +394,7 @@ def construct_materials(texture_dir, material, material_index=-1):
         if shader_name[3:5] == "00" and not organic:
             glossy_in_link = links.new(albedo_nodes[0].outputs['Alpha'], albedo_invert_nodes[0].inputs['Color'])
             rough_link = links.new(albedo_invert_nodes[0].outputs['Color'], principled.inputs['Roughness'])
+            albedo_nodes[0].image.alpha_mode = "CHANNEL_PACKED"
         elif shader_name[4] != "0":
             alpha_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Alpha'])
         else: # disable alpha
