@@ -90,8 +90,8 @@ def menu_func_import(self, context):
     pcoll = preview_collections["main"]
     raiden_icon = pcoll["raiden"]
     yorha_icon = pcoll["yorha"]
-    self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata/MGR:R (.wmb)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportNierDat.bl_idname, text="DAT/DTT File for MGR:R (.dat, .dtt)", icon_value=raiden_icon.icon_id)
+    self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata/MGR:R (.wmb)", icon_value=yorha_icon.icon_id)
     #self.layout.operator(ImportNierCol.bl_idname, text="Collision File for Nier:Automata (.col)", icon_value=yorha_icon.icon_id)
     #self.layout.operator(ImportNierLay.bl_idname, text="Layout File for Nier:Automata (.lay)", icon_value=yorha_icon.icon_id)
     self.layout.operator(ImportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
