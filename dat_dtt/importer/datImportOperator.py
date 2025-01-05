@@ -26,7 +26,7 @@ def ImportData(only_extract, filepath, transform=None):
     dtt_filepath = os.path.join(head, filename_without_extension + '.dtt') 
     
     dtt_filename = "" # Initalization
-    dat_filename = "" 
+    dat_filename = ""
     
     from . import dat_unpacker
     print("DAT Path: " + dat_filepath)
@@ -111,14 +111,18 @@ def ImportData(only_extract, filepath, transform=None):
     
     
 
-    # SCR but new and improved
     if scr_mode:
+        # SCR but new and improved
+        if filename_without_extension + ".scr" in scr_files:
+            scr_files = [filename_without_extension + ".scr"]
         scr_filepath = os.path.join(extract_dir, filename_without_extension + scr_ext, scr_files[0])
         print("WMB Path: " + scr_filepath)
         from ...scr.importer import scr_importer
         scr_importer.ImportSCR.main(scr_filepath, False)
     if wmb_mode:
         # WMB
+        if filename_without_extension + ".wmb" in wmb_files:
+            wmb_files = [filename_without_extension + ".wmb"]
         wmb_filepath = os.path.join(extract_dir, filename_without_extension + wmb_ext, wmb_files[0])
         print("WMB Path: " + wmb_filepath)
         from ...wmb.importer import wmb_importer
