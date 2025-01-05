@@ -152,75 +152,34 @@ class c_batches(object):
 class c_boneIndexTranslateTable(object):
     def __init__(self, collectionName): # formerly included bones
 
-        self.firstLevel = []
-        self.secondLevel = []
-        self.thirdLevel = []
 
-        for obj in bpy.data.collections[collectionName].all_objects:
-            if obj.type == 'ARMATURE':
-                #for idx in range(len(obj.data['firstLevel'])):
-                #    self.firstLevel.append(obj.data['firstLevel'][idx])
-                #
-                #for idx in range(len(obj.data['secondLevel'])):
-                #    self.secondLevel.append(obj.data['secondLevel'][idx])
-                #
-                #for idx in range(len(obj.data['thirdLevel'])):
-                #    self.thirdLevel.append(obj.data['thirdLevel'][idx])
-                self.firstLevel = obj.data['firstLevel']
-                self.secondLevel = obj.data['secondLevel']
-                # we regenerate the third level
-        
-        secondLevelRanges = []
-        for i, val in enumerate(self.firstLevel):
-            if val != -1:
-                secondLevelRanges.append(i * 256)
-        
-        thirdLevelRanges = []
-        couter = 0
-        #print(secondLevelRanges)
-        for i, val in enumerate(self.secondLevel):
-            if i % 16 == 0:
-                counter = secondLevelRanges.pop(0)
-            if val != -1:
-                thirdLevelRanges.append(counter)
-            counter += 16
-            
         # Generate empty table
-        newThirdLevel = []
-        for val in thirdLevelRanges:
-            for i in range(16):
-                newThirdLevel.append(0xfff)
+        fullLookup = [0xfff] * 0x1000
         
         # Populate the third level
         for i, bone in enumerate(getAllBonesInOrder("WMB")):
-            if 'ID' not in bone:
+            if 'ID' not in bone: # generate later
                 continue
-            boneID = bone['ID']         
-            for k, domain in enumerate(thirdLevelRanges):
-                if boneID >= domain and boneID < domain + 16:
-                    newThirdLevel[k * 16 + boneID - domain] = i
-                    break
-
-        # Temp here for Baal # what's Baal
-        newBones = []
+            if not 0 <= bone['ID'] < 0x1000: # force re-generate
+                del bone['ID']
+                continue
+            fullLookup[bone['ID']] = i
 
         # Add new bones that dont have ID
-        # what if there are no empty spots?
         for i, bone in enumerate(getAllBonesInOrder("WMB")):
-            if 'ID' not in bone:
-                for k in range(len(newThirdLevel) - 1, 0, -1):
-                    if newThirdLevel[k] == 0xfff:
-                        newThirdLevel[k] = i
-                        bone['ID'] = thirdLevelRanges[k//16] + k%16
-                        print("Added new bone to table", bone.name, "assigning ID", bone['ID'], "at thirdLevel translateTableIndex", k)
-                        newBones.append(bone)
-                        break
-                if 'ID' not in bone:
-                    ShowMessageBox('Failed to make room in the bone index reverse lookup table for a new bone. Try adding more multiples of 16 in place of -1s in your armature secondLevel property.', 'Too Many Bones', 'ERROR')
-                    print("Failed to add ID to bone %s, there are %d bones total but only %d slots in the table." % (bone.name, len(getAllBonesInOrder("WMB")), len(newThirdLevel)))
-                    assert 'ID' in bone
+            if 'ID' in bone:
+                continue
+            for k in range(0x1000 - 1, 0, -1):
+                if fullLookup[k] == 0xfff:
+                    fullLookup[k] = i
+                    bone['ID'] = k
+                    print("Added new bone to table", bone.name, "assigning ID", bone['ID'])
+                    newBones.append(bone)
+                    break
 
         #Print the shit for the XML
+        # nah
+        """
         for bone in newBones:
             no = bone["ID"]
             if bone.parent in newBones:
@@ -232,7 +191,7 @@ class c_boneIndexTranslateTable(object):
             else:
                 noDown = 0xfff
 
-            out = """<CLOTH_WK>
+            out = " ""<CLOTH_WK>
     <no>{}</no>
     <noUp>{}</noUp>
     <noDown>{}</noDown>
@@ -242,12 +201,54 @@ class c_boneIndexTranslateTable(object):
     <rotLimit>0.5236</rotLimit>
     <offset>0 -0.1 0</offset>
     <m_OriginalRate>0</m_OriginalRate>
-</CLOTH_WK>""".format(no, noUp, noDown)
+</CLOTH_WK>"" ".format(no, noUp, noDown)
 
             print(out)
         print("COPY TO YOUR <CLOTH_WK_LIST> AND REMEMBER TO ADD +{} TO THE <CLOTH_HEADER><m_Num> VALUE!".format(len(newBones)))
+        """
 
-        self.thirdLevel = newThirdLevel
+        # Generate levels from fullLookup
+        # The boneIndexTranslateTable is a compressed reverse lookup for bone IDs.
+        self.firstLevel = [-1] * 0x10
+        self.secondLevel = []
+        self.thirdLevel = []
+
+        # firstLevel -- skip ranges of 0x100 that are completely empty
+        curIndex = 0x10
+        for i in range(0x10):
+            partialLookup = fullLookup[0x100 * i : 0x100 * (i + 1)]
+            if all([x == 0xfff for x in partialLookup]):
+                continue
+            self.firstLevel[i] = curIndex
+            curIndex += 0x10
+
+        # secondLevel -- skip ranges of 0x10 that are completely empty
+        for i in range(0x10):
+            if self.firstLevel[i] == -1:
+                continue
+            # i corresponds to the start of a chunk of 0x100 bone indexes
+            partialLookup = fullLookup[0x100 * i : 0x100 * (i + 1)]
+            newSecondLevel = [-1] * 0x10
+            for j in range(0x10):
+                partialPartialLookup = partialLookup[0x10 * j : 0x10 * (j + 1)]
+                if all([x == 0xfff for x in partialPartialLookup]):
+                    continue
+                newSecondLevel[j] = curIndex
+                curIndex += 0x10
+
+            self.secondLevel.extend(newSecondLevel)
+
+        # thirdLevel -- just chunks from fullLookup according to secondLevel
+        for i, firstLevelItem in enumerate(self.firstLevel):
+            if firstLevelItem == -1:
+                continue
+            # -0x10 because the first level is considered under the same index system
+            secondLevelPortion = self.secondLevel[firstLevelItem - 0x10 : firstLevelItem]
+            for j, secondLevelItem in enumerate(secondLevelPortion):
+                if secondLevelItem == -1:
+                    continue
+                self.thirdLevel.extend(fullLookup[i * 0x100 + j * 0x10 : i * 0x100 + (j + 1) * 0x10])
+
 
         self.firstLevel_Size = len(self.firstLevel)
 
