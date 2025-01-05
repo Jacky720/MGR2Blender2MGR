@@ -274,7 +274,7 @@ class ExportAll(bpy.types.Operator):
                 centre_origins("WMB")
             if exportSteps.deleteLoose:
                 bpy.ops.b2n.deleteloosegeometryall()
-            wmb_exporter.main(wmbFilePath)
+            wmb_exporter.main(wmbFilePath, True)
             exportedFilesCount += 1
         from ...wta_wtp.exporter import export_wta, export_wtp
         if exportSteps.useWtaStep:
