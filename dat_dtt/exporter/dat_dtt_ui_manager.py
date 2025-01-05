@@ -243,7 +243,9 @@ class ExportAll(bpy.types.Operator):
             sarColl = bpy.data.objects["Field-Root"].users_collection[0]
 
         for item in context.scene.DatContents:
-            if item.filepath.endswith('.wta'):
+            if item.filepath.endswith('.wmb'):
+                wmbFilePath = item.filepath
+            elif item.filepath.endswith('.wta'):
                 wtaFilePath = item.filepath
             elif item.filepath.endswith('.col'):
                 colFilePath = item.filepath
@@ -255,10 +257,8 @@ class ExportAll(bpy.types.Operator):
                 sarFilePath = item.filepath
 
         for item in context.scene.DttContents:
-            if item.filepath.endswith('.wmb'):
-                wmbFilePath = item.filepath
-            elif item.filepath.endswith('.wtp'):
-                wtpFilePath = item.filepath        
+            if item.filepath.endswith('.wtp'):
+                wtpFilePath = item.filepath
 
         datFileName = baseFilename + "." + datExt
         dttFileName = baseFilename + ".dtt"
