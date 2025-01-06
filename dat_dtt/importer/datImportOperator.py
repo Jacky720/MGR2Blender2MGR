@@ -39,7 +39,7 @@ def ImportData(only_extract, filepath, transform=None):
     if (dat_filename == "" and dtt_filename == ""):
         print("I have no idea how you managed to select a DAT or DTT if you had neither")
     if (not os.path.isfile(dat_filepath) and os.path.isfile(dtt_filepath)):
-        print("Did you seriously just type random nonsense into the file select?")
+        print("Did you just type random nonsense into the file select?")
     if (dat_filename == False and dtt_filename == False):
         print("Apparently, both the DAT and DTT associated with your selection are empty.")
         
@@ -60,18 +60,18 @@ def ImportData(only_extract, filepath, transform=None):
         if (os.path.exists(os.path.join(extract_dir, filename_without_extension + '.dtt'))):
             wmb_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dtt')) if os.path.splitext(x)[1] == ".wmb"]
             wmb_ext = ".dtt"
-    
+
+    scr_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dat')) if os.path.splitext(x)[1] == ".scr"]
+
     if (len(wmb_files) > 0):
         wmb_mode = True
-    
-    scr_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dat')) if os.path.splitext(x)[1] == ".scr"]
-    if (len(scr_files) == 0):
+    elif (len(scr_files) == 0):
         # Last chance to show yourself
         print("Attempting to find SCR in DTT (fruitless)")
         if os.path.exists(os.path.join(extract_dir, filename_without_extension + '.dtt')):
             scr_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dtt')) if os.path.splitext(x)[1] == ".scr"]
             scr_ext = ".dtt"
-    
+
     if (len(scr_files) > 0):
         scr_mode = True
 
@@ -245,9 +245,10 @@ class ImportNierDtt(bpy.types.Operator, ImportHelper):
         if self.bulk_import:
             folder = os.path.split(self.filepath)[0]
             for filename in os.listdir(folder):
-                if filename[-4:] == '.dtt':
+                if filename[-4:] == '.dat':
                     try:
                         filepath = os.path.join(folder, filename)
+                        print("\nImporting", filepath)
                         ImportData(self.only_extract, filepath)
                     except:
                         print('ERROR: FAILED TO IMPORT', filename)
