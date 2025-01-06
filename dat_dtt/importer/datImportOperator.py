@@ -307,16 +307,17 @@ class ImportNierDat(bpy.types.Operator, ImportHelper):
         from ...wmb.importer import wmb_importer
         if self.reset_blend and not self.only_extract:
             wmb_importer.reset_blend()
+        firstModel = ImportData(self.only_extract, self.filepath)
         if self.bulk_import:
             folder = os.path.split(self.filepath)[0]
             for filename in os.listdir(folder):
                 if filename[-4:] == '.dat':
                     try:
                         filepath = os.path.join(folder, filename)
-                        ImportData(self.only_extract, filepath)
+                        if filepath != self.filepath: # Already got that one
+                            ImportData(self.only_extract, filepath)
                     except:
                         print('ERROR: FAILED TO IMPORT', filename)
             return {'FINISHED'}
+        return firstModel
 
-        else:
-            return ImportData(self.only_extract, self.filepath)

@@ -339,7 +339,7 @@ def construct_materials(texture_dir, material, material_index=-1):
         textures_type = texturesType.lower()
         material[texturesType] = textures.get(texturesType)
         texture_file = "%s/%s.dds" % (texture_dir, textures[texturesType])
-        if os.path.exists(texture_file):
+        if os.path.exists(texture_file) or bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
             if textures_type.find('albedo') > -1:
                 albedo_maps[textures_type] = textures.get(texturesType)
             elif textures_type.find('normal') > -1:
@@ -358,7 +358,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     colornode = None
     for i, textureID in enumerate(albedo_maps.values()):
         texture_file = "%s/%s.dds" % (texture_dir, textureID)
-        if os.path.exists(texture_file):
+        if os.path.exists(texture_file) or bpy.data.images.get(textureID + ".dds") is not None:
             albedo_image = nodes.new(type='ShaderNodeTexImage')
             albedo_nodes.append(albedo_image)
             albedo_image.location = 0,i*-60
