@@ -71,7 +71,9 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         from . import wmb_exporter
 
-        bpy.data.collections['WMB'].all_objects[0].select_set(True)
+        wmbLayerCollection = bpy.context.view_layer.layer_collection.children['WMB']
+        subCollection = [x for x in wmbLayerCollection.children if x.is_visible][0] # If this crashes, you disabled all the WMB sub-collections.
+        subCollection.collection.all_objects[0].select_set(True)
         
         print("\n==== BEGIN WMB4 EXPORT ====")
         
@@ -95,11 +97,11 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
 
         if self.delete_unused_vertexgroups:
             print("Deleting unused vertex groups...")
-            for mesh in [x for x in bpy.data.collections['WMB'].all_objects if x.type == "MESH"]:
+            for mesh in [x for x in subCollection.collection.all_objects if x.type == "MESH"]:
                 bpy.context.view_layer.objects.active = mesh
                 bpy.ops.b2n.removeunusedvertexgroups()
-            bpy.data.collections['WMB'].all_objects[0].select_set(True)
-        
+            subCollection.collection.all_objects[0].select_set(True)
+
         try:
             print("Starting export...")
             wmb_exporter.main(self.filepath, True, BALLIN=self.regenerate_slice_data)

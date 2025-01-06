@@ -133,6 +133,11 @@ def getChildrenInOrder(obj: bpy.types.Object) -> List[bpy.types.Object]:
     return sorted(obj.children, key=getObjKey)
 
 def getAllBonesInOrder(collectionName):
+    if collectionName == "WMB": # get active sub-collection
+        wmbLayerCollection = bpy.context.view_layer.layer_collection.children['WMB']
+        subCollection = [x for x in wmbLayerCollection.children if x.is_visible][0]
+        collectionName = subCollection.collection.name
+
     for obj in bpy.data.collections[collectionName].all_objects:
         if obj.type == 'ARMATURE':
             return list(obj.data.bones)
@@ -224,8 +229,10 @@ def centre_origins(collection: str):
         bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.scene.cursor.location = [0, 0, 0]
-    for obj in bpy.data.collections[collection].all_objects:
-        if obj.type == 'MESH':
+    for subCollection in bpy.context.view_layer.layer_collection.children[collection].children:
+        if not subCollection.is_visible:
+            continue
+        for obj in [x for x in subCollection.collection.all_objects if x.type == 'MESH']:
             obj.select_set(True)
             bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
             obj.select_set(False)

@@ -38,9 +38,14 @@ def restore_blend():
 def main(filepath, wmb4=False, collectionName="WMB", BALLIN=True):
     start_time = int(time.time())
     prepare_blend()
-    
+
     wmb_file = create_wmb(filepath)
-    
+
+    if collectionName == "WMB": # Get sub-collection, one that isn't disabled.
+        wmbLayerCollection = bpy.context.view_layer.layer_collection.children['WMB']
+        subCollection = [x for x in wmbLayerCollection.children if x.is_visible][0]
+        collectionName = subCollection.collection.name
+
     generated_data = c_generate_data(wmb4, collectionName, BALLER=BALLIN)
     print('-=# All Data Generated. Writing WMB... #=-')
     create_wmb_header(wmb_file, generated_data, wmb4, collectionName)
