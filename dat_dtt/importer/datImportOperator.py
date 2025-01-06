@@ -116,7 +116,7 @@ def ImportData(only_extract, filepath, transform=None):
         if filename_without_extension + ".scr" in scr_files:
             scr_files = [filename_without_extension + ".scr"]
         scr_filepath = os.path.join(extract_dir, filename_without_extension + scr_ext, scr_files[0])
-        print("WMB Path: " + scr_filepath)
+        print("SCR Path: " + scr_filepath)
         from ...scr.importer import scr_importer
         scr_importer.ImportSCR.main(scr_filepath, False)
     if wmb_mode:

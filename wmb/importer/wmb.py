@@ -1323,13 +1323,14 @@ class WMB(object):
         wmbinscr_name = ""
         if "extracted_scr" in wmb_path:
             scr_mode = True
-            split_path = wmb_file.replace("/", "\\").split("\\")
-            wmbinscr_name = split_path.pop()[:-4] # wmb name
-            split_path.pop() # "extracted_scr"
-            datdttname = split_path.pop()[:-4] # e.g. "ra01"
+            split_path = os.path.split(wmb_file)
+            wmbinscr_name = split_path[1][:-4] # wmb name
+            split_path = os.path.split(split_path[0]) # discard "extracted_scr"
+            split_path = os.path.split(split_path[0]) # separate dat name
+            datdttname = split_path[1][:-4] # e.g. "ra01"
             # wtb is both wtp and wta
-            wtp_path = "\\".join(split_path) + "\\%s.dtt\\%sscr.wtb" % (datdttname, datdttname)
-            wta_path = "\\".join(split_path) + "\\%s.dtt\\%sscr.wtb" % (datdttname, datdttname)
+            wtp_path = os.path.join(split_path[0], "%s.dtt" % datdttname, "%sscr.wtb" % datdttname)
+            wta_path = wtp_path
             if os.path.exists(wtp_path.replace('scr.wtb', 'cmn.wtb')):
                 # common files, jackpot!
                 pass # todo: load this somewhere other files can get it
@@ -1346,6 +1347,7 @@ class WMB(object):
             wta_fp.close()
         
         if os.path.exists(wmb_path):
+            print('open wmb file:', wmb_path)
             wmb_fp = open(wmb_path, "rb")
         else:
             print("DTT/DAT does not contain WMB file.")
