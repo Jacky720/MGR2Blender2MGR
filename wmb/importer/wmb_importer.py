@@ -338,8 +338,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     for texturesType in textures.keys():
         textures_type = texturesType.lower()
         material[texturesType] = textures.get(texturesType)
-        texture_file = "%s/%s.dds" % (texture_dir, textures[texturesType])
-        if os.path.exists(texture_file) or bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
+        if bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
             if textures_type.find('albedo') > -1:
                 albedo_maps[textures_type] = textures.get(texturesType)
             elif textures_type.find('normal') > -1:
@@ -357,15 +356,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     albedo_invert_nodes = []
     colornode = None
     for i, textureID in enumerate(albedo_maps.values()):
-        texture_file = "%s/%s.dds" % (texture_dir, textureID)
-        if os.path.exists(texture_file) or bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(textureID + ".dds") is not None:
             albedo_image = nodes.new(type='ShaderNodeTexImage')
             albedo_nodes.append(albedo_image)
             albedo_image.location = 0,i*-60
-            if bpy.data.images.get(textureID + ".dds") is None:
-                albedo_image.image = bpy.data.images.load(texture_file)
-            else:
-                albedo_image.image = bpy.data.images.get(textureID + ".dds")
+            albedo_image.image = bpy.data.images.get(textureID + ".dds")
             albedo_image.hide = True
             
             invert_shader = nodes.new(type="ShaderNodeInvert")
@@ -425,15 +420,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     mask_sepRGB_nodes = []
     mask_invert_nodes = []
     for i, textureID in enumerate(mask_maps.values()):
-        texture_file = "%s/%s.dds" % (texture_dir, textureID)
-        if os.path.exists(texture_file):
+        if bpy.data.images.get(textureID + ".dds") is not None:
             mask_image = nodes.new(type='ShaderNodeTexImage')
             mask_nodes.append(mask_image)
             mask_image.location = 0, ((len(albedo_maps)+1)*-60)-i*60
-            if bpy.data.images.get(textureID + ".dds") is None:
-                mask_image.image = bpy.data.images.load(texture_file)
-            else:
-                mask_image.image = bpy.data.images.get(textureID + ".dds")
+            mask_image.image = bpy.data.images.get(textureID + ".dds")
             mask_image.image.colorspace_settings.name = 'Non-Color'
             mask_image.hide = True
             if i > 0:
@@ -465,15 +456,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     normal_nodes = []
     normal_mixRGB_nodes = []
     for i, textureID in enumerate(normal_maps.values()):
-        texture_file = "%s/%s.dds" % (texture_dir, textureID)
-        if os.path.exists(texture_file):
+        if bpy.data.images.get(textureID + ".dds") is not None:
             normal_image = nodes.new(type='ShaderNodeTexImage')
             normal_nodes.append(normal_image)
             normal_image.location = 0, (len(albedo_maps)+1 + len(mask_maps)+1 + i) * -60
-            if bpy.data.images.get(textureID + ".dds") is None:
-                normal_image.image = bpy.data.images.load(texture_file)
-            else:
-                normal_image.image = bpy.data.images.get(textureID + ".dds")
+            normal_image.image = bpy.data.images.get(textureID + ".dds")
             normal_image.image.colorspace_settings.name = 'Non-Color'
             normal_image.hide = True
             if i > 0:
@@ -527,15 +514,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     curvature_sepRGB_nodes = []
     curvature_mul_nodes = []
     for i, textureID in enumerate(curvature_maps.values()):
-        texture_file = "%s/%s.dds" % (texture_dir, textureID)
-        if os.path.exists(texture_file):
+        if bpy.data.images.get(textureID + ".dds") is not None:
             curvature_image = nodes.new(type='ShaderNodeTexImage')
             curvature_nodes.append(curvature_image)
             curvature_image.location = -600, ((len(albedo_maps)+1)*-60)-i*60+50
-            if bpy.data.images.get(textureID + ".dds") is None:
-                curvature_image.image = bpy.data.images.load(texture_file)
-            else:
-                curvature_image.image = bpy.data.images.get(textureID + ".dds")
+            curvature_image.image = bpy.data.images.get(textureID + ".dds")
             curvature_image.hide = True
             if i > 0:
                 curvature_image.label = "g_CurvatureMap" + str(i-1)
@@ -831,13 +814,15 @@ def get_wmb_material(wmb, texture_dir):
                 for textureIndex in range(wmb.wta.textureCount):        # for key in textures.keys():
                     #identifier = textures[key]
                     identifier = wmb.wta.wtaTextureIdentifier[textureIndex]
+                    texture_file_name = identifier + '.dds'
+                    texture_filepath = os.path.join(texture_dir, texture_file_name)
                     try:
                         texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
                         if texture_stream:
-                            if not os.path.exists(os.path.join(texture_dir, identifier + '.dds')):
+                            if not os.path.exists(texture_filepath):
                                 create_dir(texture_dir)
-                                texture_fp = open(os.path.join(texture_dir, identifier + '.dds'), "wb")
-                                print('[+] could not find DDS texture, trying to find it in WTA; %s.dds'% identifier)
+                                texture_fp = open(texture_filepath, "wb")
+                                print('[+] could not find DDS texture, trying to find it in WTA;', texture_file_name)
                                 texture_fp.write(texture_stream)
                                 texture_fp.close()
                             else:
@@ -846,6 +831,9 @@ def get_wmb_material(wmb, texture_dir):
                             print("Texture identifier %s does not exist in WTA, despite being fetched from a WTA identifier list." % identifier)
                     except:
                         continue
+
+                    if bpy.data.images.get(texture_file_name) is None:
+                        bpy.data.images.load(texture_filepath)
                 
                 materials.append([material_name,textures,uniforms,shader_name,technique_name,parameterGroups, textureFlags])
                 #print(materials)
