@@ -245,7 +245,7 @@ class ImportNierDtt(bpy.types.Operator, ImportHelper):
         if self.bulk_import:
             folder = os.path.split(self.filepath)[0]
             for filename in os.listdir(folder):
-                if filename[-4:] == '.dat':
+                if filename[-4:] == '.dtt':
                     try:
                         filepath = os.path.join(folder, filename)
                         print("\nImporting", filepath)
@@ -310,7 +310,7 @@ class ImportNierDat(bpy.types.Operator, ImportHelper):
         if self.bulk_import:
             folder = os.path.split(self.filepath)[0]
             for filename in os.listdir(folder):
-                if filename[-4:] == '.dat' or filename[-4:] == ".dtt":
+                if filename[-4:] == '.dat':
                     try:
                         filepath = os.path.join(folder, filename)
                         ImportData(self.only_extract, filepath)
