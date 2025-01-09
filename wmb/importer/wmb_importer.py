@@ -389,6 +389,7 @@ def construct_materials(texture_dir, material, material_index=-1):
         if shader_name[3:5] == "00" and not organic:
             glossy_in_link = links.new(albedo_nodes[0].outputs['Alpha'], albedo_invert_nodes[0].inputs['Color'])
             rough_link = links.new(albedo_invert_nodes[0].outputs['Color'], principled.inputs['Roughness'])
+            specular_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Specular'])
             albedo_nodes[0].image.alpha_mode = "CHANNEL_PACKED"
         elif shader_name[4] != "0":
             alpha_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Alpha'])
