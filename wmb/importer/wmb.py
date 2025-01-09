@@ -1332,9 +1332,36 @@ class WMB(object):
             wtp_path = os.path.join(split_path[0], "%s.dtt" % datdttname, "%sscr.wtb" % datdttname)
             wta_path = wtp_path
             if os.path.exists(wtp_path.replace('scr.wtb', 'cmn.wtb')):
-                # common files, jackpot!
-                pass # todo: load this somewhere other files can get it
-        if os.path.exists(wtp_path):    
+                print("Loading %s..." % wtp_path.replace('scr.wtb', 'cmn.wtb'))
+                wtb_fp = open(wtp_path.replace('scr.wtb', 'cmn.wtb'), 'rb')
+                wtb = WTA(wtb_fp)
+
+                wmbname = os.path.split(wmb_file)[-1]
+                texture_dir = wmb_file.replace(wmbname, 'textures/common')
+
+                for textureIndex in range(wtb.textureCount):
+                    identifier = wtb.wtaTextureIdentifier[textureIndex]
+                    texture_file_name = identifier + '.dds'
+                    texture_filepath = os.path.join(texture_dir, texture_file_name)
+                    try:
+                        texture_stream = wtb.getTextureByIdentifier(identifier, wtb_fp)
+                        if not texture_stream:
+                            print("Texture identifier %s does not exist in WTB, despite being fetched from that WTB's identifier list." % identifier)
+                            continue
+                        if not os.path.exists(texture_filepath):
+                            create_dir(texture_dir)
+                            texture_fp = open(texture_filepath, "wb")
+                            print('[+] could not find DDS texture, trying to find it in WTB;', texture_file_name)
+                            texture_fp.write(texture_stream)
+                            texture_fp.close()
+                    except:
+                        continue
+
+                    if bpy.data.images.get(texture_file_name) is None:
+                        bpy.data.images.load(texture_filepath)
+
+
+        if os.path.exists(wtp_path):
             print('open wtp file')
             self.wtp_fp = open(wtp_path,'rb')
         if os.path.exists(wta_path):
