@@ -165,6 +165,7 @@ class c_boneIndexTranslateTable(object):
                 continue
             fullLookup[bone['ID']] = i
 
+        newBones = []
         # Add new bones that dont have ID
         for i, bone in enumerate(getAllBonesInOrder("WMB")):
             if 'ID' in bone:
