@@ -827,6 +827,8 @@ class wmb4_material(object):
                 self.textureArray["normalMap" + str(trueI)] = texture
             elif self.textureFlagArray[trueI] == 7:
                 self.textureArray["lightMap" + str(trueI)] = texture
+            elif self.textureFlagArray[trueI] == 10:
+                self.textureArray["tensionMap" + str(trueI)] = texture
             else:
                 self.textureArray["tex" + str(trueI)] = texture
         
