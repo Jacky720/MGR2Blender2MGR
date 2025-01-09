@@ -394,7 +394,7 @@ def construct_materials(texture_dir, material, material_index=-1):
             else:
                 specular_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Specular IOR Level'])
             albedo_nodes[0].image.alpha_mode = "CHANNEL_PACKED"
-        elif shader_name[4] != "0":
+        elif shader_name[4] != "0" or shader_name[0:3] == "har":
             alpha_link = links.new(albedo_nodes[0].outputs['Alpha'], principled.inputs['Alpha'])
         else: # disable alpha
             albedo_nodes[0].image.alpha_mode = "NONE"
