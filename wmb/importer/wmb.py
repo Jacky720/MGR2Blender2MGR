@@ -825,13 +825,15 @@ class wmb4_material(object):
                 self.textureArray["albedoMap" + str(trueI)] = texture
             elif self.textureFlagArray[trueI] == 2:
                 self.textureArray["normalMap" + str(trueI)] = texture
+            elif self.textureFlagArray[trueI] == 3:
+                self.textureArray["blendedNormalMap" + str(trueI)] = texture
             elif self.textureFlagArray[trueI] == 7:
                 self.textureArray["lightMap" + str(trueI)] = texture
             elif self.textureFlagArray[trueI] == 10:
                 self.textureArray["tensionMap" + str(trueI)] = texture
             else:
                 self.textureArray["tex" + str(trueI)] = texture
-        
+
         if DEBUG_MATERIAL_PRINT:
             print("Count:", self.trueTexturesCount*2, "Data:", texturesArray)
             print("Shader params:", [(a.x, a.y, a.z, a.w) for a in self.parameters])
