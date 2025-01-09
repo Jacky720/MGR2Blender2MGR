@@ -1016,15 +1016,15 @@ class c_mesh(object):
                 if getRealName(mesh.name) == obj_mesh_name:
                     for slot in mesh.material_slots:
                         material = slot.material
+                        if "-x-" in material.name:
+                            continue
                         for indx, mat in enumerate(getUsedMaterials(collectionName)):
                             if mat == material:
                                 matID = indx
                                 if matID not in materials:
                                     materials.append(matID)
-                                    
+
             materials.sort()
-            if obj['ID'] == 0:
-                materials = materials[:1]
             return materials
 
         def get_bones(self, obj):
@@ -1689,7 +1689,7 @@ class c_vertexGroup(object):
                     tx = int(loopTangent[0] + 127.0)
                     ty = int(loopTangent[1] + 127.0)
                     tz = int(loopTangent[2] + 127.0)
-                    sign = int(-loop.bitangent_sign*127.0+128.0)
+                    sign = 0xff if loop.bitangent_sign == -1 else 0
 
                     tangents = [tx, ty, tz, sign]
 
@@ -1940,7 +1940,8 @@ class c_vertexGroup(object):
             flip_counter = 0
             for i, index in enumerate(indexes):
                 if flip_counter == 2:
-                    indexes[i], indexes[i-1] = indexes[i-1], index
+                    # 2, 1, 0 -> 0, 1, 2
+                    indexes[i], indexes[i-2] = indexes[i-2], index
                     flip_counter = 0
                     continue
                 flip_counter += 1
