@@ -825,6 +825,8 @@ class wmb4_material(object):
                 self.textureArray["albedoMap" + str(trueI)] = texture
             elif self.textureFlagArray[trueI] == 2:
                 self.textureArray["normalMap" + str(trueI)] = texture
+            elif self.textureFlagArray[trueI] == 7:
+                self.textureArray["lightMap" + str(trueI)] = texture
             else:
                 self.textureArray["tex" + str(trueI)] = texture
         
