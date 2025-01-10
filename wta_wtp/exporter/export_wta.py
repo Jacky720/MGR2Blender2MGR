@@ -52,7 +52,7 @@ def main(context, export_filepath):
         paddingAmountArray.append(dds_padding)
 
         #wtaTextureOffset
-        if i+1 in range(len(wtaTextureSize)):
+        if i+1 < len(wtaTextureSize):
             """
             if dds_paddedSize < 12289:
                 wtaTextureOffset[i+1] = wtaTextureOffset[i] + 12288
@@ -81,6 +81,7 @@ def main(context, export_filepath):
         else:
             unknownArray1[i] = 570425376
         #unknownArray2
+        """
         if dxt not in [b'DXT1', b'DXT3', b'DXT5']:
             print("Unknown DXT format! Make sure you use DXT1, DXT3 or DXT5!")
             dds_fp.close()
@@ -114,6 +115,8 @@ def main(context, export_filepath):
                 unknownArray2.append(0)
             unknownArray2.append(1)
             unknownArray2.append(0)
+
+        """
         dds_fp.close()
 
     # Write everything
@@ -128,7 +131,8 @@ def main(context, export_filepath):
     wta_fp.write(to_bytes(textureSizeArrayOffset))
     wta_fp.write(to_bytes(unknownArrayOffset1))
     wta_fp.write(to_bytes(textureIdentifierArrayOffset))
-    wta_fp.write(to_bytes(unknownArrayOffset2))
+    #wta_fp.write(to_bytes(unknownArrayOffset2))
+    wta_fp.write('\x00\x00\x00\x00')
     for i in range(textureCount):
         wta_fp.write(to_bytes(wtaTextureOffset[i]))
     wta_fp.write(padding)
@@ -141,6 +145,7 @@ def main(context, export_filepath):
     for i in range(textureCount):
         wta_fp.write(to_bytes(int(wtaTextureIdentifier[i])))
     wta_fp.write(padding)
+    """
     for i in range(textureCount):
         wta_fp.write(to_bytes(unknownArray2[(i*5)]))
         wta_fp.write(to_bytes(unknownArray2[(i*5)+1]))
@@ -148,6 +153,8 @@ def main(context, export_filepath):
         wta_fp.write(to_bytes(unknownArray2[(i*5)+3]))
         wta_fp.write(to_bytes(unknownArray2[(i*5)+4]))
     wta_fp.write(padding)
+    """
 
     wta_fp.close()
     print('WTA Export Complete. :]')
+
