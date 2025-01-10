@@ -118,11 +118,10 @@ def handleAutoSetTextureWarnings(operatorSelf, warnings: List[str]):
     print("\n".join(warnings))
 
 def isTextureTypeSupported(textureType: str) -> bool:
-    return True # fuf yoy
-    #for supportedTex in ['g_AlbedoMap', 'g_MaskMap', 'g_NormalMap', 'g_EnvMap', 'g_DetailNormalMap', 'g_IrradianceMap', 'g_CurvatureMap', 'g_SpreadPatternMap', 'g_LUT', 'g_LightMap', 'g_GradationMap', 'g_ParallaxMap']:
-    #    if supportedTex in textureType:
-    #        return True
-    #return False
+    for supportedTex in ['Map', 'tex']:
+        if supportedTex in textureType:
+            return True
+    return False
 
 def makeWtaMaterial(matName, textures: List[Tuple[str, str, str]]):
     for tex in textures:

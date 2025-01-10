@@ -35,11 +35,11 @@ def generate(context):
         if not texture.texture_path.lower().endswith('.dds'):
             if texture.parent_mat == "":
                 print('[!] WTA/WTP Export Error: A manual ' + texture.texture_map_type + ' texture does not have a valid texture assigned.')
-                ShowMessageBox('A manual ' + texture.texture_map_type + ' texture does not have a valid texture assigned.', 'WTA/WTP Export Error', 'ERROR') 
+                #ShowMessageBox('A manual ' + texture.texture_map_type + ' texture does not have a valid texture assigned.', 'WTA/WTP Export Error', 'ERROR') 
             else:
                 print('[!] WTA/WTP Export Error: A texture in material', texture.parent_mat, 'does not have a valid path assigned.')
-                ShowMessageBox(texture.parent_mat + ' does not have a valid texture assigned to ' + texture.texture_map_type, 'WTA/WTP Export Error', 'ERROR') 
-            return None, None, None
+                #ShowMessageBox(texture.parent_mat + ' does not have a valid texture assigned to ' + texture.texture_map_type, 'WTA/WTP Export Error', 'ERROR') 
+            #return None, None, None
 
         texture_paths_array.append(texture.texture_path)
 
