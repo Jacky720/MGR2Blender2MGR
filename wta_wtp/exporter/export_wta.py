@@ -132,7 +132,7 @@ def main(context, export_filepath):
     wta_fp.write(to_bytes(unknownArrayOffset1))
     wta_fp.write(to_bytes(textureIdentifierArrayOffset))
     #wta_fp.write(to_bytes(unknownArrayOffset2))
-    wta_fp.write('\x00\x00\x00\x00')
+    wta_fp.write(b'\x00\x00\x00\x00')
     for i in range(textureCount):
         wta_fp.write(to_bytes(wtaTextureOffset[i]))
     wta_fp.write(padding)
