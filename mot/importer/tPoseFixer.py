@@ -9,7 +9,7 @@ def fixTPose(armObj: bpy.types.Object):
     
     # change all the bone rotations (technically more accurate but less nice to work with)
     bpy.ops.object.mode_set(mode="EDIT")
-    for bone in bpy.data.armatures[0].edit_bones:
+    for bone in armObj.data.edit_bones:
         #length = math.dist(bone.head, bone.tail)
         bone.tail = Vector(bone.head) + Vector((0, 0.1, 0))
     
