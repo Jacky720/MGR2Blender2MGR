@@ -128,6 +128,9 @@ class ImportSCR:
                         newCol.objects.link(target)
                     
                     if j == 0:
+                        # handle load failure
+                        if prop_name not in bpy.data.collections:
+                            bpy.data.collections.new(prop_name)
                         bpy.data.collections[prop_name]["flags"] = instanceFlags
                 
                 
