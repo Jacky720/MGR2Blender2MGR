@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MGR2Blender2MGR (Metal Gear Rising Data Exporter)",
     "author": "Woeful_Wolf, RaiderB, Jacky720, and Gaming with Portals",
-    "version": (0, 3, 1),
+    "version": (0, 1, 0),
     "blender": (2, 80, 0),
     "description": "Import/Export Various Metal Gear Rising Data files.",
     "category": "Import-Export"}
@@ -46,7 +46,7 @@ from .bxm.importer import physPanel
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
-    bl_label = 'NieR Tools'
+    bl_label = 'MGR:R Tools'
     def draw(self, context):
         self.layout.operator(RecalculateObjectIndices.bl_idname, icon="LINENUMBERS_ON")
         self.layout.operator(RemoveUnusedVertexGroups.bl_idname, icon="GROUP_VERTEX")
@@ -67,7 +67,7 @@ class NierObjectMenu(bpy.types.Menu):
 
 class NierArmatureMenu(bpy.types.Menu):
     bl_idname = 'ARMATURE_MT_n2b2n'
-    bl_label = 'NieR Tools'
+    bl_label = 'MGR:R Tools'
     def draw(self, context):
         self.layout.operator(ClearSelectedBoneIDs.bl_idname, icon='BONE_DATA')
 
@@ -86,39 +86,58 @@ class CreateLayVisualization(bpy.types.Operator):
             updateVisualizationObject(obj, obj.name[:6], True)
         return {'FINISHED'}
 
+
+
+
+class IMPORT_MGR_MainMenu(bpy.types.Menu):
+    bl_label = "MGR: Revengeance"
+    bl_idname = "IMPORT_MT_main_menu"
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        raiden_icon = pcoll["raiden"] 
+        
+        self.layout.operator(ImportNierDat.bl_idname, text="Archive File (.dat, .dtt)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ImportNierWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ImportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta/.wtp)", icon_value=raiden_icon.icon_id)
+
+class EXPORT_MGR_MainMenu(bpy.types.Menu):
+    bl_label = "MGR: Revengeance"
+    bl_idname = "EXPORT_MT_main_menu"
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        raiden_icon = pcoll["raiden"] 
+        self.layout.operator(ExportMGRRWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ExportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ExportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
+
+
+
 def menu_func_import(self, context):
     pcoll = preview_collections["main"]
-    raiden_icon = pcoll["raiden"]
-    yorha_icon = pcoll["yorha"]
-    self.layout.operator(ImportNierDat.bl_idname, text="DAT/DTT File for MGR:R (.dat, .dtt)", icon_value=raiden_icon.icon_id)
-    self.layout.operator(ImportNierWmb.bl_idname, text="WMB File for Nier:Automata/MGR:R (.wmb)", icon_value=yorha_icon.icon_id)
-    #self.layout.operator(ImportNierCol.bl_idname, text="Collision File for Nier:Automata (.col)", icon_value=yorha_icon.icon_id)
-    #self.layout.operator(ImportNierLay.bl_idname, text="Layout File for Nier:Automata (.lay)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
-    #self.layout.operator(ImportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=yorha_icon.icon_id)
-    #self.layout.operator(ImportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ImportNierMot.bl_idname, text="Motion File for Nier:Automata (.mot)", icon_value=yorha_icon.icon_id)
-    #self.layout.operator(ImportNierYaxXml.bl_idname, text="YAX XML for Nier:Automata (.xml)", icon_value=yorha_icon.icon_id)
-    self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta/.wtp)", icon_value=yorha_icon.icon_id)
+    raiden_icon = pcoll["raiden"] 
+    
+    self.layout.menu(IMPORT_MGR_MainMenu.bl_idname, icon_value=raiden_icon.icon_id)
+
 
 def menu_func_export(self, context):
     pcoll = preview_collections["main"]
-    raiden_icon = pcoll["raiden"]
-    emil_icon = pcoll["emil"]
+    raiden_icon = pcoll["raiden"] 
+    
+    self.layout.menu(EXPORT_MGR_MainMenu.bl_idname, icon_value=raiden_icon.icon_id)
+    
     self.layout.operator_context = 'INVOKE_DEFAULT'
-    #self.layout.operator(ExportNierWmb.bl_idname, text="WMB3 File for NieR:Automata (.wmb)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportMGRRWmb.bl_idname, text="WMB4 File for MGR: Revengeance (.wmb)", icon_value=emil_icon.icon_id)
-    #self.layout.operator(ExportNierCol.bl_idname, text="Collision File for NieR:Automata (.col)", icon_value=emil_icon.icon_id)
-    #self.layout.operator(ExportNierLay.bl_idname, text="Layout File for NieR:Automata (.lay)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportSCR.bl_idname, text="SCR File for MGR: Revengeance (.scr)", icon_value=raiden_icon.icon_id)
-    #self.layout.operator(ExportNierSar.bl_idname, text="Audio Environment File (.sar)", icon_value=emil_icon.icon_id)
-    #self.layout.operator(ExportNierGaArea.bl_idname, text="Visual Environment File (GAArea.bxm)", icon_value=emil_icon.icon_id)
-    self.layout.operator(ExportNierMot.bl_idname, text="Motion File for NieR:Automata (.mot)", icon_value=emil_icon.icon_id)
+    
+    
+    
 
 def menu_func_utils(self, context):
     pcoll = preview_collections["main"]
-    yorha_icon = pcoll["yorha"]
-    self.layout.menu(NierObjectMenu.bl_idname, icon_value=yorha_icon.icon_id)
+    raiden_icon = pcoll["raiden"]
+    self.layout.menu(NierObjectMenu.bl_idname, icon_value=raiden_icon.icon_id)
 
 def menu_func_editbone_utils(self, context):
     pcoll = preview_collections["main"]
@@ -183,6 +202,8 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bpy.utils.register_class(IMPORT_MGR_MainMenu)
+    bpy.utils.register_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.register()
     dat_dtt_ui_manager.register()
     physPanel.register()
@@ -211,6 +232,8 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
+    bpy.utils.unregister_class(IMPORT_MGR_MainMenu)
+    bpy.utils.unregister_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.unregister()
     dat_dtt_ui_manager.unregister()
     col_ui_manager.unregister()
