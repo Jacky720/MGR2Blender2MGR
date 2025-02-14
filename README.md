@@ -1,7 +1,7 @@
 ![MGR Plugin Banner by Aura39](https://github.com/user-attachments/assets/dd144ba0-816d-4e03-913c-7cda84a54bc6)
 (Peak banner created by [Aura](https://github.com/Aura39/))
-[!WARNING]
-This plugin is currently incompatible with Nier2Blender2Nier due to class import conflicts, this is planned to be fixed but currently isn't. Please take note of this when you have both plugins installed
+> [!WARNING]
+> This plugin is currently incompatible with Nier2Blender2Nier due to class import conflicts, this is planned to be fixed but currently isn't. Please take note of this when you have both plugins installed
 
 # Installation Instructions
 1. Download the repo's source code from Code > Download Zip button
