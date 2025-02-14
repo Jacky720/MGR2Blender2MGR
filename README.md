@@ -14,6 +14,6 @@ For help with the plugin please join the [Modding Gear Rising](https://discord.c
 
 
 ## Credits:
-Space Core for pioneering the WMB4 format and setting up the plugin
-Aura39 & Gaming With Portals for various improvements and fixes
-RaiderB & WoefulWolf for the original Nier2Blender, many components still being used
+- Space Core for pioneering the WMB4 format and setting up the plugin
+- Aura39 & Gaming With Portals for various improvements and fixes
+- RaiderB & WoefulWolf for the original Nier2Blender, many components still being used
