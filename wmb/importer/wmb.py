@@ -242,7 +242,6 @@ class wmb3_material(object):
         read_uint16(wmb_fp)
         materialNameOffset = read_uint32(wmb_fp)
         effectNameOffset = read_uint32(wmb_fp)
-        techniqueNameOffset = read_uint32(wmb_fp)
         read_uint32(wmb_fp)
         textureOffset = read_uint32(wmb_fp)
         textureNum = read_uint32(wmb_fp)
@@ -256,9 +255,6 @@ class wmb3_material(object):
         wmb_fp.seek(effectNameOffset)
         #print("Seeking to effectNameOffset: %s" % hex(effectNameOffset))
         self.effectName = to_string(wmb_fp.read(0x100))
-        wmb_fp.seek(techniqueNameOffset)
-        #print("Seeking to techniqueNameOffset: %s" % hex(techniqueNameOffset))
-        self.techniqueName = to_string(wmb_fp.read(0x100))
         self.textureArray = {}
 
         path_split = wmb_fp.name.split(os.sep)
@@ -292,7 +288,6 @@ class wmb3_material(object):
         file_dict[self.materialName]["Textures"] = self.textureArray
 
         file_dict[self.materialName]["Shader_Name"] = self.effectName
-        file_dict[self.materialName]["Technique_Name"] = self.techniqueName
         wmb_fp.seek(paramterGroupsOffset)
         #print("Seeking to paramterGroupsOffset: %s" % hex(paramterGroupsOffset))
         self.parameterGroups = []
@@ -811,7 +806,6 @@ class wmb4_material(object):
         self.parameters = load_data_array(wmb_fp, self.parametersPointer, int(self.parametersCount/4), vector4)
         
         self.effectName = load_data(wmb_fp, self.shaderNamePointer, filestring)
-        self.techniqueName = "NoTechnique"
         self.uniformArray = {}
         self.textureArray = {}
         self.textureFlagArray = []

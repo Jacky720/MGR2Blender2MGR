@@ -9,7 +9,6 @@ def create_wmb_materials(wmb_file, data):
             write_uInt16(wmb_file, val)
         write_uInt32(wmb_file, material.offsetName)             # offsetName
         write_uInt32(wmb_file, material.offsetShaderName)       # offsetShaderName
-        write_uInt32(wmb_file, material.offsetTechniqueName)    # offsetTechniqueName
         write_uInt32(wmb_file, material.unknown1)               # unknown1
         write_uInt32(wmb_file, material.offsetTextures)         # offsetTextures
         write_uInt32(wmb_file, material.numTextures)            # numTextures
@@ -20,7 +19,6 @@ def create_wmb_materials(wmb_file, data):
     for material in data.materials.materials:
         write_string(wmb_file, material.name)                   # name
         write_string(wmb_file, material.shaderName)             # shaderName
-        write_string(wmb_file, material.techniqueName)          # techniqueName
         for texture in material.textures:                       # [offsetName, texture, name]
             write_uInt32(wmb_file, texture[0])
             write_uInt32(wmb_file, int(texture[1], 16))
