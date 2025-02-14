@@ -10,8 +10,6 @@ bl_info = {
 import bpy
 from bpy.app.handlers import persistent
 from . import preferences
-from .col.exporter import col_ui_manager
-from .col.exporter.col_ui_manager import enableCollisionTools, disableCollisionTools
 from .dat_dtt.exporter import dat_dtt_ui_manager
 from .utils.util import *
 from .utils.utilOperators import RecalculateObjectIndices, RemoveUnusedVertexGroups, MergeVertexGroupCopies, \
@@ -19,21 +17,11 @@ from .utils.utilOperators import RecalculateObjectIndices, RemoveUnusedVertexGro
 from .utils.visibilitySwitcher import enableVisibilitySelector, disableVisibilitySelector
 from .utils import visibilitySwitcher
 from .wta_wtp.exporter import wta_wtp_ui_manager
-from .bxm.exporter.gaAreaExportOperator import ExportNierGaArea
-from .bxm.exporter.sarExportOperator import ExportNierSar
-from .bxm.importer.gaAreaImportOperator import ImportNierGaArea
-from .bxm.importer.sarImportOperator import ImportNierSar
-from .col.exporter.colExportOperator import ExportNierCol
-from .col.importer.colImportOperator import ImportNierCol
 from .dat_dtt.importer.datImportOperator import ImportNierDtt, ImportNierDat
-from .lay.exporter.layExportOperator import ExportNierLay
-from .lay.importer.layImportOperator import ImportNierLay
 from .mot.exporter.motExportOperator import ExportNierMot
 from .mot.importer.motImportOperator import ImportNierMot
 from .mot.common.motUtils import getArmatureObject
 from .mot.common.pl000fChecks import HidePl000fIrrelevantBones, RemovePl000fIrrelevantAnimations
-from .sync import install_dependencies
-from .sync.shared import getDropDownOperatorAndIcon
 from .wmb.exporter.wmbExportOperator import ExportNierWmb
 from .wmb.exporter.wmbExportOperator import ExportMGRRWmb
 from .wmb.exporter.wmbMaterialJSON import *
@@ -41,7 +29,6 @@ from .wmb.importer.wmbImportOperator import ImportNierWmb
 from .scr.importer.scrImportOperator import ImportSCR
 from .scr.exporter.scrExportOperator import ExportSCR
 from .wta_wtp.importer.wtpImportOperator import ExtractNierWtaWtp
-from .xmlScripting.importer.yaxXmlImportOperator import ImportNierYaxXml
 from .bxm.importer import physPanel
 
 class NierObjectMenu(bpy.types.Menu):
@@ -54,11 +41,7 @@ class NierObjectMenu(bpy.types.Menu):
         self.layout.operator(DeleteLooseGeometrySelected.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(DeleteLooseGeometryAll.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(RipMeshByUVIslands.bl_idname, icon="UV_ISLANDSEL")
-        self.layout.operator(CreateLayVisualization.bl_idname, icon="CUBE")
         self.layout.operator(RestoreImportPose.bl_idname, icon='OUTLINER_OB_ARMATURE')
-        syncOpAndIcon = getDropDownOperatorAndIcon()
-        if syncOpAndIcon is not None:
-            self.layout.operator(syncOpAndIcon[0], icon=syncOpAndIcon[1])
         armature = getArmatureObject()
         if armature is not None and armature.animation_data is not None and armature.animation_data.action is not None \
             and armature.name in { "pl0000", "pl000d", "pl0100", "pl010d" }:
@@ -70,24 +53,6 @@ class NierArmatureMenu(bpy.types.Menu):
     bl_label = 'MGR:R Tools'
     def draw(self, context):
         self.layout.operator(ClearSelectedBoneIDs.bl_idname, icon='BONE_DATA')
-
-class CreateLayVisualization(bpy.types.Operator):
-    """Create Layout Object Visualization"""
-    bl_idname = "n2b.create_lay_vis"
-    bl_label = "Create Layout Object Visualization"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        from .lay.importer.lay_importer import updateVisualizationObject
-        for obj in bpy.context.selected_objects:
-            if len(obj.name) < 6:
-                self.report({"ERROR"}, f"{obj.name} name needs to be at least 6 characters long!")
-                return {"CANCELLED"}
-            updateVisualizationObject(obj, obj.name[:6], True)
-        return {'FINISHED'}
-
-
-
 
 class IMPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
@@ -149,24 +114,14 @@ classes = (
     ImportSCR,
     ImportNierDtt,
     ImportNierDat,
-    ImportNierCol,
-    ImportNierLay,
-    ImportNierSar,
-    ImportNierGaArea,
     ImportNierMot,
-    ImportNierYaxXml,
     
     ExportNierWmb,
     ExportMGRRWmb,
     ExportSCR,
-    ExportNierCol,
-    ExportNierSar,
-    ExportNierLay,
-    ExportNierGaArea,
     ExportNierMot,
     ExtractNierWtaWtp,
     
-    CreateLayVisualization,
     NierObjectMenu,
     NierArmatureMenu,
     RecalculateObjectIndices,
@@ -194,8 +149,6 @@ def register():
     import bpy.utils.previews
     pcoll = bpy.utils.previews.new()
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    pcoll.load("emil", os.path.join(my_icons_dir, "emil.png"), 'IMAGE')
-    pcoll.load("yorha", os.path.join(my_icons_dir, "yorha-filled.png"), 'IMAGE')
     pcoll.load("raiden", os.path.join(my_icons_dir, "raiden.png"), 'IMAGE')
     preview_collections["main"] = pcoll
 
@@ -212,7 +165,6 @@ def register():
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.VIEW3D_MT_object.append(menu_func_utils)
     bpy.types.VIEW3D_MT_edit_armature.append(menu_func_editbone_utils)
-    install_dependencies.register()
 
     bpy.types.Object.collisionType = bpy.props.EnumProperty(name="Collision Type", items=collisionTypes, update=updateCollisionType)
     bpy.types.Object.UNKNOWN_collisionType = bpy.props.IntProperty(name="Unknown Collision Type", min=0, max=255, update=updateCollisionType)
@@ -221,7 +173,6 @@ def register():
     bpy.types.Material.wmb_mat_as_json = bpy.props.StringProperty(name="JSON")
 
     bpy.app.handlers.load_post.append(checkCustomPanelsEnableDisable)
-    bpy.app.handlers.load_post.append(checkOldVersionMigration)
     bpy.app.handlers.depsgraph_update_post.append(initialCheckCustomPanelsEnableDisable)
 
 def unregister():
@@ -236,18 +187,15 @@ def unregister():
     bpy.utils.unregister_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.unregister()
     dat_dtt_ui_manager.unregister()
-    col_ui_manager.unregister()
     visibilitySwitcher.unregister()
     physPanel.unregister()
     preferences.unregister()
-    install_dependencies.unregister()
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     bpy.types.VIEW3D_MT_object.remove(menu_func_utils)
     bpy.types.VIEW3D_MT_edit_armature.remove(menu_func_editbone_utils)
 
     bpy.app.handlers.load_post.remove(checkCustomPanelsEnableDisable)
-    bpy.app.handlers.load_post.remove(checkOldVersionMigration)
     if initialCheckCustomPanelsEnableDisable in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.remove(initialCheckCustomPanelsEnableDisable)
 
@@ -257,21 +205,12 @@ def checkCustomPanelsEnableDisable(_, __):
         enableVisibilitySelector()
     else:
         disableVisibilitySelector()
-    if "COL" in bpy.data.collections:
-        enableCollisionTools()
-    else:
-        disableCollisionTools()
 
 def initialCheckCustomPanelsEnableDisable(_, __):
     # during registration bpy.data is not yet available, so wait for first depsgraph update
     if hasattr(bpy.data, "collections"):
         checkCustomPanelsEnableDisable(_, __)
         bpy.app.handlers.depsgraph_update_post.remove(initialCheckCustomPanelsEnableDisable)
-
-@persistent
-def checkOldVersionMigration(_, __):
-    migrateOldWmbCollection()
-    migrateDatDirs()
 
 def migrateOldWmbCollection():
     # check if current file is an old wmb import

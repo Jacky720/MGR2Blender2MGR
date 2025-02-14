@@ -71,7 +71,7 @@ class RemoveUnusedVertexGroups(bpy.types.Operator):
                 v_unused_count += 1
                 ob.vertex_groups.remove(ob.vertex_groups[i])
 
-        ShowMessageBox(str(v_unused_count) + ' vertex groups were unused and have been removed.', 'Blender2NieR: Tool Info')
+        ShowMessageBox(str(v_unused_count) + ' vertex groups were unused and have been removed.', 'MGR:R Tool Info')
         return {'FINISHED'}
 
 
@@ -114,7 +114,7 @@ class MergeVertexGroupCopies(bpy.types.Operator):
                     obj.vertex_groups.remove(vg)
 
         bpy.context.view_layer.objects.active = last_active
-        ShowMessageBox(str(v_merged_count) + ' vertex groups had name copies and have been merged.', 'Blender2NieR: Tool Info')
+        ShowMessageBox(str(v_merged_count) + ' vertex groups had name copies and have been merged.', 'MGR:R Tool Info')
 
         return {'FINISHED'}
 
@@ -148,7 +148,7 @@ class DeleteLooseGeometrySelected(bpy.types.Operator):
             bm.clear()
 
         if v_delete_count > 0:
-            ShowMessageBox(str(v_delete_count) + ' vertexes have been deleted.', 'Blender2NieR: Tool Info')
+            ShowMessageBox(str(v_delete_count) + ' vertexes have been deleted.', 'MGR:R Tool Info')
         return {'FINISHED'}
 
 
@@ -183,7 +183,7 @@ class DeleteLooseGeometryAll(bpy.types.Operator):
             bm.clear()
 
         if v_delete_count > 0:
-            ShowMessageBox(str(v_delete_count) + ' vertexes have been deleted.', 'Blender2NieR: Tool Info')
+            ShowMessageBox(str(v_delete_count) + ' vertexes have been deleted.', 'MGR:R Tool Info')
         return {'FINISHED'}
 
 
@@ -242,7 +242,7 @@ class ClearSelectedBoneIDs(bpy.types.Operator):
                 del bone["ID"]
                 cleared_ids_count += 1
 
-        ShowMessageBox('Cleared the ID of ' + str(cleared_ids_count) + ' bones.', 'Blender2NieR: Tool Info')
+        ShowMessageBox('Cleared the ID of ' + str(cleared_ids_count) + ' bones.', 'MGR:R Tool Info')
         return {'FINISHED'}
 
 class RestoreImportPose(bpy.types.Operator):
@@ -254,7 +254,7 @@ class RestoreImportPose(bpy.types.Operator):
     def execute(self, context):
         active_object = bpy.context.active_object
         if active_object.type != "ARMATURE":
-            ShowMessageBox('Please select an armature object.', 'Blender2NieR: Tool Info')
+            ShowMessageBox('Please select an armature object.', 'MGR:R Tool Info')
             return {'FINISHED'}
             
         for pose_bone in active_object.pose.bones:
