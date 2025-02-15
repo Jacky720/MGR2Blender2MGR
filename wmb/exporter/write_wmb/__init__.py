@@ -361,27 +361,12 @@ def create_wmb_materials(wmb_file, data, wmb4=False):
             write_uInt16(wmb_file, material.numTextures) # 5 or 4, usually
             write_uInt16(wmb_file, 0) # mystery value
             write_uInt16(wmb_file, material.numParameterGroups*4)
-        if not wmb4:
-            for val in material.unknown0:                     # unknown0
-                write_uInt16(wmb_file, val)
-            write_uInt32(wmb_file, material.offsetShaderName) # offsetShaderName
-            write_uInt32(wmb_file, material.offsetName)           # offsetName
-            write_uInt32(wmb_file, material.offsetTechniqueName)  # offsetTechniqueName
-            write_uInt32(wmb_file, material.unknown1)             # unknown1
-            write_uInt32(wmb_file, material.offsetTextures)       # offsetTextures
-            write_uInt32(wmb_file, material.numTextures)          # numTextures
-            write_uInt32(wmb_file, material.offsetParameterGroups)  # offsetParameterGroups
-            write_uInt32(wmb_file, material.numParameterGroups)     # numParameterGroups
-            write_uInt32(wmb_file, material.offsetVariables)        # offsetVariables
-            write_uInt32(wmb_file, material.numVariables)           # numVariables
     for material in data.materials.materials:
         if not wmb4:
             write_string(wmb_file, material.name)                   # name
         if wmb4:
             wmb_file.seek(material.offsetShaderName)
         write_string(wmb_file, material.shaderName)             # shaderName
-        if not wmb4:
-            write_string(wmb_file, material.techniqueName)          # techniqueName
         if wmb4:
             wmb_file.seek(material.offsetTextures)
         for i, texture in enumerate(material.textures):                       # [offsetName, texture, name]

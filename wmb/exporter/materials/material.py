@@ -117,11 +117,7 @@ class c_material(object):
             print(' - If you know all materials used are valid, try ticking "Purge Materials" at export, this will clear all unused materials from your Blender file that might still be lingering.')
             print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')
 
-        self.offsetTechniqueName = self.offsetShaderName + len(self.b_material['Shader_Name']) + 1
-
         self.unknown1 = 1                           # This probably also the same mostly
-
-        self.offsetTextures = self.offsetTechniqueName + len(self.b_material['Technique_Name']) + 1
 
         self.textures = get_textures(self, self.b_material, self.offsetTextures)
 
@@ -142,7 +138,5 @@ class c_material(object):
         self.name = self.b_material.name
 
         self.shaderName = self.b_material['Shader_Name']
-
-        self.techniqueName = self.b_material['Technique_Name']
 
         self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName

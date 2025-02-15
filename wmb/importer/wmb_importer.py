@@ -269,17 +269,33 @@ def construct_materials(texture_dir, material, material_index=-1):
     textures = material[1]
     uniforms = material[2]
     shader_name = material[3]
-    technique_name = material[4]
-    parameterGroups = material[5]
-    textureFlags = material[6] # wmb4
+    parameterGroups = material[4]
+    textureFlags = material[5] # wmb4
     print('[+] importing material %s' % material_name)
-    # oh, real smooth, reusing a variable name
+    
     material = bpy.data.materials.new( '%s' % (material_name))
+    material.mgr_material_id = material_index
+    material.mgr_shader_name = shader_name
+    
+    for tex_name, tex_id in textures.items():
+        entry = material.mgr_texture_ids.add()  
+        entry.name = tex_name
+        entry.value = tex_id 
+    
+
+    if textureFlags is not None:
+        for flag in textureFlags:
+            entry = material.mgr_texture_flags.add()
+            entry.value = flag
+    
+ 
+    
+    # TODO Delete
     material['ID'] = material_index
     material['Shader_Name'] = shader_name
-    material['Technique_Name'] = technique_name
     if textureFlags is not None:
         material['Texture_Flags'] = textureFlags
+    
     # Enable Nodes
     material.use_nodes = True
     # Clear Nodes and Links
@@ -793,7 +809,6 @@ def get_wmb_material(wmb, texture_dir):
             for materialIndex, material in enumerate(wmb.materialArray):
                 material_name = material.materialName
                 shader_name = material.effectName
-                technique_name = material.techniqueName
                 uniforms = material.uniformArray
                 textures = material.textureArray
                 if hasattr(material, "textureFlagArray"): # wmb4
@@ -839,7 +854,7 @@ def get_wmb_material(wmb, texture_dir):
                     if bpy.data.images.get(texture_file_name) is None:
                         bpy.data.images.load(texture_filepath)
                 
-                materials.append([material_name,textures,uniforms,shader_name,technique_name,parameterGroups, textureFlags])
+                materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
                 #print(materials)
         else:
             texture_dir = texture_dir.replace('.dat','.dtt')
@@ -861,7 +876,6 @@ def get_wmb_material(wmb, texture_dir):
         for materialIndex, material in enumerate(wmb.materialArray):
             material_name = material.materialName
             shader_name = material.effectName
-            technique_name = material.techniqueName
             uniforms = material.uniformArray
             textures = material.textureArray
             # why the fuck was this not already here, it doesn't need the wta
@@ -884,7 +898,7 @@ def get_wmb_material(wmb, texture_dir):
                 textureFlags = material.textureFlagArray
             else:
                 textureFlags = None
-            materials.append([material_name,textures,uniforms,shader_name,technique_name,parameterGroups,textureFlags])
+            materials.append([material_name,textures,uniforms,shader_name,parameterGroups,textureFlags])
         
     return materials
 
