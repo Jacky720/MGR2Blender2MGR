@@ -178,36 +178,6 @@ class c_boneIndexTranslateTable(object):
                     newBones.append(bone)
                     break
 
-        #Print the shit for the XML
-        # nah
-        """
-        for bone in newBones:
-            no = bone["ID"]
-            if bone.parent in newBones:
-                noUp = bone.parent['ID']
-            else:
-                noUp = 0xfff
-            if bone.children and bone.children[0] in newBones:
-                noDown = bone.children[0]['ID']
-            else:
-                noDown = 0xfff
-
-            out = " ""<CLOTH_WK>
-    <no>{}</no>
-    <noUp>{}</noUp>
-    <noDown>{}</noDown>
-    <noSide>4095</noSide>
-    <noPoly>4095</noPoly>
-    <noFix>4095</noFix>
-    <rotLimit>0.5236</rotLimit>
-    <offset>0 -0.1 0</offset>
-    <m_OriginalRate>0</m_OriginalRate>
-</CLOTH_WK>"" ".format(no, noUp, noDown)
-
-            print(out)
-        print("COPY TO YOUR <CLOTH_WK_LIST> AND REMEMBER TO ADD +{} TO THE <CLOTH_HEADER><m_Num> VALUE!".format(len(newBones)))
-        """
-
         # Generate levels from fullLookup
         # The boneIndexTranslateTable is a compressed reverse lookup for bone IDs.
         self.firstLevel = [-1] * 0x10
@@ -896,15 +866,11 @@ class c_material(object):
             print(' - If you know all materials used are valid, try ticking "Purge Materials" at export, this will clear all unused materials from your Blender file that might still be lingering.')
             print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')
 
-        self.offsetTechniqueName = self.offsetShaderName + len(self.b_material['Shader_Name']) + 1
-
         self.unknown1 = 1                           # This probably also the same mostly
 
         if wmb4:
             self.offsetTextures = self.offsetShaderName + len(self.b_material['Shader_Name'])
             self.offsetTextures += 16 - (self.offsetTextures % 16)
-        else:
-            self.offsetTextures = self.offsetTechniqueName + len(self.b_material['Technique_Name']) + 1
 
         self.textures = get_textures(self, self.b_material, self.offsetTextures)
         if wmb4:
@@ -930,9 +896,6 @@ class c_material(object):
         self.name = self.b_material.name
 
         self.shaderName = self.b_material['Shader_Name']
-        
-        if not wmb4:
-            self.techniqueName = self.b_material['Technique_Name']
         
         self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName
         print(self.offsetShaderName, self.offsetTextures, self.offsetParameterGroups, self.materialNames_StructSize)
