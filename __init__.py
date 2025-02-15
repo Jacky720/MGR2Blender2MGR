@@ -30,6 +30,7 @@ from .scr.importer.scrImportOperator import ImportSCR
 from .scr.exporter.scrExportOperator import ExportSCR
 from .wta_wtp.importer.wtpImportOperator import ExtractNierWtaWtp
 from .bxm.importer import physPanel
+from .wmb.materials import materialUI
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
@@ -139,10 +140,33 @@ classes = (
     WMBMaterialFromJSON,
     WMBCopyMaterialJSON,
     WMBPasteMaterialJSON,
-    WMBMaterialJSONPanel
+    WMBMaterialJSONPanel,
+    # Material UI
+    materialUI.MGRMaterialPanel,
+    materialUI.MGRULTextureFlagPanel
 )
 
 preview_collections = {}
+
+
+
+def register_material_properties():
+    bpy.utils.register_class(materialUI.MGRMaterialProperty)
+    bpy.utils.register_class(materialUI.MGRTextureFlagProperty)
+    bpy.types.Material.mgr_material_id = bpy.props.IntProperty(
+        name="Material ID",
+        description="Unique Material Index",
+        default=-1
+    )
+
+    bpy.types.Material.mgr_shader_name = bpy.props.StringProperty(
+        name="Shader Name",
+        description="Shader used by this material"
+    )
+    
+    bpy.types.Material.mgr_texture_ids = bpy.props.CollectionProperty(type=materialUI.MGRMaterialProperty)
+    bpy.types.Material.mgr_texture_flags_index = bpy.props.IntProperty(name="Texture Flag Index")
+    bpy.types.Material.mgr_texture_flags = bpy.props.CollectionProperty(type=materialUI.MGRTextureFlagProperty)
 
 def register():
     # Custom icons
@@ -154,7 +178,7 @@ def register():
 
     for cls in classes:
         bpy.utils.register_class(cls)
-
+    register_material_properties()
     bpy.utils.register_class(IMPORT_MGR_MainMenu)
     bpy.utils.register_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.register()
@@ -183,6 +207,9 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Material.mgr_material_properties
+    bpy.utils.unregister_class(materialUI.MGRMaterialProperty)
+    bpy.utils.unregister_class(materialUI.MGRTextureFlagProperty)
     bpy.utils.unregister_class(IMPORT_MGR_MainMenu)
     bpy.utils.unregister_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.unregister()
