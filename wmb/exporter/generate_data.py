@@ -2080,6 +2080,11 @@ class c_generate_data(object):
         hasColTreeNodes = False
         hasUnknownWorldData = False
         
+        # Delete attack hitbox visualizers
+        for obj in bpy.data.objects:
+            if obj.name.startswith("Attack") and obj.type == "MESH":
+                bpy.data.objects.remove(obj)
+        
         if collectionName == 'WMB':
             collectionName = bpy.data.collections['WMB'].children[0].name
             print("\n\n===== Exporting collection %s, please remove other collections to ensure stable export =====\n\n" % collectionName)
