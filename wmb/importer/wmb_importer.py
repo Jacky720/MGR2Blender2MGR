@@ -288,8 +288,14 @@ def construct_materials(texture_dir, material, material_index=-1):
             entry = material.mgr_texture_flags.add()
             entry.value = flag
     
- 
     
+    i = 0
+    for parameter in parameterGroups:
+        material.mgr_parameters.add()
+        material.mgr_parameters[i].value = (parameter.x, parameter.y, parameter.z, parameter.w)
+        i+=1
+ 
+    print("holy fuck lois I'm a parameter group " + str(parameterGroups))
     # TODO Delete
     material['ID'] = material_index
     material['Shader_Name'] = shader_name

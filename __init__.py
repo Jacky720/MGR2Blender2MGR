@@ -143,16 +143,23 @@ classes = (
     WMBMaterialJSONPanel,
     # Material UI
     materialUI.MGRMaterialPanel,
-    materialUI.MGRULTextureFlagPanel
+    materialUI.MGRULTextureFlagPanel,
 )
 
 preview_collections = {}
 
-
+class MGRVector4Property(bpy.types.PropertyGroup):
+    value: bpy.props.FloatVectorProperty(
+        name="Vector4",
+        description="A vector with 4 float values",
+        size=4,
+        default=(0.0, 0.0, 0.0, 0.0)
+    )
 
 def register_material_properties():
     bpy.utils.register_class(materialUI.MGRMaterialProperty)
     bpy.utils.register_class(materialUI.MGRTextureFlagProperty)
+    bpy.utils.register_class(MGRVector4Property)
     bpy.types.Material.mgr_material_id = bpy.props.IntProperty(
         name="Material ID",
         description="Unique Material Index",
@@ -167,6 +174,7 @@ def register_material_properties():
     bpy.types.Material.mgr_texture_ids = bpy.props.CollectionProperty(type=materialUI.MGRMaterialProperty)
     bpy.types.Material.mgr_texture_flags_index = bpy.props.IntProperty(name="Texture Flag Index")
     bpy.types.Material.mgr_texture_flags = bpy.props.CollectionProperty(type=materialUI.MGRTextureFlagProperty)
+    bpy.types.Material.mgr_parameters = bpy.props.CollectionProperty(type=MGRVector4Property)
 
 def register():
     # Custom icons

@@ -1,13 +1,7 @@
 import bpy
+from ...consts import *
 
-textureFlagDictonary = {
-    0 : "Albedo 0",
-    1 : "Albedo 1",
-    2 : "Normal",
-    3 : "Blended Normal",
-    7 : "Light Map",
-    10 : "Tension Map"
-}
+
 
 
 class MGRTextureFlagProperty(bpy.types.PropertyGroup):
@@ -30,6 +24,9 @@ def GrabTextureNameViaFlag(id):
     else:
         return "tex" + str(id)
 
+
+
+
 class MGRMaterialPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -42,12 +39,24 @@ class MGRMaterialPanel(bpy.types.Panel):
         mat = context.material
         layout.prop(mat, "mgr_material_id", text="Material ID")
         layout.prop(mat, "mgr_shader_name", text="Shader Name")
+
+
+        propbox = layout.box()
+        propbox.label(text="Parameters")
+        i = 0
         
-        layout.label(text="Texture Flags:")
-        row = layout.row()
-        row.template_list("MGR_UL_texture_flags", "", mat, "mgr_texture_flags", mat, "mgr_texture_flags_index")
+        for mgrprop in mat.mgr_parameters:
+            subbox = propbox.row()
+            param_identifier = str(i)
+            if (i in parameterIDs):
+                param_identifier = parameterIDs[i]
+            
+            
+            subbox.prop(mgrprop, "value", text=str(param_identifier))
+            i+=1
         
-        layout.label(text="Texture IDs:")
+        
+        
         row = layout.row()
         row.template_list(
             "MGR_UL_TextureIDList",  # Name of the UI List class (defined below)
@@ -55,11 +64,13 @@ class MGRMaterialPanel(bpy.types.Panel):
             mat, "mgr_texture_ids",  # Collection property
             mat, "mgr_texture_flags_index"  # Active item index property
         )
-
+        box = layout.box()
+        box.label(text="Texture File Reference")
         # Draw individual texture properties if an item is selected
         for i in range(len(mat.mgr_texture_flags)):
             active_entry = mat.mgr_texture_ids[i]
             
             generatedTextureFlagName = GrabTextureNameViaFlag(mat.mgr_texture_flags[i].value)
             
-            layout.prop(active_entry, "value", text=generatedTextureFlagName)  # Text reflects the name propert
+            box.prop(active_entry, "value", text=generatedTextureFlagName)  # Text reflects the name propert
+        

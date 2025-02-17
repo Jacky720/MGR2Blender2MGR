@@ -6,19 +6,33 @@ class WMBMaterialToJSON(bpy.types.Operator):
     bl_label = "Store Material As JSON"
     
     def execute(self, context):
-        dictForString = []
         material = bpy.context.material
-        for key, value in material.items():
-            if key in ["wmb_mat_as_json", "ID"]:
-                continue
-            if ("Map" in key) \
-              or (key[0:3] == "tex" and key[3].isnumeric()) \
-              or (key in ("Shader_Name", "Texture_Flags")) \
-              or (key.isnumeric()):
-                if type(value) is idprop.types.IDPropertyArray:
-                    dictForString.append((key, list(value)))
-                else:
-                    dictForString.append((key, value))
+        textureArray = []
+        parameterArray = []
+        
+        for index in range(len(material.mgr_texture_ids)):
+            textureObject = {"id":material.mgr_texture_ids[index].value,
+                             "flag":material.mgr_texture_flags[index].value}
+            textureArray.append(textureObject)
+
+        for param in material.mgr_parameters:
+            parameterObject = {
+                "x": param.value[0],
+                "y": param.value[1],
+                "z": param.value[2],
+                "w": param.value[3]
+            }
+
+            parameterArray.append(parameterObject)
+        
+        
+        dictForString = {
+            "shaderID" : str(material.mgr_shader_name),
+            "textures" : textureArray,
+            "parameters":parameterArray
+        }
+        
+
         material["wmb_mat_as_json"] = json.dumps(dictForString)
         return {'FINISHED'}
 
@@ -43,6 +57,7 @@ class WMBMaterialFromJSON(bpy.types.Operator):
 
 
 class WMBCopyMaterialJSON(bpy.types.Operator):
+    # TODO Delete
     bl_idname = "b2n.copymaterialjson"
     bl_label = "Copy Material JSON"
     
@@ -51,6 +66,7 @@ class WMBCopyMaterialJSON(bpy.types.Operator):
         return {'FINISHED'}
 
 class WMBPasteMaterialJSON(bpy.types.Operator):
+    # TODO: Delete
     bl_idname = "b2n.pastematerialjson"
     bl_label = "Paste Material JSON"
     
@@ -66,10 +82,8 @@ class WMBMaterialJSONPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator(WMBMaterialToJSON.bl_idname, text="Update string from material")
-        layout.operator(WMBCopyMaterialJSON.bl_idname, text="Copy material to clipboard")
+        layout.operator(WMBMaterialToJSON.bl_idname, text="Copy Material")
         
         layout.prop(bpy.context.material, "wmb_mat_as_json")
         
-        layout.operator(WMBPasteMaterialJSON.bl_idname, text="Paste material from clipboard")
-        layout.operator(WMBMaterialFromJSON.bl_idname, text="Update material from string")
+        layout.operator(WMBMaterialFromJSON.bl_idname, text="Paste Material")
