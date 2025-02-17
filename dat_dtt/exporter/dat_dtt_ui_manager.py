@@ -137,18 +137,6 @@ class DAT_DTT_PT_Export(bpy.types.Panel):
         row = box.row(align=True)
         row.scale_y = 1.125
         secondRowItemCount = 0
-        if context.scene.ExportAllSteps.useColStep or "COL" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useColStep", text="COL", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useColStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useLayStep or "LAY" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useLayStep", text="LAY", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useLayStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useSarStep or "SAR" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useSarStep", text="SAR", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useSarStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useGaStep or "GaArea" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useGaStep", text="GAArea", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useGaStep else "ADD")
-            secondRowItemCount += 1
         if secondRowItemCount >= 3:
             row = box.row(align=True)
             row.scale_y = 1.125
@@ -222,9 +210,6 @@ class ExportAll(bpy.types.Operator):
         if not baseFilename:
             self.report({"ERROR"}, "Missing Base Name!")
             return {"CANCELLED"}
-
-        if exportSteps.useSarStep:
-            sarColl = bpy.data.objects["Field-Root"].users_collection[0]
 
         for item in context.scene.DatContents:
             if item.filepath.endswith('.wmb'):
