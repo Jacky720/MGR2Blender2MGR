@@ -207,6 +207,12 @@ def register():
     bpy.app.handlers.load_post.append(checkCustomPanelsEnableDisable)
     bpy.app.handlers.depsgraph_update_post.append(initialCheckCustomPanelsEnableDisable)
 
+    bpy.types.Scene.selected_material = bpy.props.EnumProperty(
+        name="Copy From Existing Material",
+        description="Select a material",
+        items=get_materials
+    )
+
 def unregister():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)

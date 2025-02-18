@@ -74,3 +74,4 @@ class MGRMaterialPanel(bpy.types.Panel):
             
             box.prop(active_entry, "value", text=generatedTextureFlagName)  # Text reflects the name propert
         
+        
