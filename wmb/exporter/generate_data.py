@@ -723,17 +723,22 @@ class c_material(object):
             numTextures = 0
             textures = []
             
-            for key, value in material.items():
-                #print(key, value)
-                if (isinstance(value, str)):
-                    if (key.find('g_') != -1) or(wmb4 and (key.find('tex') != -1 or key.find('Map') != -1)):
-                        #print(key, value)
-                        numTextures += 1
+            for texture in material.mgr_texture_ids:
+                numTextures += 1
 
             offsetName = offset + numTextures * 8
 
+            for texobj in material.mgr_texture_ids:
+                texture = texobj.value
+                name = texobj.name
+                
+                offset += 4 + 4 + len(name) # but it isn't used after this?
+                textures.append([offsetName, texture, name])
+                if not wmb4:
+                    offsetName += len(name) + 1
 
-            for key, value in material.items():
+
+            '''for key, value in material.items():
                 if (isinstance(value, str)) and ((key.find('g_') != -1) or(wmb4 and (key.find('tex') != -1 or key.find('Map') != -1))):
                     texture = value
                     name = key
@@ -741,7 +746,7 @@ class c_material(object):
                     offset += 4 + 4 + len(key) # but it isn't used after this?
                     textures.append([offsetName, texture, name])
                     if not wmb4:
-                        offsetName += len(name) + 1
+                        offsetName += len(name) + 1'''
             
             if wmb4: # proper sorting
                 sortedTextures = []
@@ -772,23 +777,7 @@ class c_material(object):
             return textures_StructSize
 
         def get_numParameterGroups(self, material):
-            numParameterGroups = 0
-            parameterGroups = []
-
-            def Check(char):
-                try: 
-                    int(char)
-                    return True
-                except ValueError:
-                    return False
-
-            for key, value in material.items():
-                if Check(key[0]):
-                    if not key[0] in parameterGroups:
-                        numParameterGroups += 1
-                        parameterGroups.append(key[0])
-
-            return numParameterGroups
+            return len(material.mgr_parameters)
 
         def get_parameterGroups(self, material, offsetParameterGroups, numParameterGroups):
             parameterGroups = []
@@ -802,12 +791,12 @@ class c_material(object):
 
                 parameters = []
                 if not wmb4:
-                    for key, value in material.items():
-                        if key[0] == str(i):
-                            parameters.append(value)
+                    ShowMessageBox("WMB3 support has been deprecated, don't try to do something like this again")
                 else:
-                    for j in range(4):
-                        parameters.append(material[str(i)][j])
+                    parameters.append(material.mgr_parameters[i].value[0])
+                    parameters.append(material.mgr_parameters[i].value[0])
+                    parameters.append(material.mgr_parameters[i].value[0])
+                    parameters.append(material.mgr_parameters[i].value[0])
                         
                 numParameters = len(parameters)
 
@@ -860,21 +849,26 @@ class c_material(object):
         if wmb4:
             self.offsetShaderName = self.offsetName
 
-        if not 'Shader_Name' in self.b_material:
+        '''if not 'Shader_Name' in self.b_material:
             ShowMessageBox('Shader_Name not found. The exporter just tried converting a material that does not have all the required data. Check system console for details.', 'Invalid Material', 'ERROR')
             print('[ERROR] Invalid Material: Shader_Name not found.')
             print(' - If you know all materials used are valid, try ticking "Purge Materials" at export, this will clear all unused materials from your Blender file that might still be lingering.')
-            print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')
+            print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')'''
+        # TODO Reimplement  
 
+        wmbShaderName = self.b_material.mgr_shader_name
+    
         self.unknown1 = 1                           # This probably also the same mostly
 
         if wmb4:
-            self.offsetTextures = self.offsetShaderName + len(self.b_material['Shader_Name'])
+            self.offsetTextures = self.offsetShaderName + len(wmbShaderName)
             self.offsetTextures += 16 - (self.offsetTextures % 16)
 
         self.textures = get_textures(self, self.b_material, self.offsetTextures)
         if wmb4:
-            self.textureFlags = list(material['Texture_Flags'])
+            self.textureFlags = []
+            for flag in self.b_material.mgr_texture_flags:
+                self.textureFlags.append(flag.value)
 
         self.numTextures = len(self.textures)
 
@@ -895,7 +889,7 @@ class c_material(object):
 
         self.name = self.b_material.name
 
-        self.shaderName = self.b_material['Shader_Name']
+        self.shaderName = wmbShaderName
         
         self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName
         print(self.offsetShaderName, self.offsetTextures, self.offsetParameterGroups, self.materialNames_StructSize)

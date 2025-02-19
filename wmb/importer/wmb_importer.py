@@ -295,12 +295,12 @@ def construct_materials(texture_dir, material, material_index=-1):
         material.mgr_parameters[i].value = (parameter.x, parameter.y, parameter.z, parameter.w)
         i+=1
  
-    print("holy fuck lois I'm a parameter group " + str(parameterGroups))
+
     # TODO Delete
-    material['ID'] = material_index
+    '''material['ID'] = material_index
     material['Shader_Name'] = shader_name
     if textureFlags is not None:
-        material['Texture_Flags'] = textureFlags
+        material['Texture_Flags'] = textureFlags'''
     
     # Enable Nodes
     material.use_nodes = True
@@ -335,7 +335,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     shaderFile = open(os.path.dirname(os.path.realpath(__file__)) + "/shader_params.json", "r")
     shaders = json.load(shaderFile)
 
-    for gindx, parameterGroup in enumerate(parameterGroups):
+    '''for gindx, parameterGroup in enumerate(parameterGroups):
         # let's group these into lists
         if (gindx != 0) or (shader_name not in shaders):
             material[str(gindx)] = [0.0] * 4
@@ -350,7 +350,7 @@ def construct_materials(texture_dir, material, material_index=-1):
                 if (gindx == 0) and (shader_name in shaders):
                     material[str(gindx) + '_' + str(pindx).zfill(2) + '_' + shaders[shader_name]["Parameters"][pindx]] = parameter
                 else:
-                    material[str(gindx)][pindx] = parameter
+                    material[str(gindx)][pindx] = parameter'''
 
     albedo_maps = {}
     normal_maps = {}
@@ -359,7 +359,7 @@ def construct_materials(texture_dir, material, material_index=-1):
 
     for texturesType in textures.keys():
         textures_type = texturesType.lower()
-        material[texturesType] = textures.get(texturesType)
+        #material[texturesType] = textures.get(texturesType)
         if bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
             if textures_type.find('albedo') > -1:
                 albedo_maps[textures_type] = textures.get(texturesType)

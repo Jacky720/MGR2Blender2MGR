@@ -25,7 +25,8 @@ class ExportNierWmb(bpy.types.Operator, ExportHelper):
         bpy.data.collections['WMB'].all_objects[0].select_set(True)
 
         if self.rip_mesh_by_uv_islands:
-            RipMeshByUVIslands.execute()
+            # TODO Add
+            pass
 
         if self.centre_origins:
             print("Centering origins...")
@@ -84,7 +85,7 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
         
         if self.rip_mesh_by_uv_islands:
             print("Ripping islands...")
-            RipMeshByUVIslands.execute()
+            # TODO Add
         
         if self.centre_origins:
             print("Centering origins...")

@@ -36,6 +36,7 @@ class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
     bl_label = 'MGR:R Tools'
     def draw(self, context):
+        
         self.layout.operator(RecalculateObjectIndices.bl_idname, icon="LINENUMBERS_ON")
         self.layout.operator(RemoveUnusedVertexGroups.bl_idname, icon="GROUP_VERTEX")
         self.layout.operator(MergeVertexGroupCopies.bl_idname, icon="GROUP_VERTEX")
@@ -43,6 +44,7 @@ class NierObjectMenu(bpy.types.Menu):
         self.layout.operator(DeleteLooseGeometryAll.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(RipMeshByUVIslands.bl_idname, icon="UV_ISLANDSEL")
         self.layout.operator(RestoreImportPose.bl_idname, icon='OUTLINER_OB_ARMATURE')
+        
         armature = getArmatureObject()
         if armature is not None and armature.animation_data is not None and armature.animation_data.action is not None \
             and armature.name in { "pl0000", "pl000d", "pl0100", "pl010d" }:
