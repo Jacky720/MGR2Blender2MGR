@@ -112,6 +112,10 @@ class ExportMGRRWmb(bpy.types.Operator, ExportHelper):
                 bpy.ops.b2n.removeunusedvertexgroups()
             subCollection.collection.all_objects[0].select_set(True)
 
+        for mesh in [x for x in subCollection.collection.all_objects if x.type == "MESH"]: # Check for vertex group exceeding 50
+            if len(mesh.vertex_groups) > 50:
+                self.report({'WARNING'}, f"{mesh.name} exceeds the recommended limit of 50 vertex groups.")
+
         try:
             print("Starting export...")
             wmb_exporter.main(self.filepath, True, BALLIN=self.regenerate_slice_data)
