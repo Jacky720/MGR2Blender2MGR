@@ -22,7 +22,6 @@ from .mot.exporter.motExportOperator import ExportNierMot
 from .mot.importer.motImportOperator import ImportNierMot
 from .mot.common.motUtils import getArmatureObject
 from .mot.common.pl000fChecks import HidePl000fIrrelevantBones, RemovePl000fIrrelevantAnimations
-from .wmb.exporter.wmbExportOperator import ExportNierWmb
 from .wmb.exporter.wmbExportOperator import ExportMGRRWmb
 from .wmb.exporter.wmbMaterialJSON import *
 from .wmb.importer.wmbImportOperator import ImportNierWmb
@@ -69,7 +68,7 @@ class IMPORT_MGR_MainMenu(bpy.types.Menu):
         self.layout.operator(ImportNierWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
-        self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta/.wtp)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta, .wtp)", icon_value=raiden_icon.icon_id)
 
 class EXPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
@@ -118,8 +117,7 @@ classes = (
     ImportNierDtt,
     ImportNierDat,
     ImportNierMot,
-    
-    ExportNierWmb,
+
     ExportMGRRWmb,
     ExportSCR,
     ExportNierMot,

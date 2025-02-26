@@ -6,9 +6,9 @@ import os
 from .motImporter import importMot
 
 class ImportNierMot(bpy.types.Operator, ImportHelper):
-    """Import a Nier Animation mot file"""
+    """Import MOT Data."""
     bl_idname = "import_scene.mot"
-    bl_label = "Import Nier Animation Data"
+    bl_label = "Import Metal Gear Rising Motion Data"
     bl_options = {'UNDO'}
 
     bulkImport: bpy.props.BoolProperty(name="Bulk Import", description="Import all mot files in the folder", default=False)
