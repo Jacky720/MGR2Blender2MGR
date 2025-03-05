@@ -376,8 +376,9 @@ def create_wmb_materials(wmb_file, data, wmb4=False):
             if wmb4:
                 worked = False
                 for key, value in enumerate(data.textures.textures):
+                    print(f"{value[1]} : {texture[1]}")
                     if value[1] == texture[1]:
-                        write_uInt32(wmb_file, material.textureFlags[i])
+                        write_uInt32(wmb_file, material.textures[i][2])
                         write_uInt32(wmb_file, key)
                         worked = True
                         break

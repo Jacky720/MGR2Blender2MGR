@@ -1,7 +1,7 @@
 from ....utils.util import ShowMessageBox
 
 class c_material(object):
-    def __init__(self, offsetMaterialName, material):
+    def __init__(self, offsetMaterialName, material, wmb4=False):
         self.offsetMaterial = offsetMaterialName
         self.b_material = material
 
@@ -9,48 +9,40 @@ class c_material(object):
             offset = offsetTextures
             numTextures = 0
             textures = []
-            for key, value in material.items():
-                if (isinstance(value, str)) and (key.find('g_') != -1):
-                    numTextures += 1
+            
+            for texture in material.mgr_data.textures:
+                print(f"{texture.flag} : {texture.id}")
+                numTextures += 1
 
             offsetName = offset + numTextures * 8
 
+            for texobj in material.mgr_data.textures:
+                texture = texobj.id
+                flag = texobj.flag
 
-            for key, value in material.items():
-                if (isinstance(value, str)) and (key.find('g_') != -1):
-                    texture = value
-                    name = key
-
-                    offset += 4 + 4 + len(key)
-                    textures.append([offsetName, texture, name])
-                    offsetName += len(name) + 1
-            return textures
+                textures.append([offsetName, texture, flag])
+            
+            # proper sorting
+            sortedTextures = []
+            for tex in textures:
+                flag = tex[2]
+                sortedTextures.append([tex, flag])
+            
+            # I'm using "tex" really loosely here, since it's become:
+            # [[offsetName, id, flag], flag]
+            sortedTextures = sorted(sortedTextures, key=lambda tex: tex[1])
+            return [tex[0] for tex in sortedTextures]
 
         def get_textures_StructSize(self, textures):
             textures_StructSize = 0
             for texture in textures:
-                textures_StructSize += 8
-                textures_StructSize += len(texture[2]) + 1
+                #print(texture[1])
+                textures_StructSize += 8 # if not wmb4 else 4 # the other 4 are flags and now considered such
+            #print(textures_StructSize)
             return textures_StructSize
 
         def get_numParameterGroups(self, material):
-            numParameterGroups = 0
-            parameterGroups = []
-
-            def Check(char):
-                try: 
-                    int(char)
-                    return True
-                except ValueError:
-                    return False
-
-            for key, value in material.items():
-                if Check(key[0]):
-                    if not key[0] in parameterGroups:
-                        numParameterGroups += 1
-                        parameterGroups.append(key[0])
-
-            return numParameterGroups
+            return len(material.mgr_data.parameters)
 
         def get_parameterGroups(self, material, offsetParameterGroups, numParameterGroups):
             parameterGroups = []
@@ -63,9 +55,10 @@ class c_material(object):
                     index = -1
 
                 parameters = []
-                for key, value in material.items():
-                    if key[0] == str(i):
-                        parameters.append(value)
+                parameters.append(material.mgr_data.parameters[i].value[0])
+                parameters.append(material.mgr_data.parameters[i].value[0])
+                parameters.append(material.mgr_data.parameters[i].value[0])
+                parameters.append(material.mgr_data.parameters[i].value[0])
                         
                 numParameters = len(parameters)
 
@@ -78,7 +71,7 @@ class c_material(object):
         def get_parameterGroups_StructSize(self, parameterGroups):
             parameterGroups_StructSize = 0
             for parameterGroup in parameterGroups:
-                parameterGroups_StructSize += 12 + parameterGroup[2] * 4
+                parameterGroups_StructSize += 16
             return parameterGroups_StructSize
 
         def get_variables(self, material, offsetVariables):
@@ -99,31 +92,38 @@ class c_material(object):
             return variables
 
         def get_variables_StructSize(self, variables):
-            variables_StructSize = 0
-            for variable in variables:
-                variables_StructSize += 8
-                variables_StructSize += len(variable[2]) + 1
-            return variables_StructSize
+            return 0
 
-        self.unknown0 = [2016, 7, 5, 15]            # This is probably always the same as far as I know?
+        self.unknown0 = [] if wmb4 else [2016, 7, 5, 15] # This is probably always the same as far as I know?
 
         self.offsetName = self.offsetMaterial
 
         self.offsetShaderName = self.offsetName + len(self.b_material.name) + 1
 
-        if not 'Shader_Name' in self.b_material:
+        self.offsetShaderName = self.offsetName
+
+        '''if not 'Shader_Name' in self.b_material:
             ShowMessageBox('Shader_Name not found. The exporter just tried converting a material that does not have all the required data. Check system console for details.', 'Invalid Material', 'ERROR')
             print('[ERROR] Invalid Material: Shader_Name not found.')
             print(' - If you know all materials used are valid, try ticking "Purge Materials" at export, this will clear all unused materials from your Blender file that might still be lingering.')
-            print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')
+            print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')'''
+        # TODO Reimplement  
 
+        wmbShaderName = self.b_material.mgr_data.shader_name
+    
         self.unknown1 = 1                           # This probably also the same mostly
+
+        self.offsetTextures = self.offsetShaderName + len(wmbShaderName)
+        self.offsetTextures += 16 - (self.offsetTextures % 16)
 
         self.textures = get_textures(self, self.b_material, self.offsetTextures)
 
         self.numTextures = len(self.textures)
 
         self.offsetParameterGroups = self.offsetTextures + get_textures_StructSize(self, self.textures)
+        #print(hex(self.offsetParameterGroups))
+        if wmb4 and (self.offsetParameterGroups % 16 > 0):
+            self.offsetParameterGroups += 16 - (self.offsetParameterGroups % 16)
 
         self.numParameterGroups = get_numParameterGroups(self, self.b_material)  
 
@@ -137,6 +137,7 @@ class c_material(object):
 
         self.name = self.b_material.name
 
-        self.shaderName = self.b_material['Shader_Name']
-
+        self.shaderName = wmbShaderName
+        
         self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName
+        print(self.offsetShaderName, self.offsetTextures, self.offsetParameterGroups, self.materialNames_StructSize)

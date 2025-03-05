@@ -1,15 +1,26 @@
 import bpy
 from ...consts import *
-
-
-
-
-class MGRTextureFlagProperty(bpy.types.PropertyGroup):
-    value: bpy.props.IntProperty(name="Texture Flag")
+from ...utils.util import MGRVector4Property
+from ...utils.util import crc32
 
 class MGRMaterialProperty(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Property Name")
-    value: bpy.props.StringProperty(name="Value")
+    flag: bpy.props.IntProperty(name="Texture Flag")
+    id: bpy.props.StringProperty(name="Texture ID")
+
+class MGRMaterialDataProperty(bpy.types.PropertyGroup):
+    id: bpy.props.IntProperty(
+        name="Material ID",
+        description="Unique Material Index",
+        default=-1
+    )
+
+    shader_name: bpy.props.StringProperty(
+        name="Shader Name",
+        description="Shader used by this material"
+    )
+    
+    textures: bpy.props.CollectionProperty(type=MGRMaterialProperty)
+    parameters: bpy.props.CollectionProperty(type=MGRVector4Property)
 
 class MGRULTextureFlagPanel(bpy.types.UIList):
     bl_idname = "MGR_UL_texture_flags"
@@ -24,8 +35,48 @@ def GrabTextureNameViaFlag(id):
     else:
         return "tex" + str(id)
 
+# TODO: More material presets
+# TODO: Add picker for presets
+materialPresets = {
+    "character": {
+        "textures": [
+            {"id": "0", "flag": 0},
+            {"id": "0", "flag": 1},
+            {"id": "0", "flag": 2},
+            {"id": "0", "flag": 3}
+        ],
+        "parameters": [
+            (0.5, 0.5, 0.5,  -1.0),
+            (0.5, 0.0, 40.0,  1.0),
+            (1.0, 0.0, 0.0,  -1.0),
+            (1.0, 1.0, -1.0, -1.0)
+        ]
+    }
+}
 
+class MGRMaterialCreateOperator(bpy.types.Operator):
+    '''Creates an export-ready material.'''
+    bl_idname = "materialui.creatematerial"
+    bl_context = 'material'
+    bl_label = "New Basic Material"
+    bl_options = {'REGISTER', 'UNDO'}
 
+    def execute(self, context):
+        material = bpy.context.material
+        
+        material.mgr_data.parameters.clear()
+        material.mgr_data.shader_name = "ois00_xbxeX"
+        
+        for texture in materialPresets["character"]["textures"]:
+            if not any(tex.flag == texture["flag"] for tex in material.mgr_data.textures):        
+                entry = material.mgr_data.textures.add()
+                entry.flag = texture["flag"]
+                entry.id = texture["id"]
+        
+        for i, param in enumerate(materialPresets["character"]["parameters"]):
+            material.mgr_data.parameters.add()
+            material.mgr_data.parameters[i].value = (param[0], param[1], param[2], param[3])
+        return {'FINISHED'}
 
 class MGRMaterialPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
@@ -37,41 +88,36 @@ class MGRMaterialPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         mat = context.material
-        layout.prop(mat, "mgr_material_id", text="Material ID")
-        layout.prop(mat, "mgr_shader_name", text="Shader Name")
 
+        if mat is None:
+            layout.label("Select a material first")
+            return
+
+        layout.prop(mat.mgr_data, "id", text="Material ID")
+        layout.prop(mat.mgr_data, "shader_name", text="Shader Name")
 
         propbox = layout.box()
         propbox.label(text="Parameters")
-        i = 0
         
-        for mgrprop in mat.mgr_parameters:
+        for i, mgrprop in enumerate(mat.mgr_data.parameters):
             subbox = propbox.row()
             param_identifier = str(i)
             if (i in parameterIDs):
                 param_identifier = parameterIDs[i]
             
-            
             subbox.prop(mgrprop, "value", text=str(param_identifier))
-            i+=1
-        
-        
-        
-        row = layout.row()
-        row.template_list(
-            "MGR_UL_TextureIDList",  # Name of the UI List class (defined below)
-            "", 
-            mat, "mgr_texture_ids",  # Collection property
-            mat, "mgr_texture_flags_index"  # Active item index property
-        )
+
         box = layout.box()
         box.label(text="Texture File Reference")
         # Draw individual texture properties if an item is selected
-        for i in range(len(mat.mgr_texture_flags)):
-            active_entry = mat.mgr_texture_ids[i]
+        for i in range(len(mat.mgr_data.textures)):
+            active_entry = mat.mgr_data.textures[i]
             
-            generatedTextureFlagName = GrabTextureNameViaFlag(mat.mgr_texture_flags[i].value)
+            generatedTextureFlagName = GrabTextureNameViaFlag(int(mat.mgr_data.textures[i].flag))
             
-            box.prop(active_entry, "value", text=generatedTextureFlagName)  # Text reflects the name propert
+            box.prop(active_entry, "id", text=generatedTextureFlagName)  # Text reflects the name propert
+        
+        box = layout.box()
+        box.operator(MGRMaterialCreateOperator.bl_idname)
         
         
