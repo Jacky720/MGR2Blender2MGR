@@ -257,8 +257,8 @@ def set_partent(parent, child):
 def addWtaExportMaterial(texture_dir, material):
     material_name = material[0]
     textures = material[1]
-    wtaTextures: List[Tuple[int, int, str]] = [
-        (int(flag), int(id), os.path.join(texture_dir, f"{id}.dds"))
+    wtaTextures: List[Tuple[int, str, str]] = [
+        (int(flag), id, os.path.join(texture_dir, f"{id}.dds"))
         for flag, id in textures.items()
     ]
     makeWtaMaterial(material_name, wtaTextures)

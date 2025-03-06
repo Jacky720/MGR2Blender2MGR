@@ -33,7 +33,7 @@ class WTAItems(bpy.types.PropertyGroup):
 
     parent_mat : bpy.props.StringProperty()
     texture_map_type : bpy.props.IntProperty()
-    texture_identifier : bpy.props.IntProperty()
+    texture_identifier : bpy.props.StringProperty()
     texture_path : bpy.props.StringProperty()
 
 def autoSetWtaTexPathsForMat(blendMat: bpy.types.Material, allWtaItems: List[WTAItems], warnings: List[str]):
@@ -117,7 +117,7 @@ def handleAutoSetTextureWarnings(operatorSelf, warnings: List[str]):
     print("First encountered textures used instead. Consider changing the ids.")
     print("\n".join(warnings))
 
-def makeWtaMaterial(matName, textures: List[Tuple[int, int, str]]):
+def makeWtaMaterial(matName, textures: List[Tuple[int, str, str]]):
     for tex in textures:
         newID = generateID(bpy.context)
         newTex: WTAItems = bpy.context.scene.WTAMaterials.add()
@@ -142,7 +142,7 @@ class GetMaterialsOperator(bpy.types.Operator):
         context.scene.WTAMaterials.clear()
         for mat in getUsedMaterials():
             try:
-                wtaTextures: List[Tuple[int, int, str]] = [
+                wtaTextures: List[Tuple[int, str, str]] = [
                     (flag, id, "None")
                     for flag, id in mat.items()
                 ]
@@ -179,7 +179,7 @@ class GetNewMaterialsOperator(bpy.types.Operator):
                 continue
 
             try:
-                wtaTextures: List[Tuple[int, int, str]] = [
+                wtaTextures: List[Tuple[int, str, str]] = [
                     (flag, id, "None")
                     for flag, id in mat.items()
                 ]

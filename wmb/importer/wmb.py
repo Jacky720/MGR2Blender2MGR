@@ -874,7 +874,7 @@ class wmb4_texture(object):
     def read(self, wmb_fp):
         super(wmb4_texture, self).__init__()
         self.flags = read_uint32(wmb_fp)
-        self.id = read_uint32(wmb_fp)
+        self.id = str(read_uint32(wmb_fp))
 
 class wmb4_vertexGroup(object):
     """docstring for wmb4_vertexGroup"""

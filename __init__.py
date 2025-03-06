@@ -141,21 +141,9 @@ classes = (
     WMBCopyMaterialJSON,
     WMBPasteMaterialJSON,
     WMBMaterialJSONPanel,
-    # Material UI
-    materialUI.MGRMaterialCreateOperator,
-    materialUI.MGRMaterialPanel,
-    materialUI.MGRULTextureFlagPanel,
 )
 
 preview_collections = {}
-
-def register_material_properties():
-    from .utils.util import MGRVector4Property
-    bpy.utils.register_class(materialUI.MGRMaterialProperty)
-    bpy.utils.register_class(MGRVector4Property)
-    bpy.utils.register_class(materialUI.MGRMaterialDataProperty)
-
-    bpy.types.Material.mgr_data = bpy.props.PointerProperty(type=materialUI.MGRMaterialDataProperty)
 
 def register():
     # Custom icons
@@ -165,11 +153,15 @@ def register():
     pcoll.load("raiden", os.path.join(my_icons_dir, "raiden.png"), 'IMAGE')
     preview_collections["main"] = pcoll
 
+    from .utils.util import MGRVector4Property
+    bpy.utils.register_class(MGRVector4Property)
     for cls in classes:
         bpy.utils.register_class(cls)
-    register_material_properties()
+    materialUI.register()
     bpy.utils.register_class(IMPORT_MGR_MainMenu)
     bpy.utils.register_class(EXPORT_MGR_MainMenu)
+
+
     wta_wtp_ui_manager.register()
     dat_dtt_ui_manager.register()
     physPanel.register()
@@ -202,9 +194,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Material.mgr_material_properties
-    bpy.utils.unregister_class(materialUI.MGRMaterialProperty)
-    bpy.utils.unregister_class(materialUI.MGRMaterialDataProperty)
+    materialUI.unregister()
     bpy.utils.unregister_class(IMPORT_MGR_MainMenu)
     bpy.utils.unregister_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.unregister()
