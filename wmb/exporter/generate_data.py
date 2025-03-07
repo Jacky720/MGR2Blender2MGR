@@ -1847,6 +1847,8 @@ class c_vertexGroup(object):
                             print(len(vertexes), "- Vertex Weights Error: Vertex has a total weight not equal to 1.0. Try using Blender's [Weights -> Normalize All] function.")
                         if not all([0 <= x < 256 for x in boneWeights]):
                             print(len(vertexes), "- Vertex Weights Error: Vertex weight is outside the standard byte range, absolutely giving up now, enjoy your writing error")
+                    elif bone:
+                        boneIndexes.append(getBoneIndexByName("WMB", bone.name))
 
                     color = []
                     if self.vertexFlags in {4, 5, 12, 14} or (wmb4 and vertexFormat >= 0x337):
