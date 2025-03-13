@@ -51,8 +51,8 @@ class MotHeader:
 		self.animationName = file.read(20).decode("utf-8", errors="replace").rstrip("\0")
 	
 	def fillDefaults(self):
-		self.magic = 0x746F6D
-		self.hash = 538051589
+		self.magic = struct.unpack("<I", b"mot\0")[0]
+		self.hash = 0x20120405
 		self.flag = 0
 		self.frameCount = 0
 		self.recordsOffset = 0

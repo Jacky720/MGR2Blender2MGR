@@ -242,7 +242,7 @@ def create_wmb_header(wmb_file, data, wmb4=False, collectionName="WMB"):
         if data.vertexFormat > 0x107: # TODO more precise
             write_Int16(wmb_file, -1)
         else:
-            write_Int16(wmb_file, 0)
+            write_Int16(wmb_file, data.vertexGroups.vertexGroups[0].vertexes[0][4][0]) # bone index
         
         boundingBoxXYZ, boundingBoxUVW = getGlobalBoundingBox()
         write_xyz(wmb_file, boundingBoxXYZ) # boundingBox: x y z 

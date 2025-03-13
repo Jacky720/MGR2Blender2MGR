@@ -154,9 +154,9 @@ def main(file_path, do_ly2):
         
         ly2.seek(ly2MysteryPointer)
         for i in range(len(WMBCol["ly2OtherFlags"])):
-            ly2.write(struct.pack("<I", WMBCol["ly2OtherFlags"][i]))
-            ly2.write(struct.pack("<I", WMBCol["ly2MysteryB"][i]))
-            ly2.write(struct.pack("<I", WMBCol["ly2MysteryC"][i]))
+            ly2.write(struct.pack("<i", WMBCol["ly2OtherFlags"][i]))
+            ly2.write(struct.pack("<i", WMBCol["ly2MysteryB"][i]))
+            ly2.write(struct.pack("<i", WMBCol["ly2MysteryC"][i]))
         
         ly2.close()
         

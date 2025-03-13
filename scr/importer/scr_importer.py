@@ -142,9 +142,9 @@ class ImportSCR:
             ly2MysteryB = []
             ly2MysteryC = []
             for i in range(ly2MysteryCount):
-                ly2OtherFlags.append(struct.unpack("<I", ly2.read(4))[0])
-                ly2MysteryB.append(struct.unpack("<I", ly2.read(4))[0])
-                ly2MysteryC.append(struct.unpack("<I", ly2.read(4))[0])
+                ly2OtherFlags.append(struct.unpack("<i", ly2.read(4))[0])
+                ly2MysteryB.append(struct.unpack("<i", ly2.read(4))[0])
+                ly2MysteryC.append(struct.unpack("<i", ly2.read(4))[0])
             
             bpy.data.collections["WMB"]["ly2OtherFlags"] = ly2OtherFlags
             bpy.data.collections["WMB"]["ly2MysteryB"] = ly2MysteryB
