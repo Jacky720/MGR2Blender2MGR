@@ -10,6 +10,7 @@ from .bonenames import wmb4_bonenames
 from ...utils.util import ShowMessageBox, getPreferences, printTimings
 from .wmb import *
 from ...wta_wtp.exporter.wta_wtp_ui_manager import makeWtaMaterial
+from ..materials import materialBuilder 
 
 
 def reset_blend():
@@ -284,6 +285,8 @@ def construct_materials(texture_dir, material, material_index=-1):
         material.mgr_data.parameters.add()
         material.mgr_data.parameters[i].value = (parameter.x, parameter.y, parameter.z, parameter.w)
     
+    materialBuilder.buildMaterialNodes(material, uniforms)
+    return material
     # Enable Nodes
     material.use_nodes = True
     # Clear Nodes and Links
@@ -441,6 +444,7 @@ def construct_materials(texture_dir, material, material_index=-1):
             mask_link = links.new(mask_nodes[0].outputs['Color'], principled.inputs['Metallic'])
 
     # Normal Nodes
+    # God fucking dammit Aura, how the fuck did you screw this up
     normal_nodes = []
     normal_mixRGB_nodes = []
     for i, textureID in enumerate(normal_maps.values()):
