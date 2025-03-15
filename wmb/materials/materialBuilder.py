@@ -44,10 +44,11 @@ def buildMaterialNodes(material, uniforms):
     
     node_dict = {}
     mixedAlbedoNode = None
+    mixedLightmapNode = None
     hasMixedAlbedo=False
     normalShader = None
-    
-    
+    uv_lightmap_node = None
+    albedoInverterNode = None
     
     for i, texentry in enumerate(material.mgr_data.textures):
         if bpy.data.images.get(str(texentry.id) + ".dds") is not None:
@@ -56,21 +57,55 @@ def buildMaterialNodes(material, uniforms):
             image_node.image = bpy.data.images.get(str(texentry.id) + ".dds")
             image_node.hide = True
             image_node.label = consts.getTextureFlagFromDict(texentry.flag)
-            if texentry.flag == 1:
+            if texentry.flag == 0:                 
+                albedoInverterNode = nodes.new(type="ShaderNodeInvert")
+                albedoInverterNode.location = 300, 0
+                albedoInverterNode.inputs[0].default_value = 1.0
+            
+            elif texentry.flag == 1:
                 hasMixedAlbedo = True
                 mixedAlbedoNode = nodes.new(type='ShaderNodeMixRGB')
-                mixedAlbedoNode.location = 300, 100
+                mixedAlbedoNode.location = 300, i*-60
                 mixedAlbedoNode.hide = True
+                
+            elif texentry.flag == 2:
+                image_node.image.colorspace_settings.name = 'Non-Color'
+                
+            elif texentry.flag == 7:
+                mixedLightmapNode = nodes.new(type='ShaderNodeMixRGB')
+                mixedLightmapNode.location = 500, i*-60
+                mixedLightmapNode.hide = True
+                
+                mixedLightmapNode.blend_type = 'SOFT_LIGHT'
+                mixedLightmapNode.label = "Lightmap Mixer"
+                
             
             node_dict[texentry.flag] = image_node
+    
+    
+    albedoNode = None
+    if not mixedLightmapNode == None:
+        uv_lightmap_node = nodes.new(type="ShaderNodeUVMap")
+        uv_lightmap_node.uv_map = "LightMap"
+        uv_lightmap_node.location = (-200, -150)
+        uv_lightmap_node.label = "LightMap UV"
     
 
     
     for flag, node in node_dict.items():
         if flag == 0: # Base Color
             links.new(node.outputs['Color'], principled.inputs['Base Color'])
-        
-        if flag == 3:
+            if material.mgr_data.shader_name in consts.transparentShaders:
+                links.new(node.outputs['Alpha'], principled.inputs['Alpha'])
+                material.blend_method = 'HASHED'
+            elif not material.mgr_data.shader_name in consts.reflectiveBlacklist:
+                links.new(node.outputs['Alpha'], albedoInverterNode.inputs['Color'])
+                links.new(albedoInverterNode.outputs['Color'], principled.inputs['Roughness'])
+                
+            
+            
+            albedoNode = node
+        if flag == 2:
             if normalShader == None:
                 normalShader = nodes.new(type='ShaderNodeNormalMap')
                 normalShader.location = 600, 0
@@ -80,3 +115,11 @@ def buildMaterialNodes(material, uniforms):
             invertGreen = invertGreenChannel(nodes, node.location[1])
             links.new(node.outputs["Color"], invertGreen.inputs["Color"])
             links.new(invertGreen.outputs["Color"], normalShader.inputs["Color"])
+        
+        if flag == 7:
+            if not "skn" in material.mgr_data.shader_name:
+                mixedLightmapNode.inputs[0].default_value = 0.792
+                links.new(uv_lightmap_node.outputs['UV'], node.inputs['Vector'])
+                links.new(albedoNode.outputs['Color'], mixedLightmapNode.inputs[1])
+                links.new(node.outputs['Color'], mixedLightmapNode.inputs[2])
+                links.new(mixedLightmapNode.outputs['Color'], principled.inputs['Base Color'])

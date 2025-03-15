@@ -561,7 +561,13 @@ def add_material_to_mesh(mesh, materials , uvs):
     for i in range(1, 5): # 0 handled above
         if len(uvs[i]) > 0:
             #print("Creating UV layer for", material.name)
-            new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
+            new_uv_layer = None
+            if i == 1:
+                new_uv_layer = bm.loops.layers.uv.new("LightMap")
+            else:
+                new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
             for face in bm.faces:
                 face.material_index = 0
                 for l in face.loops:

@@ -6,15 +6,18 @@ parameterIDs = {
 
 }
 
-
-
 textureFlagDictonary = {
     0 : "Albedo 0",
     1 : "Albedo 1",
-    2 : "Light Map",
-    3 : "Normal",
+    2 : "Normal",
+    3 : "Blended Normal",
+    4 : "Cubemap",
+    7 : "Lightmap",
     10 : "Tension Map"
 }
+
+reflectiveBlacklist = ["skn03_xbXxX","siv00_sxmxb", "siv00_sxmvx"] # These shaders will never have reflection
+transparentShaders = ["ois02_sbxeX", "cnm10_SxwXX", "siv23_sbxex"] # These shaders will be given a cardboard cutout effect
 
 def getTextureFlagFromDict(id):
     value = textureFlagDictonary.get(id)

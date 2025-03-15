@@ -812,10 +812,9 @@ class wmb4_material(object):
         for i, texture in enumerate(texturesArray):
             if i % 2 == 0:
                 self.textureFlagArray.append(texture)
-                continue
             else:
-                trueI = int((i - 1) / 2) # bad method, don't care tonight
-                self.textureArray[trueI] = texture
+                trueI = int((i - 1) / 2) # bad method, don't care tonight  
+                self.textureArray[self.textureFlagArray[trueI]] = texture
 
         if DEBUG_MATERIAL_PRINT:
             print("Count:", self.trueTexturesCount*2, "Data:", texturesArray)
