@@ -29,6 +29,7 @@ from .scr.importer.scrImportOperator import ImportSCR
 from .scr.exporter.scrExportOperator import ExportSCR
 from .wta_wtp.importer.wtpImportOperator import ExtractNierWtaWtp
 from .bxm.importer import physPanel
+from .bxm.importer import gadImporter
 from .wmb.materials import materialUI
 
 class NierObjectMenu(bpy.types.Menu):
@@ -69,6 +70,7 @@ class IMPORT_MGR_MainMenu(bpy.types.Menu):
         self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta, .wtp)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(gadImporter.ImportMGRGad.bl_idname, text="Lighting Information (.gad)", icon_value=raiden_icon.icon_id)
 
 class EXPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
@@ -141,6 +143,8 @@ classes = (
     WMBCopyMaterialJSON,
     WMBPasteMaterialJSON,
     WMBMaterialJSONPanel,
+
+    gadImporter.ImportMGRGad,
 )
 
 preview_collections = {}
