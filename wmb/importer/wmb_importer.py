@@ -1206,20 +1206,9 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
             if wmb.wmb_header.vertexFormat == 0x107: # wmb.wmb_header.referenceBone != -1
                 #bpy.ops.object.mode_set(mode='EDIT')
                 for mesh in meshes:
-                    setchild = mesh.constraints.new(type='CHILD_OF')
-                    setchild.target = amt
-                    setchild.inverse_matrix = Matrix.Identity(4)
-                    setchild.use_rotation_x = False
-                    setchild.use_rotation_y = False
-                    setchild.use_rotation_z = False
-                    #setchild.influence = 0.0
-                    #bone = amt.data.edit_bones[wmb.wmb_header.referenceBone]
-                    bone = amt.pose.bones[wmb.wmb_header.referenceBone]
-                    #boneName = str(bone.name)
-                    #mesh.location.x = bone.head.x
-                    #mesh.location.y = -bone.head.z
-                    #mesh.location.z = bone.head.y
-                    setchild.subtarget = bone.name #boneName
+                    mesh.vertex_groups.new(name="bone%d"%wmb.wmb_header.referenceBone)
+                    mesh.vertex_groups["bone%d"%wmb.wmb_header.referenceBone].add(
+                        list(range(len(mesh.data.vertices))), 1.0, "REPLACE")
                 #bpy.ops.object.mode_set(mode='OBJECT')
                     
             for bone in amt.data.bones:

@@ -1660,13 +1660,6 @@ class c_vertexGroup(object):
                 
                 previousIndex = -1
                 
-                # used for child constraints, again
-                bone = None
-                if (wmb4 
-                   and "Child Of" in bvertex_obj_obj.constraints
-                   and bvertex_obj_obj.constraints["Child Of"].target is not None):
-                    bone = amt.data.bones[bvertex_obj_obj.constraints["Child Of"].subtarget]
-                
                 missingBones = set()
                 
                 for loop in sorted_loops:
@@ -1678,11 +1671,6 @@ class c_vertexGroup(object):
                     bvertex = bvertex_obj[0][loop.vertex_index]
                     # XYZ Position
                     position = [bvertex.co.x, bvertex.co.y, bvertex.co.z]
-                    
-                    if bone:
-                        position[0] -= bone.head_local.x
-                        position[1] -= bone.head_local.y
-                        position[2] -= bone.head_local.z
 
                     # Tangents
                     loopTangent = loop.tangent * 127
@@ -1847,8 +1835,11 @@ class c_vertexGroup(object):
                             print(len(vertexes), "- Vertex Weights Error: Vertex has a total weight not equal to 1.0. Try using Blender's [Weights -> Normalize All] function.")
                         if not all([0 <= x < 256 for x in boneWeights]):
                             print(len(vertexes), "- Vertex Weights Error: Vertex weight is outside the standard byte range, absolutely giving up now, enjoy your writing error")
-                    elif bone:
-                        boneIndexes.append(getBoneIndexByName("WMB", bone.name))
+                    else:
+                        for groupRef in bvertex.groups:
+                            boneGroupName = bvertex_obj_obj.vertex_groups[groupRef.group].name
+                            boneIndexes.append(getBoneIndexByName("WMB", boneGroupName))
+                            break
 
                     color = []
                     if self.vertexFlags in {4, 5, 12, 14} or (wmb4 and vertexFormat >= 0x337):
