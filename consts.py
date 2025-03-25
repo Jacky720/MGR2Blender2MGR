@@ -16,7 +16,7 @@ textureFlagDictonary = {
     10 : "Tension Map"
 }
 
-reflectiveBlacklist = ["skn03_xbXxX","siv00_sxmxb", "siv00_sxmvx"] # These shaders will never have reflection
+reflectiveBlacklist = ["skn03_xbXxX","siv00_sxmxb", "siv00_sxmvx", "siv00_sxmvb"] # These shaders will never have reflection
 transparentShaders = ["ois02_sbxeX", "cnm10_SxwXX", "siv23_sbxex"] # These shaders will be given a cardboard cutout effect
 
 def getTextureFlagFromDict(id):
