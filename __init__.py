@@ -31,6 +31,9 @@ from .wta_wtp.importer.wtpImportOperator import ExtractNierWtaWtp
 from .bxm.importer import physPanel
 from .bxm.importer import gadImporter
 from .wmb.materials import materialUI
+from .hkx.importer import hkxImportOperator
+from .path.importer import pathImportOperator
+from .path.exporter import pathExportOperator
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
@@ -57,6 +60,15 @@ class NierArmatureMenu(bpy.types.Menu):
     def draw(self, context):
         self.layout.operator(ClearSelectedBoneIDs.bl_idname, icon='BONE_DATA')
 
+class IMPORT_MGR_HKXMenu(bpy.types.Menu):
+    bl_label = "Physics"
+    bl_idname = "IMPORT_MT_phys"
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        self.layout.operator(hkxImportOperator.ImportMGRHavokPackfile.bl_idname, text="HAVOK Collision (.hkx)", icon_value=pcoll["havok"].icon_id)
+        self.layout.operator(pathImportOperator.ImportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=pcoll["raiden"].icon_id)
+
 class IMPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
     bl_idname = "IMPORT_MT_main_menu"
@@ -65,6 +77,7 @@ class IMPORT_MGR_MainMenu(bpy.types.Menu):
         pcoll = preview_collections["main"]
         raiden_icon = pcoll["raiden"] 
         
+        self.layout.menu(IMPORT_MGR_HKXMenu.bl_idname, icon_value=pcoll["raiden"].icon_id)    
         self.layout.operator(ImportNierDat.bl_idname, text="Archive File (.dat, .dtt)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
@@ -82,7 +95,7 @@ class EXPORT_MGR_MainMenu(bpy.types.Menu):
         self.layout.operator(ExportMGRRWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
-
+        self.layout.operator(pathExportOperator.ExportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=raiden_icon.icon_id)
 
 
 def menu_func_import(self, context):
@@ -145,6 +158,14 @@ classes = (
     WMBMaterialJSONPanel,
 
     gadImporter.ImportMGRGad,
+    
+    hkxImportOperator.ImportMGRHavokPackfile,
+    hkxImportOperator.ImportMGRHavokTagfile,
+    
+    pathImportOperator.ImportMGRPath,
+    pathExportOperator.ExportMGRPath
+    
+    
 )
 
 preview_collections = {}
@@ -155,6 +176,7 @@ def register():
     pcoll = bpy.utils.previews.new()
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
     pcoll.load("raiden", os.path.join(my_icons_dir, "raiden.png"), 'IMAGE')
+    pcoll.load("havok", os.path.join(my_icons_dir, "hvk.png"), 'IMAGE')
     preview_collections["main"] = pcoll
 
     from .utils.util import MGRVector4Property
@@ -163,6 +185,7 @@ def register():
         bpy.utils.register_class(cls)
     materialUI.register()
     bpy.utils.register_class(IMPORT_MGR_MainMenu)
+    bpy.utils.register_class(IMPORT_MGR_HKXMenu)
     bpy.utils.register_class(EXPORT_MGR_MainMenu)
 
 

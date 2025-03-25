@@ -14,7 +14,7 @@ class WMBMaterialToJSON(bpy.types.Operator):
         parameterArray = []
         
         for index in range(len(material.mgr_data.textures)):
-            textureObject = material.mgr_data.textures[index]
+            textureObject = [material.mgr_data.textures[index].id,material.mgr_data.textures[index].flag]
             textureArray.append(textureObject)
 
         for param in material.mgr_data.parameters:
@@ -34,7 +34,7 @@ class WMBMaterialToJSON(bpy.types.Operator):
             "parameters":parameterArray
         }
         
-
+        print(str(dictForString))
         material["wmb_mat_as_json"] = json.dumps(dictForString)
         bpy.context.window_manager.clipboard = bpy.context.material["wmb_mat_as_json"]
         self.report({'INFO'}, "Copied JSON")
@@ -62,8 +62,8 @@ class WMBMaterialFromJSON(bpy.types.Operator):
         material.mgr_data.shader_name = dictFromString["shaderID"]
         for texture in dictFromString["textures"]:
             entry = material.mgr_data.textures.add()  
-            entry.flag = texture["flag"]
-            entry.id = texture["id"] 
+            entry.flag = texture[1]
+            entry.id = texture[0] 
         
         for i, param in enumerate(dictFromString["parameters"]):
             material.mgr_data.parameters.add()
