@@ -77,7 +77,7 @@ class IMPORT_MGR_MainMenu(bpy.types.Menu):
         pcoll = preview_collections["main"]
         raiden_icon = pcoll["raiden"] 
         
-        self.layout.menu(IMPORT_MGR_HKXMenu.bl_idname, icon_value=pcoll["raiden"].icon_id)    
+        # self.layout.menu(IMPORT_MGR_HKXMenu.bl_idname, icon_value=pcoll["raiden"].icon_id)    
         self.layout.operator(ImportNierDat.bl_idname, text="Archive File (.dat, .dtt)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
@@ -95,7 +95,7 @@ class EXPORT_MGR_MainMenu(bpy.types.Menu):
         self.layout.operator(ExportMGRRWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
-        self.layout.operator(pathExportOperator.ExportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=raiden_icon.icon_id)
+        # self.layout.operator(pathExportOperator.ExportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=raiden_icon.icon_id)
 
 
 def menu_func_import(self, context):
