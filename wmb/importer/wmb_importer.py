@@ -1125,7 +1125,18 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
     texture_dir = wmb_file.replace(wmbname, 'textures')
     armature_name = ""
     if hasattr(wmb, 'hasBone') and wmb.hasBone:
-        boneArray = [[bone.boneIndex, "bone%d"%bone.boneIndex, bone.parentIndex,"bone%d"%bone.parentIndex, bone.world_position, bone.world_rotation, bone.boneNumber, bone.local_position, bone.local_rotation, bone.world_rotation, bone.world_position_tpose] for bone in wmb.boneArray]
+        boneArray = [[
+            bone.boneIndex,
+            "bone%d" % bone.boneIndex,
+            bone.parentIndex,
+            "bone%d" % bone.parentIndex,
+            bone.world_position,
+            bone.world_rotation,
+            bone.boneNumber,
+            bone.local_position,
+            bone.local_rotation,
+            bone.world_rotation,
+            bone.world_position_tpose] for bone in wmb.boneArray]
         armature_no_wmb = wmbname.replace('.wmb','')
         armature_name_split = armature_no_wmb.split('/')
         armature_name = armature_name_split[-1]
@@ -1187,30 +1198,22 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
             if wmb.wmb_header.vertexFormat == 0x107: # wmb.wmb_header.referenceBone != -1
                 #bpy.ops.object.mode_set(mode='EDIT')
                 for mesh in meshes:
-                    setchild = mesh.constraints.new(type='CHILD_OF')
-                    setchild.target = amt
-                    setchild.inverse_matrix = Matrix.Identity(4)
-                    setchild.use_rotation_x = False
-                    setchild.use_rotation_y = False
-                    setchild.use_rotation_z = False
-                    #setchild.influence = 0.0
-                    #bone = amt.data.edit_bones[wmb.wmb_header.referenceBone]
-                    bone = amt.pose.bones[wmb.wmb_header.referenceBone]
-                    #boneName = str(bone.name)
-                    #mesh.location.x = bone.head.x
-                    #mesh.location.y = -bone.head.z
-                    #mesh.location.z = bone.head.y
-                    setchild.subtarget = bone.name #boneName
+                    mesh.vertex_groups.new(name="bone%d"%wmb.wmb_header.referenceBone)
+                    mesh.vertex_groups["bone%d"%wmb.wmb_header.referenceBone].add(
+                        list(range(len(mesh.data.vertices))), 1.0, "REPLACE")
                 #bpy.ops.object.mode_set(mode='OBJECT')
                     
             for bone in amt.data.bones:
+                oldBoneName = bone.name
                 if bone["ID"] in wmb4_bonenames:
-                    oldBoneName = bone.name
                     #print("Renaming %s to %s" % (bone.name, wmb4_bonenames[bone["ID"]]))
                     bone.name = wmb4_bonenames[bone["ID"]]
-                    for mesh in [x for x in col.objects if x.type == "MESH"]:
-                        for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
-                            vertexGroup.name = wmb4_bonenames[bone["ID"]]
+                else:
+                    bone.name = "bone%d" % bone["ID"]
+                for mesh in [x for x in col.objects if x.type == "MESH"]:
+                    for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
+                        vertexGroup.name = bone.name
+                    
         else:
             print("Huh, no armature. hasBone is", wmb.hasBone)
             
