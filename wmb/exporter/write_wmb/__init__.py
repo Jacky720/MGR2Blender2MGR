@@ -2,6 +2,7 @@
 from ....utils.ioUtils import write_Int32, write_uInt32, write_Int16, write_xyz, write_float, write_char, write_string, write_uInt16, SmartIO, write_byte, write_float16
 from ....utils.util import *
 from time import time
+import bpy
 
 def create_wmb_batches(wmb_file, data, wmb4=False):
     wmb_file.seek(data.batches_Offset)
@@ -679,7 +680,10 @@ def create_wmb_vertexGroups(wmb_file, data, wmb4=False):
                 if data.vertexFormat in {0x10307, 0x10107}:
                     writeColor.write(wmb_file, vertex[6])
                 if data.vertexFormat == 0x10307:
-                    writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
+                    try:
+                        writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
+                    except:
+                        print("ERROR: Missing UVMap2, export will likely fail")
             
             else:
                 if vertexGroup.vertexFlags in {1, 4, 5, 12, 14}:

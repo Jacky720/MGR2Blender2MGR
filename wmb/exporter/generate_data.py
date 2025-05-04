@@ -65,6 +65,10 @@ class c_batch_supplements(object): # wmb4
             batchDatum[0] = batch['ID']
             batchDatum[1] = batch['meshGroupIndex']
             batchDatum[2] = batch.material_slots[0].material['ID']
+
+            if not 'boneSetIndex' in batch: # this *probably* should never happen, that being said if it does happen I wont be suprised
+                batch["boneSetIndex"] = -1
+
             batchDatum[3] = batch['boneSetIndex']
             if 'batchGroup' not in batch or batch['batchGroup'] < 0:
                 batch['batchGroup'] = 0
@@ -1397,7 +1401,12 @@ class c_vertexGroup(object):
                 sorted_loops = sorted(loops, key=lambda loop: loop.vertex_index)
                 
                 if self.vertexFlags not in {0, 1, 4, 5, 12, 14} or wmb4:
-                    boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
+                    if 'boneSetIndex' in bvertex_obj_obj:
+                        boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
+                    else:
+                        bvertex_obj_obj["boneSetIndex"] = -1
+                        boneSet = get_boneSet(self, -1)
+
                 
                 previousIndex = -1
                 
@@ -2024,7 +2033,12 @@ class c_generate_data(object):
             
         else:
             
-            self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
+            if 'vertexFormat' in bpy.data.collections[collectionName]:
+                self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
+            else:
+                self.vertexFormat = 65799
+                bpy.data.collections[collectionName]['info'] = "Some of these properties were auto-generated... good luck"
+                bpy.data.collections[collectionName]['vertexFormat'] = 65799
             
             if BALLIN:
                 # FUCK YOU BALTIMORE

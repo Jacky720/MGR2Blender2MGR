@@ -34,6 +34,7 @@ from .wmb.materials import materialUI
 from .hkx.importer import hkxImportOperator
 from .path.importer import pathImportOperator
 from .path.exporter import pathExportOperator
+from .wmb import wmb_builder
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
@@ -47,6 +48,8 @@ class NierObjectMenu(bpy.types.Menu):
         self.layout.operator(DeleteLooseGeometryAll.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(RipMeshByUVIslands.bl_idname, icon="UV_ISLANDSEL")
         self.layout.operator(RestoreImportPose.bl_idname, icon='OUTLINER_OB_ARMATURE')
+        self.layout.operator(wmb_builder.MakeNewWMB.bl_idname, icon='CUBE')
+        self.layout.operator()
         
         armature = getArmatureObject()
         if armature is not None and armature.animation_data is not None and armature.animation_data.action is not None \
@@ -163,7 +166,9 @@ classes = (
     hkxImportOperator.ImportMGRHavokTagfile,
     
     pathImportOperator.ImportMGRPath,
-    pathExportOperator.ExportMGRPath
+    pathExportOperator.ExportMGRPath,
+
+    wmb_builder.MakeNewWMB
     
     
 )
