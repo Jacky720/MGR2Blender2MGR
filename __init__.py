@@ -1,8 +1,8 @@
 bl_info = {
     "name": "MGR2Blender2MGR (Metal Gear Rising Data Exporter)",
-    "author": "Woeful_Wolf, RaiderB, Jacky720, and Gaming with Portals",
-    "version": (0, 1, 0),
-    "blender": (2, 80, 0),
+    "author": "Woeful_Wolf, RaiderB, Jacky720, Gaming with Portals, and Aura39",
+    "version": (0, 2, 0),
+    "blender": (3, 0, 0),
     "description": "Import/Export Various Metal Gear Rising Data files.",
     "category": "Import-Export"}
 
@@ -48,7 +48,7 @@ class NierObjectMenu(bpy.types.Menu):
         self.layout.operator(DeleteLooseGeometryAll.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(RipMeshByUVIslands.bl_idname, icon="UV_ISLANDSEL")
         self.layout.operator(RestoreImportPose.bl_idname, icon='OUTLINER_OB_ARMATURE')
-        self.layout.operator(wmb_builder.MakeNewWMB.bl_idname, icon='CUBE')
+        # self.layout.operator(wmb_builder.MakeNewWMB.bl_idname, icon='CUBE')
         self.layout.operator()
         
         armature = getArmatureObject()
