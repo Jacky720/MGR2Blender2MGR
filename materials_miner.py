@@ -43,12 +43,8 @@ def extractMats(fp):
             break
 
         shaderName = mat["Shader_Name"]
-        technique = mat["Technique_Name"]
         parameters  = mat["ParameterGroups"]
         variables = mat["Variables"]
-
-        if technique != "Default":
-            continue
 
         if len(parameters) == 0:
             continue

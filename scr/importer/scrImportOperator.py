@@ -7,7 +7,7 @@ from ...utils.util import setExportFieldsFromImportFile
 
 
 class ImportSCR(bpy.types.Operator, ImportHelper):
-    '''Load a MGR SCR File.'''
+    '''Import SCR Data.'''
     bl_idname = "import_scene.scr_data"
     bl_label = "Import SCR Data"
     bl_options = {'PRESET'}

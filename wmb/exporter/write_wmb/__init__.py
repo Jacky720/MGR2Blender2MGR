@@ -2,6 +2,7 @@
 from ....utils.ioUtils import write_Int32, write_uInt32, write_Int16, write_xyz, write_float, write_char, write_string, write_uInt16, SmartIO, write_byte, write_float16
 from ....utils.util import *
 from time import time
+import bpy
 
 def create_wmb_batches(wmb_file, data, wmb4=False):
     wmb_file.seek(data.batches_Offset)
@@ -361,27 +362,12 @@ def create_wmb_materials(wmb_file, data, wmb4=False):
             write_uInt16(wmb_file, material.numTextures) # 5 or 4, usually
             write_uInt16(wmb_file, 0) # mystery value
             write_uInt16(wmb_file, material.numParameterGroups*4)
-        if not wmb4:
-            for val in material.unknown0:                     # unknown0
-                write_uInt16(wmb_file, val)
-            write_uInt32(wmb_file, material.offsetShaderName) # offsetShaderName
-            write_uInt32(wmb_file, material.offsetName)           # offsetName
-            write_uInt32(wmb_file, material.offsetTechniqueName)  # offsetTechniqueName
-            write_uInt32(wmb_file, material.unknown1)             # unknown1
-            write_uInt32(wmb_file, material.offsetTextures)       # offsetTextures
-            write_uInt32(wmb_file, material.numTextures)          # numTextures
-            write_uInt32(wmb_file, material.offsetParameterGroups)  # offsetParameterGroups
-            write_uInt32(wmb_file, material.numParameterGroups)     # numParameterGroups
-            write_uInt32(wmb_file, material.offsetVariables)        # offsetVariables
-            write_uInt32(wmb_file, material.numVariables)           # numVariables
     for material in data.materials.materials:
         if not wmb4:
             write_string(wmb_file, material.name)                   # name
         if wmb4:
             wmb_file.seek(material.offsetShaderName)
         write_string(wmb_file, material.shaderName)             # shaderName
-        if not wmb4:
-            write_string(wmb_file, material.techniqueName)          # techniqueName
         if wmb4:
             wmb_file.seek(material.offsetTextures)
         for i, texture in enumerate(material.textures):                       # [offsetName, texture, name]
@@ -391,8 +377,9 @@ def create_wmb_materials(wmb_file, data, wmb4=False):
             if wmb4:
                 worked = False
                 for key, value in enumerate(data.textures.textures):
+                    print(f"{value[1]} : {texture[1]}")
                     if value[1] == texture[1]:
-                        write_uInt32(wmb_file, material.textureFlags[i])
+                        write_uInt32(wmb_file, material.textures[i][2])
                         write_uInt32(wmb_file, key)
                         worked = True
                         break
@@ -693,7 +680,10 @@ def create_wmb_vertexGroups(wmb_file, data, wmb4=False):
                 if data.vertexFormat in {0x10307, 0x10107}:
                     writeColor.write(wmb_file, vertex[6])
                 if data.vertexFormat == 0x10307:
-                    writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
+                    try:
+                        writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
+                    except:
+                        print("ERROR: Missing UVMap2, export will likely fail")
             
             else:
                 if vertexGroup.vertexFlags in {1, 4, 5, 12, 14}:

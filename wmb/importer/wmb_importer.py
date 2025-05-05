@@ -9,7 +9,8 @@ from .bonenames import wmb4_bonenames
 
 from ...utils.util import ShowMessageBox, getPreferences, printTimings
 from .wmb import *
-from ...wta_wtp.exporter.wta_wtp_ui_manager import isTextureTypeSupported, makeWtaMaterial
+from ...wta_wtp.exporter.wta_wtp_ui_manager import makeWtaMaterial
+from ..materials import materialBuilder 
 
 
 def reset_blend():
@@ -257,10 +258,9 @@ def set_partent(parent, child):
 def addWtaExportMaterial(texture_dir, material):
     material_name = material[0]
     textures = material[1]
-    wtaTextures: List[Tuple[str, str, str]] = [
-        (mapType, id, os.path.join(texture_dir, f"{id}.dds"))
-        for mapType, id in textures.items()
-        if isTextureTypeSupported(mapType)
+    wtaTextures: List[Tuple[int, str, str]] = [
+        (int(flag), id, os.path.join(texture_dir, f"{id}.dds"))
+        for flag, id in textures.items()
     ]
     makeWtaMaterial(material_name, wtaTextures)
 
@@ -269,17 +269,24 @@ def construct_materials(texture_dir, material, material_index=-1):
     textures = material[1]
     uniforms = material[2]
     shader_name = material[3]
-    technique_name = material[4]
-    parameterGroups = material[5]
-    textureFlags = material[6] # wmb4
+    parameterGroups = material[4]
     print('[+] importing material %s' % material_name)
-    # oh, real smooth, reusing a variable name
+    
     material = bpy.data.materials.new( '%s' % (material_name))
-    material['ID'] = material_index
-    material['Shader_Name'] = shader_name
-    material['Technique_Name'] = technique_name
-    if textureFlags is not None:
-        material['Texture_Flags'] = textureFlags
+    material.mgr_data.id = material_index
+    material.mgr_data.shader_name = shader_name
+    
+    for tex_flag, tex_id in textures.items():
+        entry = material.mgr_data.textures.add()  
+        entry.flag = tex_flag
+        entry.id = str(tex_id)
+    
+    for i, parameter in enumerate(parameterGroups):
+        material.mgr_data.parameters.add()
+        material.mgr_data.parameters[i].value = (parameter.x, parameter.y, parameter.z, parameter.w)
+    
+    materialBuilder.buildMaterialNodes(material, uniforms)
+    return material
     # Enable Nodes
     material.use_nodes = True
     # Clear Nodes and Links
@@ -299,7 +306,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     # Mask Map Count
     mask_map_count = 0
     # Alpha Channel
-    material.blend_method = 'CLIP'
+    material.surface_render_method = 'DITHERED'
 
     #print("\n".join(["%s:%f" %(key, uniforms[key]) for key in sorted(uniforms.keys())]))
     # Shader Parameters
@@ -313,40 +320,20 @@ def construct_materials(texture_dir, material, material_index=-1):
     shaderFile = open(os.path.dirname(os.path.realpath(__file__)) + "/shader_params.json", "r")
     shaders = json.load(shaderFile)
 
-    for gindx, parameterGroup in enumerate(parameterGroups):
-        # let's group these into lists
-        if (gindx != 0) or (shader_name not in shaders):
-            material[str(gindx)] = [0.0] * 4
-        if type(parameterGroup) is not list:
-            for pindx, parameter in enumerate([parameterGroup.x, parameterGroup.y, parameterGroup.z, parameterGroup.w]):
-                if (gindx == 0) and (shader_name in shaders):
-                    material[str(gindx) + '_' + str(pindx).zfill(2) + '_' + shaders[shader_name]["Parameters"][pindx]] = parameter
-                else:
-                    material[str(gindx)][pindx] = parameter
-        else:
-            for pindx, parameter in enumerate(parameterGroup):
-                if (gindx == 0) and (shader_name in shaders):
-                    material[str(gindx) + '_' + str(pindx).zfill(2) + '_' + shaders[shader_name]["Parameters"][pindx]] = parameter
-                else:
-                    material[str(gindx)][pindx] = parameter
-
     albedo_maps = {}
     normal_maps = {}
     mask_maps = {}
     curvature_maps = {}
 
     for texturesType in textures.keys():
-        textures_type = texturesType.lower()
-        material[texturesType] = textures.get(texturesType)
+        textures_type = texturesType
+        #material[texturesType] = textures.get(texturesType)
         if bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
-            if textures_type.find('albedo') > -1:
+            print(textures_type)
+            if textures_type in {0,1}:
                 albedo_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('normal') > -1:
+            elif textures_type in {2,3}:
                 normal_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('mask') > -1:
-                mask_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('curvature') > -1:
-                curvature_maps[textures_type] = textures.get(texturesType)
         else:
             pass#print("Couldn't find", texture_file, "for", textures_type)
 
@@ -356,11 +343,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     albedo_invert_nodes = []
     colornode = None
     for i, textureID in enumerate(albedo_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             albedo_image = nodes.new(type='ShaderNodeTexImage')
             albedo_nodes.append(albedo_image)
             albedo_image.location = 0,i*-60
-            albedo_image.image = bpy.data.images.get(textureID + ".dds")
+            albedo_image.image = bpy.data.images.get(str(textureID) + ".dds")
             albedo_image.hide = True
             
             invert_shader = nodes.new(type="ShaderNodeInvert")
@@ -424,11 +411,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     mask_sepRGB_nodes = []
     mask_invert_nodes = []
     for i, textureID in enumerate(mask_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             mask_image = nodes.new(type='ShaderNodeTexImage')
             mask_nodes.append(mask_image)
             mask_image.location = 0, ((len(albedo_maps)+1)*-60)-i*60
-            mask_image.image = bpy.data.images.get(textureID + ".dds")
+            mask_image.image = bpy.data.images.get(str(textureID) + ".dds")
             mask_image.image.colorspace_settings.name = 'Non-Color'
             mask_image.hide = True
             if i > 0:
@@ -457,14 +444,15 @@ def construct_materials(texture_dir, material, material_index=-1):
             mask_link = links.new(mask_nodes[0].outputs['Color'], principled.inputs['Metallic'])
 
     # Normal Nodes
+    # God fucking dammit Aura, how the fuck did you screw this up
     normal_nodes = []
     normal_mixRGB_nodes = []
     for i, textureID in enumerate(normal_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             normal_image = nodes.new(type='ShaderNodeTexImage')
             normal_nodes.append(normal_image)
             normal_image.location = 0, (len(albedo_maps)+1 + len(mask_maps)+1 + i) * -60
-            normal_image.image = bpy.data.images.get(textureID + ".dds")
+            normal_image.image = bpy.data.images.get(str(textureID) + ".dds")
             normal_image.image.colorspace_settings.name = 'Non-Color'
             normal_image.hide = True
             if i > 0:
@@ -573,7 +561,13 @@ def add_material_to_mesh(mesh, materials , uvs):
     for i in range(1, 5): # 0 handled above
         if len(uvs[i]) > 0:
             #print("Creating UV layer for", material.name)
-            new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
+            new_uv_layer = None
+            if i == 1:
+                new_uv_layer = bm.loops.layers.uv.new("LightMap")
+            else:
+                new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
             for face in bm.faces:
                 face.material_index = 0
                 for l in face.loops:
@@ -793,7 +787,6 @@ def get_wmb_material(wmb, texture_dir):
             for materialIndex, material in enumerate(wmb.materialArray):
                 material_name = material.materialName
                 shader_name = material.effectName
-                technique_name = material.techniqueName
                 uniforms = material.uniformArray
                 textures = material.textureArray
                 if hasattr(material, "textureFlagArray"): # wmb4
@@ -839,7 +832,7 @@ def get_wmb_material(wmb, texture_dir):
                     if bpy.data.images.get(texture_file_name) is None:
                         bpy.data.images.load(texture_filepath)
                 
-                materials.append([material_name,textures,uniforms,shader_name,technique_name,parameterGroups, textureFlags])
+                materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
                 #print(materials)
         else:
             texture_dir = texture_dir.replace('.dat','.dtt')
@@ -861,7 +854,6 @@ def get_wmb_material(wmb, texture_dir):
         for materialIndex, material in enumerate(wmb.materialArray):
             material_name = material.materialName
             shader_name = material.effectName
-            technique_name = material.techniqueName
             uniforms = material.uniformArray
             textures = material.textureArray
             # why the fuck was this not already here, it doesn't need the wta
@@ -884,7 +876,7 @@ def get_wmb_material(wmb, texture_dir):
                 textureFlags = material.textureFlagArray
             else:
                 textureFlags = None
-            materials.append([material_name,textures,uniforms,shader_name,technique_name,parameterGroups,textureFlags])
+            materials.append([material_name,textures,uniforms,shader_name,parameterGroups,textureFlags])
         
     return materials
 

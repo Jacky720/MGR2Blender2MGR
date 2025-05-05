@@ -6,6 +6,8 @@ from time import time
 # these two are for bones
 import numpy as np
 import mathutils as mu
+from .materials.material import c_material
+from .materials.create_materials import c_materials
 
 def getRealName(name):
     splitname = name.split('-')
@@ -63,6 +65,10 @@ class c_batch_supplements(object): # wmb4
             batchDatum[0] = batch['ID']
             batchDatum[1] = batch['meshGroupIndex']
             batchDatum[2] = batch.material_slots[0].material['ID']
+
+            if not 'boneSetIndex' in batch: # this *probably* should never happen, that being said if it does happen I wont be suprised
+                batch["boneSetIndex"] = -1
+
             batchDatum[3] = batch['boneSetIndex']
             if 'batchGroup' not in batch or batch['batchGroup'] < 0:
                 batch['batchGroup'] = 0
@@ -177,36 +183,6 @@ class c_boneIndexTranslateTable(object):
                     print("Added new bone to table", bone.name, "assigning ID", bone['ID'])
                     newBones.append(bone)
                     break
-
-        #Print the shit for the XML
-        # nah
-        """
-        for bone in newBones:
-            no = bone["ID"]
-            if bone.parent in newBones:
-                noUp = bone.parent['ID']
-            else:
-                noUp = 0xfff
-            if bone.children and bone.children[0] in newBones:
-                noDown = bone.children[0]['ID']
-            else:
-                noDown = 0xfff
-
-            out = " ""<CLOTH_WK>
-    <no>{}</no>
-    <noUp>{}</noUp>
-    <noDown>{}</noDown>
-    <noSide>4095</noSide>
-    <noPoly>4095</noPoly>
-    <noFix>4095</noFix>
-    <rotLimit>0.5236</rotLimit>
-    <offset>0 -0.1 0</offset>
-    <m_OriginalRate>0</m_OriginalRate>
-</CLOTH_WK>"" ".format(no, noUp, noDown)
-
-            print(out)
-        print("COPY TO YOUR <CLOTH_WK_LIST> AND REMEMBER TO ADD +{} TO THE <CLOTH_HEADER><m_Num> VALUE!".format(len(newBones)))
-        """
 
         # Generate levels from fullLookup
         # The boneIndexTranslateTable is a compressed reverse lookup for bone IDs.
@@ -742,237 +718,6 @@ class c_lods(object):
 
         self.lods = get_lods(lodsStart, batches)
         self.lods_StructSize = get_lodsStructSize(self.lods)
-
-class c_material(object):
-    def __init__(self, offsetMaterialName, material, wmb4=False):
-        self.offsetMaterial = offsetMaterialName
-        self.b_material = material
-
-        def get_textures(self, material, offsetTextures):
-            offset = offsetTextures
-            numTextures = 0
-            textures = []
-            
-            for key, value in material.items():
-                #print(key, value)
-                if (isinstance(value, str)):
-                    if (key.find('g_') != -1) or(wmb4 and (key.find('tex') != -1 or key.find('Map') != -1)):
-                        #print(key, value)
-                        numTextures += 1
-
-            offsetName = offset + numTextures * 8
-
-
-            for key, value in material.items():
-                if (isinstance(value, str)) and ((key.find('g_') != -1) or(wmb4 and (key.find('tex') != -1 or key.find('Map') != -1))):
-                    texture = value
-                    name = key
-                    
-                    offset += 4 + 4 + len(key) # but it isn't used after this?
-                    textures.append([offsetName, texture, name])
-                    if not wmb4:
-                        offsetName += len(name) + 1
-            
-            if wmb4: # proper sorting
-                sortedTextures = []
-                for tex in textures:
-                    name = tex[2]
-                    if name.find('tex') != -1:
-                        num = int(name[3:])
-                    else:
-                        mapIndx = name.find('Map')
-                        num = int(name[(mapIndx + 3):])
-                    sortedTextures.append([tex, num])
-                
-                # I'm using "tex" really loosely here, since it's become:
-                # [[offsetName, texture, name], num]
-                sortedTextures = sorted(sortedTextures, key=lambda tex: tex[1])
-                return [tex[0] for tex in sortedTextures]
-            
-            return textures
-
-        def get_textures_StructSize(self, textures):
-            textures_StructSize = 0
-            for texture in textures:
-                #print(texture[1])
-                textures_StructSize += 8 # if not wmb4 else 4 # the other 4 are flags and now considered such
-                if not wmb4:
-                    textures_StructSize += len(texture[2]) + 1
-            #print(textures_StructSize)
-            return textures_StructSize
-
-        def get_numParameterGroups(self, material):
-            numParameterGroups = 0
-            parameterGroups = []
-
-            def Check(char):
-                try: 
-                    int(char)
-                    return True
-                except ValueError:
-                    return False
-
-            for key, value in material.items():
-                if Check(key[0]):
-                    if not key[0] in parameterGroups:
-                        numParameterGroups += 1
-                        parameterGroups.append(key[0])
-
-            return numParameterGroups
-
-        def get_parameterGroups(self, material, offsetParameterGroups, numParameterGroups):
-            parameterGroups = []
-            offsetParameters = offsetParameterGroups + numParameterGroups * 12
-
-            for i in range(numParameterGroups):
-                index = i
-
-                if index == 1:
-                    index = -1
-
-                parameters = []
-                if not wmb4:
-                    for key, value in material.items():
-                        if key[0] == str(i):
-                            parameters.append(value)
-                else:
-                    for j in range(4):
-                        parameters.append(material[str(i)][j])
-                        
-                numParameters = len(parameters)
-
-                parameterGroups.append([index, offsetParameters, numParameters, parameters])
-
-                offsetParameters += numParameters * 4
-
-            return parameterGroups
-
-        def get_parameterGroups_StructSize(self, parameterGroups):
-            parameterGroups_StructSize = 0
-            for parameterGroup in parameterGroups:
-                if not wmb4:
-                    parameterGroups_StructSize += 12 + parameterGroup[2] * 4
-                else:
-                    parameterGroups_StructSize += 16
-            return parameterGroups_StructSize
-
-        def get_variables(self, material, offsetVariables):
-            numVariables = 0
-            for key, val in material.items():
-                if (isinstance(val, float)) and (key[0] not in ('0', '1')):
-                    numVariables += 1
-            
-            variables = []
-            offset = offsetVariables + numVariables * 8
-            for key, val in material.items():
-                if (isinstance(val, float)) and (key[0] not in ('0', '1')):
-                    offsetName = offset
-                    value = val
-                    name = key
-                    variables.append([offsetName, value, name])
-                    offset += len(name) + 1
-            return variables
-
-        def get_variables_StructSize(self, variables):
-            if wmb4:
-                return 0
-            variables_StructSize = 0
-            for variable in variables:
-                variables_StructSize += 8
-                variables_StructSize += len(variable[2]) + 1
-            return variables_StructSize
-
-        self.unknown0 = [] if wmb4 else [2016, 7, 5, 15] # This is probably always the same as far as I know?
-
-        self.offsetName = self.offsetMaterial
-
-        self.offsetShaderName = self.offsetName + len(self.b_material.name) + 1
-        if wmb4:
-            self.offsetShaderName = self.offsetName
-
-        if not 'Shader_Name' in self.b_material:
-            ShowMessageBox('Shader_Name not found. The exporter just tried converting a material that does not have all the required data. Check system console for details.', 'Invalid Material', 'ERROR')
-            print('[ERROR] Invalid Material: Shader_Name not found.')
-            print(' - If you know all materials used are valid, try ticking "Purge Materials" at export, this will clear all unused materials from your Blender file that might still be lingering.')
-            print(' - WARNING: THIS WILL PERMANENTLY REMOVE ALL UNUSED MATERIALS.')
-
-        self.offsetTechniqueName = self.offsetShaderName + len(self.b_material['Shader_Name']) + 1
-
-        self.unknown1 = 1                           # This probably also the same mostly
-
-        if wmb4:
-            self.offsetTextures = self.offsetShaderName + len(self.b_material['Shader_Name'])
-            self.offsetTextures += 16 - (self.offsetTextures % 16)
-        else:
-            self.offsetTextures = self.offsetTechniqueName + len(self.b_material['Technique_Name']) + 1
-
-        self.textures = get_textures(self, self.b_material, self.offsetTextures)
-        if wmb4:
-            self.textureFlags = list(material['Texture_Flags'])
-
-        self.numTextures = len(self.textures)
-
-        self.offsetParameterGroups = self.offsetTextures + get_textures_StructSize(self, self.textures)
-        #print(hex(self.offsetParameterGroups))
-        if wmb4 and (self.offsetParameterGroups % 16 > 0):
-            self.offsetParameterGroups += 16 - (self.offsetParameterGroups % 16)
-
-        self.numParameterGroups = get_numParameterGroups(self, self.b_material)  
-
-        self.parameterGroups = get_parameterGroups(self, self.b_material, self.offsetParameterGroups, self.numParameterGroups)
-
-        self.offsetVariables = self.offsetParameterGroups + get_parameterGroups_StructSize(self, self.parameterGroups)
-
-        self.variables = get_variables(self, self.b_material, self.offsetVariables)
-
-        self.numVariables = len(self.variables)
-
-        self.name = self.b_material.name
-
-        self.shaderName = self.b_material['Shader_Name']
-        
-        if not wmb4:
-            self.techniqueName = self.b_material['Technique_Name']
-        
-        self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName
-        print(self.offsetShaderName, self.offsetTextures, self.offsetParameterGroups, self.materialNames_StructSize)
-
-class c_materials(object):
-    def __init__(self, materialsStart, wmb4=False, collectionName='WMB'):
-        
-        def get_materials(self):
-            materials = []
-            offsetMaterialName = materialsStart
-
-            # Material Headers
-            if wmb4:
-                offsetMaterialName += 24 * len(getUsedMaterials(collectionName))
-            else:
-                offsetMaterialName += 48 * len(getUsedMaterials(collectionName))
-            
-            if wmb4 and (offsetMaterialName%16>0):
-                offsetMaterialName += 16 - (offsetMaterialName%16)
-
-            for mat in getUsedMaterials(collectionName):
-                print('[+] Generating Material', mat.name)
-                material = c_material(offsetMaterialName, mat, wmb4)
-                materials.append(material)
-
-                offsetMaterialName += material.materialNames_StructSize
-
-            return materials
-        
-        def get_materials_StructSize(self, materials):
-            materials_StructSize = 0
-            for material in materials:
-                materials_StructSize += (48 if not wmb4 else 24) + material.materialNames_StructSize
-                #if wmb4 and (materials_StructSize%16>0):
-                #    materials_StructSize += 16 - (materials_StructSize%16)
-                    
-            return materials_StructSize
-
-        self.materials = get_materials(self)
-        self.materials_StructSize = get_materials_StructSize(self, self.materials)
 
 def getObjectCenter(obj):
     obj_local_bbox_center = 0.125 * sum((Vector(b) for b in obj.bound_box), Vector())
@@ -1656,7 +1401,12 @@ class c_vertexGroup(object):
                 sorted_loops = sorted(loops, key=lambda loop: loop.vertex_index)
                 
                 if self.vertexFlags not in {0, 1, 4, 5, 12, 14} or wmb4:
-                    boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
+                    if 'boneSetIndex' in bvertex_obj_obj:
+                        boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
+                    else:
+                        bvertex_obj_obj["boneSetIndex"] = -1
+                        boneSet = get_boneSet(self, -1)
+
                 
                 previousIndex = -1
                 
@@ -2110,6 +1860,11 @@ class c_generate_data(object):
         hasColTreeNodes = False
         hasUnknownWorldData = False
         
+        # Delete attack hitbox visualizers
+        for obj in bpy.data.objects:
+            if obj.name.startswith("Attack") and obj.type == "MESH":
+                bpy.data.objects.remove(obj)
+        
         if collectionName == 'WMB':
             collectionName = bpy.data.collections['WMB'].children[0].name
             print("\n\n===== Exporting collection %s, please remove other collections to ensure stable export =====\n\n" % collectionName)
@@ -2278,7 +2033,12 @@ class c_generate_data(object):
             
         else:
             
-            self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
+            if 'vertexFormat' in bpy.data.collections[collectionName]:
+                self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
+            else:
+                self.vertexFormat = 65799
+                bpy.data.collections[collectionName]['info'] = "Some of these properties were auto-generated... good luck"
+                bpy.data.collections[collectionName]['vertexFormat'] = 65799
             
             if BALLIN:
                 # FUCK YOU BALTIMORE

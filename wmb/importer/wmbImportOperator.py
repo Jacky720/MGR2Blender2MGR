@@ -7,7 +7,7 @@ from ...utils.util import setExportFieldsFromImportFile
 
 
 class ImportNierWmb(bpy.types.Operator, ImportHelper):
-    '''Load a Nier:Automata WMB File.'''
+    '''Import WMB Data.'''
     bl_idname = "import_scene.wmb_data"
     bl_label = "Import WMB Data"
     bl_options = {'PRESET'}

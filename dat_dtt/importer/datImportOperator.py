@@ -8,7 +8,6 @@ from bpy_extras.io_utils import ImportHelper
 from ...scr.importer import scr_importer
 
 from ...consts import DAT_EXTENSIONS
-from ...col.exporter.col_ui_manager import enableCollisionTools
 from ...utils.visibilitySwitcher import enableVisibilitySelector
 from ...utils.util import setExportFieldsFromImportFile, ShowMessageBox
 
@@ -210,23 +209,10 @@ def importDtt(only_extract, filepath, transform=None):
         from ...wmb.importer import wmb_importer
         wmb_importer.main(only_extract, wmb_filepath, transform)
 
-    # COL
-    col_filepath = os.path.join(extract_dir, tailless_tail + '.dat', tailless_tail + '.col')
-    if os.path.isfile(col_filepath):
-        from ...col.importer import col_importer
-        col_importer.main(col_filepath)
-        enableCollisionTools()
-
-    # LAY
-    lay_filepath = os.path.join(extract_dir, tailless_tail + '.dat', 'Layout.lay')
-    if os.path.isfile(lay_filepath):
-        from ...lay.importer import lay_importer
-        lay_importer.main(lay_filepath)
-
     return {'FINISHED'}
 
 class ImportNierDtt(bpy.types.Operator, ImportHelper):
-    '''Load a Nier:Automata DTT (and DAT) File.'''
+    '''Load a DTT (and DAT) File.'''
     bl_idname = "import_scene.dtt_data"
     bl_label = "Import DTT (and DAT) Data"
     bl_options = {'PRESET'}
@@ -260,7 +246,7 @@ class ImportNierDtt(bpy.types.Operator, ImportHelper):
 
 
 class ImportNierDat(bpy.types.Operator, ImportHelper):
-    '''Load a Nier:Automata DAT File.'''
+    '''Load a DAT File.'''
     bl_idname = "import_scene.dat_data"
     bl_label = "Import DAT/DTT Data"
     bl_options = {'PRESET'}
@@ -286,19 +272,6 @@ class ImportNierDat(bpy.types.Operator, ImportHelper):
             return {'FINISHED'}
 
         setExportFieldsFromImportFile(filepath, True)
-
-        # COL
-        col_filepath = os.path.join(extract_dir, tailless_tail + '.dat', tailless_tail + '.col')
-        if os.path.isfile(col_filepath):
-            from ...col.importer import col_importer
-            col_importer.main(col_filepath)
-            enableCollisionTools()
-
-        # LAY
-        lay_filepath = os.path.join(extract_dir, tailless_tail + '.dat', 'Layout.lay')
-        if os.path.isfile(lay_filepath):
-            from ...lay.importer import lay_importer
-            lay_importer.main(lay_filepath)
 
         return {'FINISHED'}
 

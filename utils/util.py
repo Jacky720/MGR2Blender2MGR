@@ -10,6 +10,7 @@ import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector
+from zlib import crc32 as zcrc32
 
 from .ioUtils import read_uint32
 from ..consts import ADDON_NAME, DAT_EXTENSIONS
@@ -34,6 +35,16 @@ def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
         self.layout.alignment = 'CENTER'
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+class MGRVector4Property(bpy.types.PropertyGroup):
+    value: bpy.props.FloatVectorProperty(
+        name="Vector4",
+        description="A vector with 4 float values",
+        size=4,
+        default=(0.0, 0.0, 0.0, 0.0)
+    )
+
+def crc32(text: str) -> int:
+	return zcrc32(text.encode('ascii')) & 0xFFFFFFFF
 
 def drawMultilineLabel(context, text, parent):
     """Stolen from https://b3d.interplanety.org/en/multiline-text-in-blender-interface-panels/"""

@@ -24,22 +24,6 @@ class ExportAllSteps(bpy.types.PropertyGroup):
         name = "Export WTA",
         default = True
     )
-    useColStep: bpy.props.BoolProperty(
-        name = "Export COL",
-        default = False
-    )
-    useLayStep: bpy.props.BoolProperty(
-        name = "Export LAY",
-        default = False
-    )
-    useSarStep: bpy.props.BoolProperty(
-        name = "Export SAR",
-        default = False
-    )
-    useGaStep: bpy.props.BoolProperty(
-        name = "Export GAArea",
-        default = False
-    )
     useDatStep: bpy.props.BoolProperty(
         name = "Export DAT",
         default = True
@@ -153,18 +137,6 @@ class DAT_DTT_PT_Export(bpy.types.Panel):
         row = box.row(align=True)
         row.scale_y = 1.125
         secondRowItemCount = 0
-        if context.scene.ExportAllSteps.useColStep or "COL" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useColStep", text="COL", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useColStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useLayStep or "LAY" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useLayStep", text="LAY", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useLayStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useSarStep or "SAR" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useSarStep", text="SAR", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useSarStep else "ADD")
-            secondRowItemCount += 1
-        if context.scene.ExportAllSteps.useGaStep or "GaArea" in bpy.data.collections:
-            row.prop(context.scene.ExportAllSteps, "useGaStep", text="GAArea", icon="PANEL_CLOSE" if context.scene.ExportAllSteps.useGaStep else "ADD")
-            secondRowItemCount += 1
         if secondRowItemCount >= 3:
             row = box.row(align=True)
             row.scale_y = 1.125
@@ -239,22 +211,11 @@ class ExportAll(bpy.types.Operator):
             self.report({"ERROR"}, "Missing Base Name!")
             return {"CANCELLED"}
 
-        if exportSteps.useSarStep:
-            sarColl = bpy.data.objects["Field-Root"].users_collection[0]
-
         for item in context.scene.DatContents:
             if item.filepath.endswith('.wmb'):
                 wmbFilePath = item.filepath
             elif item.filepath.endswith('.wta'):
                 wtaFilePath = item.filepath
-            elif item.filepath.endswith('.col'):
-                colFilePath = item.filepath
-            elif item.filepath.endswith('Layout.lay'):
-                layFilePath = item.filepath
-            elif item.filepath.endswith("GAArea.bxm"):
-                gaFilePath = item.filepath
-            elif item.filepath.endswith('.sar'):
-                sarFilePath = item.filepath
 
         for item in context.scene.DttContents:
             if item.filepath.endswith('.wtp'):
@@ -284,32 +245,6 @@ class ExportAll(bpy.types.Operator):
         if exportSteps.useWtpStep:
             print("Exporting WTP")
             export_wtp.main(context, wtpFilePath)
-            exportedFilesCount += 1
-        from ...col.exporter import col_exporter
-        if exportSteps.useColStep:
-            print("Exporting COL")
-            if exportSteps.triangulateMeshes:
-                triangulate_meshes("COL")
-            if exportSteps.centerOrigins:
-                centre_origins("COL")
-            if exportSteps.deleteLoose:
-                bpy.ops.b2n.deleteloosegeometryall()
-            col_exporter.main(colFilePath, True)
-            exportedFilesCount += 1
-        from ...lay.exporter import lay_exporter
-        if exportSteps.useLayStep:
-            print("Exporting LAY")
-            lay_exporter.main(layFilePath)
-            exportedFilesCount += 1
-        if exportSteps.useSarStep:
-            print("Exporting SAR")
-            from ...bxm.exporter import sarExporter
-            sarExporter.exportSar(sarFilePath)
-            exportedFilesCount += 1
-        if exportSteps.useGaStep:
-            print("Exporting GaArea")
-            from ...bxm.exporter import gaAreaExporter
-            gaAreaExporter.exportGaArea(gaFilePath)
             exportedFilesCount += 1
         from . import export_dat
         if exportSteps.useDatStep:

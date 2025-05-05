@@ -6,9 +6,9 @@ import os
 from .motExporter import exportMot
 
 class ExportNierMot(bpy.types.Operator, ExportHelper):
-    """Export a Nier Animation mot file"""
+    """Export MOT Data."""
     bl_idname = "export_scene.mot"
-    bl_label = "Export Nier Animation Data"
+    bl_label = "Export Metal Gear Rising Data"
     bl_options = {'UNDO'}
 
     patchExisting: bpy.props.BoolProperty(

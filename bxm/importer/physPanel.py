@@ -5,6 +5,9 @@ from bpy_extras.io_utils import ExportHelper, ImportHelper
 from . import clpImporter
 from . import clhImporter
 
+from ..exporter import clpExporter
+from ..exporter import clhExporter
+
 class OpenBXMFile(bpy.types.Operator, ImportHelper):
     '''Open Physics BXM File'''
     bl_idname = "na.open_physics_bxm_file"
@@ -42,18 +45,18 @@ class SaveBXMFile(bpy.types.Operator, ExportHelper):
         filepath = self.filepath
         
         if self.type == "clp":
-            clpImporter.exportCLP(filepath)
+            clpExporter.exportCLP(filepath)
         elif self.type == "clh":
-            clhImporter.exportCLH(filepath)
+            clhExporter.exportCLH(filepath)
 
         return {"FINISHED"}
 
 class B2NPhysicsEditor(bpy.types.Panel):
-    bl_label = "NieR:Automata Physics Editor"
+    bl_label = "MGR:Revengeance Physics Editor"
     bl_idname = "B2N_PT_PhysicsEditorToplevel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "NA: Physics Editor"
+    bl_category = "MGR:R Physics Editor"
 
     def draw(self, context):
         return

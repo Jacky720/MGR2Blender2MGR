@@ -24,6 +24,11 @@ def main(file_path, do_ly2):
         else:
             sub_models.append(sub_model)
     
+    for sub_model in sub_models:
+        if len(sub_model.all_objects) == 0:
+            sub_models.remove(sub_model)
+            print("Culled SCR collection...\nReason: no objects")
+
     
     # generate scr data
     current_offset = 0x10 + 4 * len(sub_models)
