@@ -66,14 +66,15 @@ def buildMaterialNodes(material, uniforms):
             #pass
         
         elif texentry.flag == 1:
-            mixedAlbedoNode = nodes.new(type='ShaderNodeMixRGB')
-            mixedAlbedoNode.location = 300, i*-60
-            mixedAlbedoNode.hide = True
-            
-            vertexColAttNode = nodes.new(type='ShaderNodeAttribute')
-            vertexColAttNode.attribute_name = "Col"
-            vertexColAttNode.location = (-200, (i*-60)+40)
-            vertexColAttNode.hide = True
+            if image_node.image is not None:
+                mixedAlbedoNode = nodes.new(type='ShaderNodeMixRGB')
+                mixedAlbedoNode.location = 300, i*-60
+                mixedAlbedoNode.hide = True
+                
+                vertexColAttNode = nodes.new(type='ShaderNodeAttribute')
+                vertexColAttNode.attribute_name = "Col"
+                vertexColAttNode.location = (-200, (i*-60)+40)
+                vertexColAttNode.hide = True
             
         elif texentry.flag == 2:
             if image_node.image is not None:
@@ -131,8 +132,9 @@ def buildMaterialNodes(material, uniforms):
             
         
         elif flag == 1: # Second base color, mapped by vertex color
-            links.new(node.outputs['Color'], mixedAlbedoNode.inputs[2])
-            links.new(vertexColAttNode.outputs['Alpha'], mixedAlbedoNode.inputs['Fac'])
+            if (node.image is not None):
+                links.new(node.outputs['Color'], mixedAlbedoNode.inputs[2])
+                links.new(vertexColAttNode.outputs['Alpha'], mixedAlbedoNode.inputs['Fac'])
         elif flag == 2: # Normal map
             if normalShader is None:
                 normalShader = nodes.new(type='ShaderNodeNormalMap')
