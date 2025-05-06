@@ -48,21 +48,20 @@ def main(filepath, wmb4=True, collectionName="WMB", BALLIN=True):
 
     generated_data = c_generate_data(collectionName, BALLER=BALLIN)
     print('-=# All Data Generated. Writing WMB... #=-')
-    create_wmb_header(wmb_file, generated_data, wmb4, collectionName)
+    create_wmb_header(wmb_file, generated_data, collectionName)
 
     print('Writing vertexGroups.')
-    create_wmb_vertexGroups(wmb_file, generated_data, True)
+    create_wmb_vertexGroups(wmb_file, generated_data)
 
     print('Writing batches.')
-    create_wmb_batches(wmb_file, generated_data, True)
+    create_wmb_batches(wmb_file, generated_data)
     
     print('Writing batch supplementary data.')
-    #TODO
     create_wmb_batch_supplement(wmb_file, generated_data)
     
     if generated_data.bones is not None:
         print('Writing bones.')
-        create_wmb_bones(wmb_file, generated_data, True)
+        create_wmb_bones(wmb_file, generated_data)
 
     if hasattr(generated_data, 'boneIndexTranslateTable'):
         print('Writing boneIndexTranslateTable.')
@@ -70,17 +69,17 @@ def main(filepath, wmb4=True, collectionName="WMB", BALLIN=True):
 
     if hasattr(generated_data, 'boneSet'):
         print('Writing boneSets.')
-        create_wmb_boneSet(wmb_file, generated_data, True)
+        create_wmb_boneSet(wmb_file, generated_data)
 
     print('Writing materials.')
-    create_wmb_materials(wmb_file, generated_data, True)
+    create_wmb_materials(wmb_file, generated_data)
 
     print('Writing textures.')
     #TODO
     create_wmb_textures(wmb_file, generated_data)
 
     print('Writing meshes.')
-    create_wmb_meshes(wmb_file, generated_data, True)
+    create_wmb_meshes(wmb_file, generated_data)
     
     if generated_data.mystery is not None:
         print("God help us, writing that absurd mystery chunk.")
