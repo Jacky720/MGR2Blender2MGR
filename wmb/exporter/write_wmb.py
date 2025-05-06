@@ -114,122 +114,8 @@ def create_wmb_header(wmb_file, data, wmb4=False, collectionName="WMB"):
         write_char(wmb_file, char)                                 
     write_uInt32(wmb_file, (0x20160116 if not wmb4 else 0))     # version
     if not wmb4:
-        write_Int32(wmb_file, 0)                                    # unknownA
-        if data.vertexGroups.vertexGroups[0].vertexFlags in [4, 5] and data.numBones > 0:
-            write_Int16(wmb_file, 8)                                    # flags
-            write_Int16(wmb_file, 0)                                    # referenceBone
-        elif data.vertexGroups.vertexGroups[0].vertexFlags in [4, 5, 14]:
-            write_Int16(wmb_file, 8)                                    
-            write_Int16(wmb_file, -1) 
-        else:
-            write_Int16(wmb_file, 10)                                    
-            write_Int16(wmb_file, -1)
-        
-        boundingBoxXYZ, boundingBoxUVW = getGlobalBoundingBox()
-        write_xyz(wmb_file, boundingBoxXYZ)                        # boundingBox: x y z 
-        write_xyz(wmb_file, boundingBoxUVW)                        #              u v w
-
-        offsetBones = data.bones_Offset
-        write_uInt32(wmb_file, offsetBones)                          # offsetBones
-        print(' + offsetBones: ', hex(offsetBones))
-
-        numBones = data.numBones
-        write_uInt32(wmb_file, numBones)                            # numBones
-        print(' + numBones: ', numBones)
-
-        offsetBoneIndexTranslateTable = data.boneIndexTranslateTable_Offset
-        write_uInt32(wmb_file, offsetBoneIndexTranslateTable)       # offsetBoneIndexTranslateTable
-        print(' + offsetBoneIndexTranslateTable: ', hex(offsetBoneIndexTranslateTable))
-
-        if hasattr(data, 'boneIndexTranslateTable'):
-            boneTranslateTableSize = data.boneIndexTranslateTable.boneIndexTranslateTable_StructSize
-        else:
-            boneTranslateTableSize = 0
-        write_uInt32(wmb_file, boneTranslateTableSize)              # boneTranslateTableSize
-        print(' + boneTranslateTableSize: ', boneTranslateTableSize)
-
-        offsetVertexGroups = data.vertexGroups_Offset
-        write_uInt32(wmb_file, offsetVertexGroups)                  # offsetVertexGroups
-        print(' + offsetVertexGroups: ', hex(offsetVertexGroups))
-
-        numVertexGroups = len(data.vertexGroups.vertexGroups)
-        write_uInt32(wmb_file, numVertexGroups)                     # numVertexGroups
-        print(' + numVertexGroups: ', numVertexGroups)
-
-        offsetBatches = data.batches_Offset
-        write_uInt32(wmb_file, offsetBatches)                       # offsetBatches
-        print(' + offsetBatches: ', hex(offsetBatches))
-
-        numBatches = len(data.batches.batches)
-        write_uInt32(wmb_file, numBatches)                          # numBatches
-        print(' + numBatches: ', numBatches)
-
-        offsetLods = data.lods_Offset
-        write_uInt32(wmb_file, offsetLods)                          # offsetLods
-        print(' + offsetLods: ', hex(offsetLods))
-
-        numLods = data.lodsCount                                    
-        write_uInt32(wmb_file, numLods)                             # numLods
-        print(' + numLods: ', numLods)
-
-        offsetColTreeNodes = data.colTreeNodes_Offset                                      
-        write_uInt32(wmb_file, offsetColTreeNodes)                  # offsetColTreeNodes
-        print(' + offsetColTreeNodes: ', hex(offsetColTreeNodes))
-
-        numColTreeNodes = data.colTreeNodesCount    
-        write_uInt32(wmb_file, numColTreeNodes)                     # numColTreeNodes
-        print(' + numColTreeNodes: ', numColTreeNodes)
-
-        offsetBoneMap = data.boneMap_Offset
-        write_uInt32(wmb_file, offsetBoneMap)                       # offsetBoneMap
-        print(' + offsetBoneMap: ', hex(offsetBoneMap))
-
-        numBoneMap = data.numBoneMap
-        write_uInt32(wmb_file, numBoneMap)                          # numBoneMap/boneMapSize
-        print(' + numBoneMap: ', numBoneMap)
-
-        offsetBoneSets = data.boneSets_Offset                
-        write_uInt32(wmb_file, offsetBoneSets)                      # offsetBoneSets
-        print(' + offsetBoneSets: ', hex(offsetBoneSets))
-
-        if hasattr(data, 'boneSet'):
-            numBoneSets = len(data.boneSet.boneSet)   
-        else:
-            numBoneSets = 0                          
-        write_uInt32(wmb_file, numBoneSets)                         # numBoneSets
-        print(' + numBoneSets: ', numBoneSets)
-
-        offsetMaterials = data.materials_Offset
-        write_uInt32(wmb_file, offsetMaterials)                     # offsetMaterials
-        print(' + offsetMaterials: ', hex(offsetMaterials))
-
-        numMaterials = len(data.materials.materials)
-        write_uInt32(wmb_file, numMaterials)                        # numMaterials
-        print(' + numMaterials: ', numMaterials)
-
-        offsetMeshes = data.meshes_Offset
-        write_uInt32(wmb_file, offsetMeshes)                        # offsetMeshes
-        print(' + offsetMeshes: ', hex(offsetMeshes))
-
-        numMeshes = len(data.meshes.meshes)
-        write_uInt32(wmb_file, numMeshes)                           # numMeshes
-        print(' + numMeshes: ', numMeshes)
-
-        offsetMeshMaterials = data.meshMaterials_Offset
-        write_uInt32(wmb_file, offsetMeshMaterials)                  # offsetMeshMaterials
-        print(' + offsetMeshMaterial: ', hex(offsetMeshMaterials))
-
-        numMeshMaterials = len(data.meshMaterials.meshMaterials)
-        write_uInt32(wmb_file, numMeshMaterials)                    # numMeshMaterials
-        print(' + numMeshMaterials: ', numMeshMaterials)
-
-        offsetUnknown0 = data.unknownWorldData_Offset
-        write_uInt32(wmb_file, offsetUnknown0)                      # offsetUnknown0
-        print(' + offsetUnknown0: ', hex(offsetUnknown0))
-
-        numUnknown0 = data.unknownWorldDataCount
-        write_uInt32(wmb_file, numUnknown0)                          # numUnknown0
-        print(' + numUnknown0: ', numUnknown0)
+        print("Hey WMB3 is no longer supported")
+        wmb_file.write(b"Hey WMB3 is no longer supported")
     else:
         write_uInt32(wmb_file, data.vertexFormat)
         
@@ -637,8 +523,6 @@ def create_wmb_vertexGroups(wmb_file, data, wmb4=False):
                 write_uInt32(wmb_file, val)
         print("NumVertexes:", hex(vertexGroup.numVertexes))
         write_Int32(wmb_file, vertexGroup.numVertexes)              # numVertexes
-        if not wmb4:
-            write_Int32(wmb_file, vertexGroup.vertexFlags)              # vertexFlags
         write_Int32(wmb_file, vertexGroup.indexBufferOffset)        # indexBufferOffset
         write_Int32(wmb_file, vertexGroup.numIndexes)               # numIndexes
     
@@ -656,125 +540,40 @@ def create_wmb_vertexGroups(wmb_file, data, wmb4=False):
     for vertexGroup in data.vertexGroups.vertexGroups:
         wmb_file.seek(vertexGroup.vertexOffset)
         print("Vertices:", len(vertexGroup.vertexes))
-        print("Wacky flag:", vertexGroup.vertexFlags)
         for vertex in vertexGroup.vertexes:                         # [position.xyz, tangents, normal, uv_maps, boneIndexes, boneWeights, color]
-            writePos.write(wmb_file, vertex[0])
-            if not wmb4:
-                writeTangent.write(wmb_file, vertex[1])
+            writePos.write(wmb_file, vertex[0]) # Position
             writeUV.write(wmb_file, vertex[3][0]) # UVMap 1
             
-            if vertexGroup.vertexFlags == 0 and not wmb4: # Normal
-                writeNormal.write(wmb_file, vertex[2])
-            elif wmb4:
-                #print(hex(vertex[2]))
-                write_uInt32(wmb_file, vertex[2])
-            if wmb4:
-                writeTangent.write(wmb_file, vertex[1])
+            write_uInt32(wmb_file, vertex[2]) # Normal
+            writeTangent.write(wmb_file, vertex[1]) # Tangent
             
             # bits that change based on flags
-            if wmb4:
-                #if data.vertexFormat in {0x10337, 0x10137, 0x00337, 0x00137}:
-                if data.vertexFormat & 0x30 == 0x30: # hehe i'm clever
-                    writeBoneIndexes.write(wmb_file, vertex[4])
-                    writeBoneWeights.write(wmb_file, vertex[5])
-                if data.vertexFormat in {0x10307, 0x10107}:
-                    writeColor.write(wmb_file, vertex[6])
-                if data.vertexFormat == 0x10307:
-                    try:
-                        writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
-                    except:
-                        print("ERROR: Missing UVMap2, export will likely fail")
-            
-            else:
-                if vertexGroup.vertexFlags in {1, 4, 5, 12, 14}:
+            #if data.vertexFormat in {0x10337, 0x10137, 0x00337, 0x00137}:
+            if data.vertexFormat & 0x30 == 0x30: # hehe i'm clever
+                writeBoneIndexes.write(wmb_file, vertex[4])
+                writeBoneWeights.write(wmb_file, vertex[5])
+            if data.vertexFormat in {0x10307, 0x10107}:
+                writeColor.write(wmb_file, vertex[6])
+            if data.vertexFormat == 0x10307:
+                try:
                     writeUV.write(wmb_file, vertex[3][1]) # UVMap 2
-                if vertexGroup.vertexFlags in {7, 10, 11}:
-                    writeBoneIndexes.write(wmb_file, vertex[4])
-                    writeBoneWeights.write(wmb_file, vertex[5])
-                if vertexGroup.vertexFlags in {4, 5, 12, 14}:
-                    writeColor.write(wmb_file, vertex[6])
+                except:
+                    print("ERROR: Missing UVMap2, export will likely fail")
+            
             
         if vertexGroup.vertexExDataOffset > 0:
             wmb_file.seek(vertexGroup.vertexExDataOffset)
         for vertexExData in vertexGroup.vertexesExData:             # [normal, uv_maps, color]
+            if vertexGroup.vertexExDataOffset <= 0:
+                break
+            writeColor.write(wmb_file, vertexExData[2])
+            if data.vertexFormat in {0x10337, 0x00337}:
+                writeUV.write(wmb_file, vertexExData[1][0])
+            elif data.vertexFormat != 0x10137:
+                print("How the hell is there vertexExData with a vertexFormat of %s?" % hex(data.vertexFormat))
             
-            if wmb4:
-                if vertexGroup.vertexExDataOffset <= 0:
-                    break
-                writeColor.write(wmb_file, vertexExData[2])
-                if data.vertexFormat in {0x10337, 0x00337}:
-                    writeUV.write(wmb_file, vertexExData[1][0])
-                elif data.vertexFormat != 0x10137:
-                    print("How the hell is there vertexExData with a vertexFormat of %s?" % hex(data.vertexFormat))
-            
-            elif vertexGroup.vertexFlags in {1, 4}:                   # [1, 4]
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-            elif vertexGroup.vertexFlags == 5:                      # [5]
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-                # for val in vertexExData[1][0]:                      # UVMap 3
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][0])
-            elif vertexGroup.vertexFlags == 7: # [7]
-                # UVMap 1
-                writeUV.write(wmb_file, vertexExData[1][0])
-                # normal
-                writeNormal.write(wmb_file, vertexExData[0])
-            elif vertexGroup.vertexFlags == 10:                     # [10]
-                # for val in vertexExData[1][0]:                      # UVMap 1
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][0])
-                # for val in vertexExData[2]:                         # Color                               
-                #     write_byte(wmb_file, val)
-                writeColor.write(wmb_file, vertexExData[2])
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-            elif vertexGroup.vertexFlags == 11:                     # [11]
-                # for val in vertexExData[1][0]:                      # UVMap 1
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][0])
-                # for val in vertexExData[2]:                         # Color
-                #     write_byte(wmb_file, val)
-                writeColor.write(wmb_file, vertexExData[2])
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-                # for val in vertexExData[1][1]:                      # UVMap 2
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][1])
-            elif vertexGroup.vertexFlags == 12:                     # [12]
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-                # for val in vertexExData[1][0]:                      # UVMap 3
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][0])
-                # for val in vertexExData[1][1]:                      # UVMap 4
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][1])
-                # for val in vertexExData[1][2]:                      # UVMap 5
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][2])
-            elif vertexGroup.vertexFlags == 14:                     # [14]
-                # for val in vertexExData[0]:                         # normal
-                #     write_float16(wmb_file, val)
-                writeNormal.write(wmb_file, vertexExData[0])
-                # for val in vertexExData[1][0]:                      # UVMap 3
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][0])
-                # for val in vertexExData[1][1]:                      # UVMap 4
-                #     write_float16(wmb_file, val)
-                writeUV.write(wmb_file, vertexExData[1][1])
         
-        if wmb4:
-            wmb_file.seek(vertexGroup.indexBufferOffset)
+        wmb_file.seek(vertexGroup.indexBufferOffset)
         for index in vertexGroup.indexes:                           # indexes
-            if wmb4:
-                write_uInt16(wmb_file, index)
-            else:
-                write_uInt32(wmb_file, index)
+            write_uInt16(wmb_file, index)
         

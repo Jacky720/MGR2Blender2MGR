@@ -1700,7 +1700,7 @@ class c_generate_data(object):
             # YOU GET NO DOWN PAYMENT
 
         self.vertexGroups_Offset = currentOffset
-        self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset, True, collectionName)
+        self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset, collectionName)
         self.vertexGroupsCount = len(self.vertexGroups.vertexGroups)
         self.vertexGroups_Size = self.vertexGroups.vertexGroups_StructSize
         currentOffset += self.vertexGroups_Size
@@ -1765,7 +1765,7 @@ class c_generate_data(object):
 
         if hasArmature:
             self.boneSets_Offset = currentOffset
-            self.boneSet = c_boneSet(self.boneMap, self.boneSets_Offset, True, collectionName)
+            self.boneSet = c_boneSet(self.boneMap, self.boneSets_Offset, collectionName)
             self.boneSet_Size = self.boneSet.boneSet_StructSize
             currentOffset += self.boneSet_Size
             print('boneSet_Size: ', self.boneSet_Size)
@@ -1794,7 +1794,7 @@ class c_generate_data(object):
             currentOffset += 16 - (currentOffset % 16)
         
         self.meshes_Offset = currentOffset
-        self.meshes = c_meshes(self.meshes_Offset, True, collectionName, self.batchDescriptions)
+        self.meshes = c_meshes(self.meshes_Offset, collectionName, self.batchDescriptions)
         self.meshes_Size = self.meshes.meshes_StructSize
         currentOffset += self.meshes_Size
         print('meshes_Size: ', self.meshes_Size)
