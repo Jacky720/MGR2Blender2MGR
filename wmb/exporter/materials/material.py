@@ -54,11 +54,7 @@ class c_material(object):
                 if index == 1:
                     index = -1
 
-                parameters = []
-                parameters.append(material.mgr_data.parameters[i].value[0])
-                parameters.append(material.mgr_data.parameters[i].value[0])
-                parameters.append(material.mgr_data.parameters[i].value[0])
-                parameters.append(material.mgr_data.parameters[i].value[0])
+                parameters = list(material.mgr_data.parameters[i].value)
                         
                 numParameters = len(parameters)
 
@@ -95,12 +91,8 @@ class c_material(object):
             return 0
 
         self.unknown0 = [] if wmb4 else [2016, 7, 5, 15] # This is probably always the same as far as I know?
-
-        self.offsetName = self.offsetMaterial
-
-        self.offsetShaderName = self.offsetName + len(self.b_material.name) + 1
-
-        self.offsetShaderName = self.offsetName
+        
+        self.offsetShaderName = self.offsetMaterial
 
         '''if not 'Shader_Name' in self.b_material:
             ShowMessageBox('Shader_Name not found. The exporter just tried converting a material that does not have all the required data. Check system console for details.', 'Invalid Material', 'ERROR')
@@ -139,5 +131,5 @@ class c_material(object):
 
         self.shaderName = wmbShaderName
         
-        self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetName
+        self.materialNames_StructSize = self.offsetVariables + get_variables_StructSize(self, self.variables) - self.offsetShaderName
         print(self.offsetShaderName, self.offsetTextures, self.offsetParameterGroups, self.materialNames_StructSize)

@@ -270,7 +270,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     uniforms = material[2]
     shader_name = material[3]
     parameterGroups = material[4]
-    print('[+] importing material %s' % material_name)
+    print('[+] importing material %s, textures' % material_name, textures)
     
     material = bpy.data.materials.new( '%s' % (material_name))
     material.mgr_data.id = material_index
@@ -792,6 +792,7 @@ def get_wmb_material(wmb, texture_dir):
             textureFlags = material.textureFlagArray
             if hasattr(wmb, 'textureArray'):
                 for index, texture in textures.items():
+                    print(index, texture)
                     if texture == -1:
                         continue
                     try:
@@ -799,9 +800,10 @@ def get_wmb_material(wmb, texture_dir):
                         # Load texture
                         texture_file_name = textures[index] + '.dds'
                         texture_filepath = os.path.join(texture_dir, texture_file_name)
-                        if bpy.data.images.get(texture_file_name) is None:
+                        if os.path.exists(texture_filepath) and bpy.data.images.get(texture_file_name) is None:
                             bpy.data.images.load(texture_filepath)
-                    except:
+                    except Exception as e:
+                        print(e)
                         print("An error has occured! It seems that the global texture array doesn't have enough elements (%d). I think. This is a generic exception." % texture)
                         #print("I'm deleting this.")
                         textures[index] = -1
