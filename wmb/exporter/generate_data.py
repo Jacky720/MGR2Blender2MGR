@@ -1743,8 +1743,8 @@ class c_generate_data(object):
             print('boneIndexTranslateTable_Size: ', self.boneIndexTranslateTable_Size)
 
             # psyche, this one is padded
-            #if (currentOffset % 16) > 0:
-            if True: # ???
+            if (currentOffset % 16) > 0:
+            #if True: # ??? ok not that
                 currentOffset += 16 - (currentOffset % 16)
         else:
             self.bones_Offset = 0
