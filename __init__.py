@@ -1,8 +1,8 @@
 bl_info = {
     "name": "MGR2Blender2MGR (Metal Gear Rising Data Exporter)",
-    "author": "Woeful_Wolf, RaiderB, Jacky720, and Gaming with Portals",
-    "version": (0, 1, 0),
-    "blender": (2, 80, 0),
+    "author": "Woeful_Wolf, RaiderB, Jacky720, Gaming with Portals, and Aura39",
+    "version": (0, 2, 0),
+    "blender": (3, 0, 0),
     "description": "Import/Export Various Metal Gear Rising Data files.",
     "category": "Import-Export"}
 
@@ -22,7 +22,6 @@ from .mot.exporter.motExportOperator import ExportNierMot
 from .mot.importer.motImportOperator import ImportNierMot
 from .mot.common.motUtils import getArmatureObject
 from .mot.common.pl000fChecks import HidePl000fIrrelevantBones, RemovePl000fIrrelevantAnimations
-from .wmb.exporter.wmbExportOperator import ExportNierWmb
 from .wmb.exporter.wmbExportOperator import ExportMGRRWmb
 from .wmb.exporter.wmbMaterialJSON import *
 from .wmb.importer.wmbImportOperator import ImportNierWmb
@@ -30,12 +29,18 @@ from .scr.importer.scrImportOperator import ImportSCR
 from .scr.exporter.scrExportOperator import ExportSCR
 from .wta_wtp.importer.wtpImportOperator import ExtractNierWtaWtp
 from .bxm.importer import physPanel
+from .bxm.importer import gadImporter
 from .wmb.materials import materialUI
+from .hkx.importer import hkxImportOperator
+from .path.importer import pathImportOperator
+from .path.exporter import pathExportOperator
+from .wmb import wmb_builder
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
     bl_label = 'MGR:R Tools'
     def draw(self, context):
+        
         self.layout.operator(RecalculateObjectIndices.bl_idname, icon="LINENUMBERS_ON")
         self.layout.operator(RemoveUnusedVertexGroups.bl_idname, icon="GROUP_VERTEX")
         self.layout.operator(MergeVertexGroupCopies.bl_idname, icon="GROUP_VERTEX")
@@ -43,6 +48,9 @@ class NierObjectMenu(bpy.types.Menu):
         self.layout.operator(DeleteLooseGeometryAll.bl_idname, icon="EDITMODE_HLT")
         self.layout.operator(RipMeshByUVIslands.bl_idname, icon="UV_ISLANDSEL")
         self.layout.operator(RestoreImportPose.bl_idname, icon='OUTLINER_OB_ARMATURE')
+        # self.layout.operator(wmb_builder.MakeNewWMB.bl_idname, icon='CUBE')
+        self.layout.operator()
+        
         armature = getArmatureObject()
         if armature is not None and armature.animation_data is not None and armature.animation_data.action is not None \
             and armature.name in { "pl0000", "pl000d", "pl0100", "pl010d" }:
@@ -55,6 +63,15 @@ class NierArmatureMenu(bpy.types.Menu):
     def draw(self, context):
         self.layout.operator(ClearSelectedBoneIDs.bl_idname, icon='BONE_DATA')
 
+class IMPORT_MGR_HKXMenu(bpy.types.Menu):
+    bl_label = "Physics"
+    bl_idname = "IMPORT_MT_phys"
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        self.layout.operator(hkxImportOperator.ImportMGRHavokPackfile.bl_idname, text="HAVOK Collision (.hkx)", icon_value=pcoll["havok"].icon_id)
+        self.layout.operator(pathImportOperator.ImportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=pcoll["raiden"].icon_id)
+
 class IMPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
     bl_idname = "IMPORT_MT_main_menu"
@@ -63,11 +80,13 @@ class IMPORT_MGR_MainMenu(bpy.types.Menu):
         pcoll = preview_collections["main"]
         raiden_icon = pcoll["raiden"] 
         
+        # self.layout.menu(IMPORT_MGR_HKXMenu.bl_idname, icon_value=pcoll["raiden"].icon_id)    
         self.layout.operator(ImportNierDat.bl_idname, text="Archive File (.dat, .dtt)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ImportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
-        self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta/.wtp)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(ExtractNierWtaWtp.bl_idname, text="Extract Textures (.wta, .wtp)", icon_value=raiden_icon.icon_id)
+        self.layout.operator(gadImporter.ImportMGRGad.bl_idname, text="Lighting Information (.gad)", icon_value=raiden_icon.icon_id)
 
 class EXPORT_MGR_MainMenu(bpy.types.Menu):
     bl_label = "MGR: Revengeance"
@@ -79,7 +98,7 @@ class EXPORT_MGR_MainMenu(bpy.types.Menu):
         self.layout.operator(ExportMGRRWmb.bl_idname, text="Model File (.wmb)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportSCR.bl_idname, text="Stage/Level File (.scr)", icon_value=raiden_icon.icon_id)
         self.layout.operator(ExportNierMot.bl_idname, text="Animation (Motion) File (.mot)", icon_value=raiden_icon.icon_id)
-
+        # self.layout.operator(pathExportOperator.ExportMGRPath.bl_idname, text="Pathfinding Data (.bin)", icon_value=raiden_icon.icon_id)
 
 
 def menu_func_import(self, context):
@@ -116,8 +135,7 @@ classes = (
     ImportNierDtt,
     ImportNierDat,
     ImportNierMot,
-    
-    ExportNierWmb,
+
     ExportMGRRWmb,
     ExportSCR,
     ExportNierMot,
@@ -141,32 +159,21 @@ classes = (
     WMBCopyMaterialJSON,
     WMBPasteMaterialJSON,
     WMBMaterialJSONPanel,
-    # Material UI
-    materialUI.MGRMaterialPanel,
-    materialUI.MGRULTextureFlagPanel
+
+    gadImporter.ImportMGRGad,
+    
+    hkxImportOperator.ImportMGRHavokPackfile,
+    hkxImportOperator.ImportMGRHavokTagfile,
+    
+    pathImportOperator.ImportMGRPath,
+    pathExportOperator.ExportMGRPath,
+
+    wmb_builder.MakeNewWMB
+    
+    
 )
 
 preview_collections = {}
-
-
-
-def register_material_properties():
-    bpy.utils.register_class(materialUI.MGRMaterialProperty)
-    bpy.utils.register_class(materialUI.MGRTextureFlagProperty)
-    bpy.types.Material.mgr_material_id = bpy.props.IntProperty(
-        name="Material ID",
-        description="Unique Material Index",
-        default=-1
-    )
-
-    bpy.types.Material.mgr_shader_name = bpy.props.StringProperty(
-        name="Shader Name",
-        description="Shader used by this material"
-    )
-    
-    bpy.types.Material.mgr_texture_ids = bpy.props.CollectionProperty(type=materialUI.MGRMaterialProperty)
-    bpy.types.Material.mgr_texture_flags_index = bpy.props.IntProperty(name="Texture Flag Index")
-    bpy.types.Material.mgr_texture_flags = bpy.props.CollectionProperty(type=materialUI.MGRTextureFlagProperty)
 
 def register():
     # Custom icons
@@ -174,13 +181,19 @@ def register():
     pcoll = bpy.utils.previews.new()
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
     pcoll.load("raiden", os.path.join(my_icons_dir, "raiden.png"), 'IMAGE')
+    pcoll.load("havok", os.path.join(my_icons_dir, "hvk.png"), 'IMAGE')
     preview_collections["main"] = pcoll
 
+    from .utils.util import MGRVector4Property
+    bpy.utils.register_class(MGRVector4Property)
     for cls in classes:
         bpy.utils.register_class(cls)
-    register_material_properties()
+    materialUI.register()
     bpy.utils.register_class(IMPORT_MGR_MainMenu)
+    bpy.utils.register_class(IMPORT_MGR_HKXMenu)
     bpy.utils.register_class(EXPORT_MGR_MainMenu)
+
+
     wta_wtp_ui_manager.register()
     dat_dtt_ui_manager.register()
     physPanel.register()
@@ -199,6 +212,12 @@ def register():
     bpy.app.handlers.load_post.append(checkCustomPanelsEnableDisable)
     bpy.app.handlers.depsgraph_update_post.append(initialCheckCustomPanelsEnableDisable)
 
+    bpy.types.Scene.selected_material = bpy.props.EnumProperty(
+        name="Copy From Existing Material",
+        description="Select a material",
+        items=get_materials
+    )
+
 def unregister():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
@@ -207,9 +226,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Material.mgr_material_properties
-    bpy.utils.unregister_class(materialUI.MGRMaterialProperty)
-    bpy.utils.unregister_class(materialUI.MGRTextureFlagProperty)
+    materialUI.unregister()
     bpy.utils.unregister_class(IMPORT_MGR_MainMenu)
     bpy.utils.unregister_class(EXPORT_MGR_MainMenu)
     wta_wtp_ui_manager.unregister()

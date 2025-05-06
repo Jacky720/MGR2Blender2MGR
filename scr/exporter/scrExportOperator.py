@@ -7,7 +7,7 @@ from bpy_extras.io_utils import ExportHelper
 
 
 class ExportSCR(bpy.types.Operator, ExportHelper):
-    '''Export a MGR SCR File.'''
+    '''Export SCR Data.'''
     bl_idname = "export.scr_data"
     bl_label = "Export SCR Data"
     bl_options = {'PRESET'}

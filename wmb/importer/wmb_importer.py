@@ -9,7 +9,8 @@ from .bonenames import wmb4_bonenames
 
 from ...utils.util import ShowMessageBox, getPreferences, printTimings
 from .wmb import *
-from ...wta_wtp.exporter.wta_wtp_ui_manager import isTextureTypeSupported, makeWtaMaterial
+from ...wta_wtp.exporter.wta_wtp_ui_manager import makeWtaMaterial
+from ..materials import materialBuilder 
 
 
 def reset_blend():
@@ -257,10 +258,9 @@ def set_partent(parent, child):
 def addWtaExportMaterial(texture_dir, material):
     material_name = material[0]
     textures = material[1]
-    wtaTextures: List[Tuple[str, str, str]] = [
-        (mapType, id, os.path.join(texture_dir, f"{id}.dds"))
-        for mapType, id in textures.items()
-        if isTextureTypeSupported(mapType)
+    wtaTextures: List[Tuple[int, str, str]] = [
+        (int(flag), id, os.path.join(texture_dir, f"{id}.dds"))
+        for flag, id in textures.items()
     ]
     makeWtaMaterial(material_name, wtaTextures)
 
@@ -270,32 +270,23 @@ def construct_materials(texture_dir, material, material_index=-1):
     uniforms = material[2]
     shader_name = material[3]
     parameterGroups = material[4]
-    textureFlags = material[5] # wmb4
     print('[+] importing material %s' % material_name)
     
     material = bpy.data.materials.new( '%s' % (material_name))
-    material.mgr_material_id = material_index
-    material.mgr_shader_name = shader_name
+    material.mgr_data.id = material_index
+    material.mgr_data.shader_name = shader_name
     
-    for tex_name, tex_id in textures.items():
-        entry = material.mgr_texture_ids.add()  
-        entry.name = tex_name
-        entry.value = tex_id 
+    for tex_flag, tex_id in textures.items():
+        entry = material.mgr_data.textures.add()  
+        entry.flag = tex_flag
+        entry.id = str(tex_id)
     
-
-    if textureFlags is not None:
-        for flag in textureFlags:
-            entry = material.mgr_texture_flags.add()
-            entry.value = flag
+    for i, parameter in enumerate(parameterGroups):
+        material.mgr_data.parameters.add()
+        material.mgr_data.parameters[i].value = (parameter.x, parameter.y, parameter.z, parameter.w)
     
- 
-    
-    # TODO Delete
-    material['ID'] = material_index
-    material['Shader_Name'] = shader_name
-    if textureFlags is not None:
-        material['Texture_Flags'] = textureFlags
-    
+    materialBuilder.buildMaterialNodes(material, uniforms)
+    return material
     # Enable Nodes
     material.use_nodes = True
     # Clear Nodes and Links
@@ -315,7 +306,7 @@ def construct_materials(texture_dir, material, material_index=-1):
     # Mask Map Count
     mask_map_count = 0
     # Alpha Channel
-    material.blend_method = 'CLIP'
+    material.surface_render_method = 'DITHERED'
 
     #print("\n".join(["%s:%f" %(key, uniforms[key]) for key in sorted(uniforms.keys())]))
     # Shader Parameters
@@ -329,40 +320,20 @@ def construct_materials(texture_dir, material, material_index=-1):
     shaderFile = open(os.path.dirname(os.path.realpath(__file__)) + "/shader_params.json", "r")
     shaders = json.load(shaderFile)
 
-    for gindx, parameterGroup in enumerate(parameterGroups):
-        # let's group these into lists
-        if (gindx != 0) or (shader_name not in shaders):
-            material[str(gindx)] = [0.0] * 4
-        if type(parameterGroup) is not list:
-            for pindx, parameter in enumerate([parameterGroup.x, parameterGroup.y, parameterGroup.z, parameterGroup.w]):
-                if (gindx == 0) and (shader_name in shaders):
-                    material[str(gindx) + '_' + str(pindx).zfill(2) + '_' + shaders[shader_name]["Parameters"][pindx]] = parameter
-                else:
-                    material[str(gindx)][pindx] = parameter
-        else:
-            for pindx, parameter in enumerate(parameterGroup):
-                if (gindx == 0) and (shader_name in shaders):
-                    material[str(gindx) + '_' + str(pindx).zfill(2) + '_' + shaders[shader_name]["Parameters"][pindx]] = parameter
-                else:
-                    material[str(gindx)][pindx] = parameter
-
     albedo_maps = {}
     normal_maps = {}
     mask_maps = {}
     curvature_maps = {}
 
     for texturesType in textures.keys():
-        textures_type = texturesType.lower()
-        material[texturesType] = textures.get(texturesType)
+        textures_type = texturesType
+        #material[texturesType] = textures.get(texturesType)
         if bpy.data.images.get("%s.dds" % textures[texturesType]) is not None:
-            if textures_type.find('albedo') > -1:
+            print(textures_type)
+            if textures_type in {0,1}:
                 albedo_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('normal') > -1:
+            elif textures_type in {2,3}:
                 normal_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('mask') > -1:
-                mask_maps[textures_type] = textures.get(texturesType)
-            elif textures_type.find('curvature') > -1:
-                curvature_maps[textures_type] = textures.get(texturesType)
         else:
             pass#print("Couldn't find", texture_file, "for", textures_type)
 
@@ -372,11 +343,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     albedo_invert_nodes = []
     colornode = None
     for i, textureID in enumerate(albedo_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             albedo_image = nodes.new(type='ShaderNodeTexImage')
             albedo_nodes.append(albedo_image)
             albedo_image.location = 0,i*-60
-            albedo_image.image = bpy.data.images.get(textureID + ".dds")
+            albedo_image.image = bpy.data.images.get(str(textureID) + ".dds")
             albedo_image.hide = True
             
             invert_shader = nodes.new(type="ShaderNodeInvert")
@@ -440,11 +411,11 @@ def construct_materials(texture_dir, material, material_index=-1):
     mask_sepRGB_nodes = []
     mask_invert_nodes = []
     for i, textureID in enumerate(mask_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             mask_image = nodes.new(type='ShaderNodeTexImage')
             mask_nodes.append(mask_image)
             mask_image.location = 0, ((len(albedo_maps)+1)*-60)-i*60
-            mask_image.image = bpy.data.images.get(textureID + ".dds")
+            mask_image.image = bpy.data.images.get(str(textureID) + ".dds")
             mask_image.image.colorspace_settings.name = 'Non-Color'
             mask_image.hide = True
             if i > 0:
@@ -473,14 +444,15 @@ def construct_materials(texture_dir, material, material_index=-1):
             mask_link = links.new(mask_nodes[0].outputs['Color'], principled.inputs['Metallic'])
 
     # Normal Nodes
+    # God fucking dammit Aura, how the fuck did you screw this up
     normal_nodes = []
     normal_mixRGB_nodes = []
     for i, textureID in enumerate(normal_maps.values()):
-        if bpy.data.images.get(textureID + ".dds") is not None:
+        if bpy.data.images.get(str(textureID) + ".dds") is not None:
             normal_image = nodes.new(type='ShaderNodeTexImage')
             normal_nodes.append(normal_image)
             normal_image.location = 0, (len(albedo_maps)+1 + len(mask_maps)+1 + i) * -60
-            normal_image.image = bpy.data.images.get(textureID + ".dds")
+            normal_image.image = bpy.data.images.get(str(textureID) + ".dds")
             normal_image.image.colorspace_settings.name = 'Non-Color'
             normal_image.hide = True
             if i > 0:
@@ -589,7 +561,13 @@ def add_material_to_mesh(mesh, materials , uvs):
     for i in range(1, 5): # 0 handled above
         if len(uvs[i]) > 0:
             #print("Creating UV layer for", material.name)
-            new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
+            new_uv_layer = None
+            if i == 1:
+                new_uv_layer = bm.loops.layers.uv.new("LightMap")
+            else:
+                new_uv_layer = bm.loops.layers.uv.new("UVMap" + str(i + 1))
+            
             for face in bm.faces:
                 face.material_index = 0
                 for l in face.loops:
@@ -763,7 +741,7 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
                 meshName += collection_name[-4:]
             
             materials = [batchData.materialIndex]
-            if (len(mesh.materials) == 0) or materials[0] not in mesh.materials:
+            if batchData.materialIndex not in mesh.materials:
                 print("Huh, mismatched material index.")
                 print(materials, mesh.materials)
                 materials.extend(mesh.materials)
@@ -805,70 +783,60 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
 def get_wmb_material(wmb, texture_dir):
     materials = []
     if wmb.wta:
-        if hasattr(wmb, 'materialArray'):
-            for materialIndex, material in enumerate(wmb.materialArray):
-                material_name = material.materialName
-                shader_name = material.effectName
-                uniforms = material.uniformArray
-                textures = material.textureArray
-                if hasattr(material, "textureFlagArray"): # wmb4
-                    textureFlags = material.textureFlagArray
-                else:
-                    textureFlags = None
-                if hasattr(wmb, 'textureArray'):
-                    for index, texture in textures.items():
-                        if texture == -1:
-                            continue
-                        try:
-                            textures[index] = wmb.textureArray[texture].id # change index to WTA identifier
-                        except:
-                            print("An error has occured! It seems that the global texture array doesn't have enough elements (%d). I think. This is a generic exception." % texture)
-                            #print("I'm deleting this.")
-                            textures[index] = -1
-                    for index, texture in textures.copy().items():
-                        if texture == -1:
-                            del textures[index]
-                    print("Textures on %s:"%material_name, textures)
-                parameterGroups = material.parameterGroups
-                for textureIndex in range(wmb.wta.textureCount):        # for key in textures.keys():
-                    #identifier = textures[key]
-                    identifier = wmb.wta.wtaTextureIdentifier[textureIndex]
-                    texture_file_name = identifier + '.dds'
-                    texture_filepath = os.path.join(texture_dir, texture_file_name)
-                    try:
-                        texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
-                        if texture_stream:
-                            if not os.path.exists(texture_filepath):
-                                create_dir(texture_dir)
-                                texture_fp = open(texture_filepath, "wb")
-                                print('[+] could not find DDS texture, trying to find it in WTA;', texture_file_name)
-                                texture_fp.write(texture_stream)
-                                texture_fp.close()
-                            else:
-                                pass#print('[+] Found %s.dds'% identifier)
-                        else:
-                            print("Texture identifier %s does not exist in WTA, despite being fetched from a WTA identifier list." % identifier)
-                    except:
+        assert(hasattr(wmb, 'materialArray'))
+        for materialIndex, material in enumerate(wmb.materialArray):
+            material_name = material.materialName
+            shader_name = material.effectName
+            uniforms = material.uniformArray
+            textures = material.textureArray
+            textureFlags = material.textureFlagArray
+            if hasattr(wmb, 'textureArray'):
+                for index, texture in textures.items():
+                    if texture == -1:
                         continue
+                    try:
+                        textures[index] = wmb.textureArray[texture].id # change index to WTA identifier
+                        # Load texture
+                        texture_file_name = textures[index] + '.dds'
+                        texture_filepath = os.path.join(texture_dir, texture_file_name)
+                        if bpy.data.images.get(texture_file_name) is None:
+                            bpy.data.images.load(texture_filepath)
+                    except:
+                        print("An error has occured! It seems that the global texture array doesn't have enough elements (%d). I think. This is a generic exception." % texture)
+                        #print("I'm deleting this.")
+                        textures[index] = -1
+                for index, texture in textures.copy().items():
+                    if texture == -1:
+                        del textures[index]
+                print("Textures on %s:"%material_name, textures)
+            parameterGroups = material.parameterGroups
+            
+            # Let's be nice, try and load everything else in the WTA too
+            for identifier in wmb.wta.wtaTextureIdentifier:        # for key in textures.keys():
+                #identifier = textures[key]
+                texture_file_name = identifier + '.dds'
+                texture_filepath = os.path.join(texture_dir, texture_file_name)
+                try:
+                    texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
+                    if texture_stream:
+                        if not os.path.exists(texture_filepath):
+                            create_dir(texture_dir)
+                            texture_fp = open(texture_filepath, "wb")
+                            print('[+] could not find DDS texture, trying to find it in WTA;', texture_file_name)
+                            texture_fp.write(texture_stream)
+                            texture_fp.close()
+                        else:
+                            pass#print('[+] Found %s.dds'% identifier)
+                    else:
+                        print("Texture identifier %s does not exist in WTA, despite being fetched from a WTA identifier list." % identifier)
+                except:
+                    continue
 
-                    if bpy.data.images.get(texture_file_name) is None:
-                        bpy.data.images.load(texture_filepath)
-                
-                materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
-                #print(materials)
-        else:
-            texture_dir = texture_dir.replace('.dat','.dtt')
-            for textureIndex in range(wmb.wta.textureCount):
-                #print(textureIndex)
-                identifier = wmb.wta.wtaTextureIdentifier[textureIndex]
-                texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
-                if texture_stream:
-                    if not os.path.exists(os.path.join(texture_dir, identifier + '.dds')):
-                        create_dir(texture_dir)
-                        texture_fp = open(os.path.join(texture_dir, identifier + '.dds'), "wb")
-                        print('[+] dumping %s.dds'% identifier)
-                        texture_fp.write(texture_stream)
-                        texture_fp.close()
+                if bpy.data.images.get(texture_file_name) is None:
+                    bpy.data.images.load(texture_filepath)
+            
+            materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
+            #print(materials)
 
     else:
         print('Missing .wta')
@@ -894,10 +862,7 @@ def get_wmb_material(wmb, texture_dir):
                         del textures[index]
                 print("Textures on %s:"%material_name, textures)
             parameterGroups = material.parameterGroups
-            if hasattr(material, "textureFlagArray"): # wmb4
-                textureFlags = material.textureFlagArray
-            else:
-                textureFlags = None
+            textureFlags = material.textureFlagArray
             materials.append([material_name,textures,uniforms,shader_name,parameterGroups,textureFlags])
         
     return materials
@@ -1134,11 +1099,9 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
     collection_name = wmbname[:-4]
     if bpy.data.collections.get(collection_name): # oops, duplicate
         collection_suffix = 1
-        while True:
-            if not bpy.data.collections.get(collection_name + "." + ("%03d" % collection_suffix)):
-                collection_name += "." + ("%03d" % collection_suffix)
-                break
+        while bpy.data.collections.get(collection_name + (".%03d" % collection_suffix)):
             collection_suffix += 1
+        collection_name += "." + ("%03d" % collection_suffix)
     col = bpy.data.collections.new(collection_name)
     
     wmbCollection.children.link(col)
@@ -1147,7 +1110,18 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
     texture_dir = wmb_file.replace(wmbname, 'textures')
     armature_name = ""
     if hasattr(wmb, 'hasBone') and wmb.hasBone:
-        boneArray = [[bone.boneIndex, "bone%d"%bone.boneIndex, bone.parentIndex,"bone%d"%bone.parentIndex, bone.world_position, bone.world_rotation, bone.boneNumber, bone.local_position, bone.local_rotation, bone.world_rotation, bone.world_position_tpose] for bone in wmb.boneArray]
+        boneArray = [[
+            bone.boneIndex,
+            "bone%d" % bone.boneIndex,
+            bone.parentIndex,
+            "bone%d" % bone.parentIndex,
+            bone.world_position,
+            bone.world_rotation,
+            bone.boneNumber,
+            bone.local_position,
+            bone.local_rotation,
+            bone.world_rotation,
+            bone.world_position_tpose] for bone in wmb.boneArray]
         armature_no_wmb = wmbname.replace('.wmb','')
         armature_name_split = armature_no_wmb.split('/')
         armature_name = armature_name_split[-1]
@@ -1209,30 +1183,22 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
             if wmb.wmb_header.vertexFormat == 0x107: # wmb.wmb_header.referenceBone != -1
                 #bpy.ops.object.mode_set(mode='EDIT')
                 for mesh in meshes:
-                    setchild = mesh.constraints.new(type='CHILD_OF')
-                    setchild.target = amt
-                    setchild.inverse_matrix = Matrix.Identity(4)
-                    setchild.use_rotation_x = False
-                    setchild.use_rotation_y = False
-                    setchild.use_rotation_z = False
-                    #setchild.influence = 0.0
-                    #bone = amt.data.edit_bones[wmb.wmb_header.referenceBone]
-                    bone = amt.pose.bones[wmb.wmb_header.referenceBone]
-                    #boneName = str(bone.name)
-                    #mesh.location.x = bone.head.x
-                    #mesh.location.y = -bone.head.z
-                    #mesh.location.z = bone.head.y
-                    setchild.subtarget = bone.name #boneName
+                    mesh.vertex_groups.new(name="bone%d"%wmb.wmb_header.referenceBone)
+                    mesh.vertex_groups["bone%d"%wmb.wmb_header.referenceBone].add(
+                        list(range(len(mesh.data.vertices))), 1.0, "REPLACE")
                 #bpy.ops.object.mode_set(mode='OBJECT')
                     
             for bone in amt.data.bones:
+                oldBoneName = bone.name
                 if bone["ID"] in wmb4_bonenames:
-                    oldBoneName = bone.name
                     #print("Renaming %s to %s" % (bone.name, wmb4_bonenames[bone["ID"]]))
                     bone.name = wmb4_bonenames[bone["ID"]]
-                    for mesh in [x for x in col.objects if x.type == "MESH"]:
-                        for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
-                            vertexGroup.name = wmb4_bonenames[bone["ID"]]
+                else:
+                    bone.name = "bone%d" % bone["ID"]
+                for mesh in [x for x in col.objects if x.type == "MESH"]:
+                    for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
+                        vertexGroup.name = bone.name
+                    
         else:
             print("Huh, no armature. hasBone is", wmb.hasBone)
             

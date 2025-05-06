@@ -242,6 +242,10 @@ def write_string(file, str):
 
 # Big Endian
 
+def readBe_float(file) -> int:
+    entry = file.read(4)
+    return struct.unpack('>f', entry)[0]
+
 def readBe_int16(file) -> int:
     entry = file.read(2)
     return struct.unpack('>h', entry)[0]
@@ -280,4 +284,8 @@ def writeBe_int16(file, int):
 
 def writeBe_uint16(file, int):
     entry = struct.pack('>H', int)
+    file.write(entry)
+
+def writeBe_float(file, flt):
+    entry = struct.pack('>f', flt)
     file.write(entry)

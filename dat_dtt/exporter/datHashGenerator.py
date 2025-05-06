@@ -5,8 +5,7 @@ from ...utils.ioUtils import write_uInt32, write_Int16
 import zlib
 import os
 
-def crc32(text: str) -> int:
-	return zlib.crc32(text.encode('ascii')) & 0xFFFFFFFF
+from ...utils.util import crc32
 
 class HashData:
     inFiles: List[str]

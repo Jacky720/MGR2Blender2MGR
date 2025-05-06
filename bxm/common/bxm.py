@@ -14,16 +14,16 @@ class BxmHeader:
 	def fromFile(self, file: BufferedReader):
 		self.type = file.read(4).decode("ascii")
 		self.flags = readBe_int32(file)
-		self.nodeCount = readBe_int16(file)
-		self.dataCount = readBe_int16(file)
+		self.nodeCount = readBe_uint16(file)
+		self.dataCount = readBe_uint16(file)
 		self.dataSize = readBe_int32(file)
 
 	def writeToFile(self, file: BufferedWriter):
 		for char in self.type:
 			writeBe_char(file, char)
 		writeBe_int32(file, self.flags)
-		writeBe_int16(file, self.nodeCount)
-		writeBe_int16(file, self.dataCount)
+		writeBe_uint16(file, self.nodeCount)
+		writeBe_uint16(file, self.dataCount)
 		writeBe_int32(file, self.dataSize)
 
 class NodeInfo:
@@ -34,7 +34,7 @@ class NodeInfo:
 
 	def fromFile(self, file: BufferedReader):
 		self.childCount = readBe_int16(file)
-		self.firstChildIndex = readBe_int16(file)
+		self.firstChildIndex = readBe_uint16(file)
 		self.attributeCount = readBe_int16(file)
 		self.dataIndex = readBe_int16(file)
 

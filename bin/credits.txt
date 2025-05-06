@@ -1,0 +1,1 @@
+HavokAssetCc -> Taken from Havok Preview Tools 2011, used to convert HKX to a readable format and back.

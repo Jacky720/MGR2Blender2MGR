@@ -32,7 +32,7 @@ class WTAItems(bpy.types.PropertyGroup):
     id : bpy.props.IntProperty()
 
     parent_mat : bpy.props.StringProperty()
-    texture_map_type : bpy.props.StringProperty()
+    texture_map_type : bpy.props.IntProperty()
     texture_identifier : bpy.props.StringProperty()
     texture_path : bpy.props.StringProperty()
 
@@ -117,13 +117,7 @@ def handleAutoSetTextureWarnings(operatorSelf, warnings: List[str]):
     print("First encountered textures used instead. Consider changing the ids.")
     print("\n".join(warnings))
 
-def isTextureTypeSupported(textureType: str) -> bool:
-    for supportedTex in ['Map', 'tex']:
-        if supportedTex in textureType:
-            return True
-    return False
-
-def makeWtaMaterial(matName, textures: List[Tuple[str, str, str]]):
+def makeWtaMaterial(matName, textures: List[Tuple[int, str, str]]):
     for tex in textures:
         newID = generateID(bpy.context)
         newTex: WTAItems = bpy.context.scene.WTAMaterials.add()
@@ -148,10 +142,9 @@ class GetMaterialsOperator(bpy.types.Operator):
         context.scene.WTAMaterials.clear()
         for mat in getUsedMaterials():
             try:
-                wtaTextures: List[Tuple[str, str, str]] = [
-                    (mapType, id, "None")
-                    for mapType, id in mat.items()
-                    if isTextureTypeSupported(mapType)
+                wtaTextures: List[Tuple[int, str, str]] = [
+                    (flag, id, "None")
+                    for flag, id in mat.items()
                 ]
                 makeWtaMaterial(mat.name, wtaTextures)
                 newMaterialsAdded += 1
@@ -186,10 +179,9 @@ class GetNewMaterialsOperator(bpy.types.Operator):
                 continue
 
             try:
-                wtaTextures: List[Tuple[str, str, str]] = [
-                    (mapType, id, "None")
-                    for mapType, id in mat.items()
-                    if isTextureTypeSupported(mapType)
+                wtaTextures: List[Tuple[int, str, str]] = [
+                    (flag, id, "None")
+                    for flag, id in mat.items()
                 ]
                 makeWtaMaterial(mat.name, wtaTextures)
                 newMaterialsAdded += 1

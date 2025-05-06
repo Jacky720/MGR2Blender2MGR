@@ -47,7 +47,7 @@ class SaveBXMFile(bpy.types.Operator, ExportHelper):
         if self.type == "clp":
             clpExporter.exportCLP(filepath)
         elif self.type == "clh":
-            clpExporter.exportCLH(filepath)
+            clhExporter.exportCLH(filepath)
 
         return {"FINISHED"}
 

@@ -49,86 +49,42 @@ def main(filepath, wmb4=False, collectionName="WMB", BALLIN=True):
     generated_data = c_generate_data(wmb4, collectionName, BALLER=BALLIN)
     print('-=# All Data Generated. Writing WMB... #=-')
     create_wmb_header(wmb_file, generated_data, wmb4, collectionName)
+
+    print('Writing vertexGroups.')
+    create_wmb_vertexGroups(wmb_file, generated_data, True)
+
+    print('Writing batches.')
+    create_wmb_batches(wmb_file, generated_data, True)
     
-    if not wmb4:
+    print('Writing batch supplementary data.')
+    #TODO
+    create_wmb_batch_supplement(wmb_file, generated_data)
+    
+    if generated_data.bones is not None:
         print('Writing bones.')
-        if generated_data.bones is not None:
-            create_wmb_bones(wmb_file, generated_data)
+        create_wmb_bones(wmb_file, generated_data, True)
 
-        if hasattr(generated_data, 'boneIndexTranslateTable'):
-            print('Writing boneIndexTranslateTable.')
-            create_wmb_boneIndexTranslateTable(wmb_file, generated_data)
+    if hasattr(generated_data, 'boneIndexTranslateTable'):
+        print('Writing boneIndexTranslateTable.')
+        create_wmb_boneIndexTranslateTable(wmb_file, generated_data)
 
-        print('Writing vertexGroups.')
-        create_wmb_vertexGroups(wmb_file, generated_data)
-
-        print('Writing batches.')
-        create_wmb_batches(wmb_file, generated_data)
-        
-        print('Writing LODs.')
-        create_wmb_lods(wmb_file, generated_data)
-
-        print('Writing meshMaterials.')
-        create_wmb_meshMaterials(wmb_file, generated_data)
-
-        if generated_data.colTreeNodes is not None:
-            print('Writing colTreeNodes.')
-            create_wmb_colTreeNodes(wmb_file, generated_data)
-
+    if hasattr(generated_data, 'boneSet'):
         print('Writing boneSets.')
-        if hasattr(generated_data, 'boneSet'):
-            create_wmb_boneSet(wmb_file, generated_data)
+        create_wmb_boneSet(wmb_file, generated_data, True)
 
-        if generated_data.boneMap is not None:
-            print('Writing boneMap.')
-            create_wmb_boneMap(wmb_file, generated_data)
+    print('Writing materials.')
+    create_wmb_materials(wmb_file, generated_data, True)
 
-        print('Writing meshes.')
-        create_wmb_meshes(wmb_file, generated_data)
+    print('Writing textures.')
+    #TODO
+    create_wmb_textures(wmb_file, generated_data)
 
-        print('Writing materials.')
-        create_wmb_materials(wmb_file, generated_data)
-
-        if generated_data.unknownWorldData is not None:
-            print('Writing unknownWorldData.')
-            create_wmb_unknownWorldData(wmb_file, generated_data)
-
-    else: # Revengeance
-        print('Writing vertexGroups.')
-        create_wmb_vertexGroups(wmb_file, generated_data, True)
-
-        print('Writing batches.')
-        create_wmb_batches(wmb_file, generated_data, True)
-        
-        print('Writing batch supplementary data.')
-        #TODO
-        create_wmb_batch_supplement(wmb_file, generated_data)
-        
-        if generated_data.bones is not None:
-            print('Writing bones.')
-            create_wmb_bones(wmb_file, generated_data, True)
-
-        if hasattr(generated_data, 'boneIndexTranslateTable'):
-            print('Writing boneIndexTranslateTable.')
-            create_wmb_boneIndexTranslateTable(wmb_file, generated_data)
-
-        if hasattr(generated_data, 'boneSet'):
-            print('Writing boneSets.')
-            create_wmb_boneSet(wmb_file, generated_data, True)
-
-        print('Writing materials.')
-        create_wmb_materials(wmb_file, generated_data, True)
-
-        print('Writing textures.')
-        #TODO
-        create_wmb_textures(wmb_file, generated_data)
-
-        print('Writing meshes.')
-        create_wmb_meshes(wmb_file, generated_data, True)
-        
-        if generated_data.mystery is not None:
-            print("God help us, writing that absurd mystery chunk.")
-            create_wmb_mystery(wmb_file, generated_data)
+    print('Writing meshes.')
+    create_wmb_meshes(wmb_file, generated_data, True)
+    
+    if generated_data.mystery is not None:
+        print("God help us, writing that absurd mystery chunk.")
+        create_wmb_mystery(wmb_file, generated_data)
 
     print('Finished writing. Closing file..')
     close_wmb(wmb_file, generated_data)

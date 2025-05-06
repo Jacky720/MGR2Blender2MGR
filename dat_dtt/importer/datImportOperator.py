@@ -212,7 +212,7 @@ def importDtt(only_extract, filepath, transform=None):
     return {'FINISHED'}
 
 class ImportNierDtt(bpy.types.Operator, ImportHelper):
-    '''Load a Nier:Automata DTT (and DAT) File.'''
+    '''Load a DTT (and DAT) File.'''
     bl_idname = "import_scene.dtt_data"
     bl_label = "Import DTT (and DAT) Data"
     bl_options = {'PRESET'}
@@ -246,7 +246,7 @@ class ImportNierDtt(bpy.types.Operator, ImportHelper):
 
 
 class ImportNierDat(bpy.types.Operator, ImportHelper):
-    '''Load a Nier:Automata DAT File.'''
+    '''Load a DAT File.'''
     bl_idname = "import_scene.dat_data"
     bl_label = "Import DAT/DTT Data"
     bl_options = {'PRESET'}
