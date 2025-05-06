@@ -741,7 +741,7 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
                 meshName += collection_name[-4:]
             
             materials = [batchData.materialIndex]
-            if (len(mesh.materials) == 0) or materials[0] not in mesh.materials:
+            if batchData.materialIndex not in mesh.materials:
                 print("Huh, mismatched material index.")
                 print(materials, mesh.materials)
                 materials.extend(mesh.materials)
@@ -783,70 +783,60 @@ def format_wmb_mesh(wmb, collection_name, wmb4_transform=None):
 def get_wmb_material(wmb, texture_dir):
     materials = []
     if wmb.wta:
-        if hasattr(wmb, 'materialArray'):
-            for materialIndex, material in enumerate(wmb.materialArray):
-                material_name = material.materialName
-                shader_name = material.effectName
-                uniforms = material.uniformArray
-                textures = material.textureArray
-                if hasattr(material, "textureFlagArray"): # wmb4
-                    textureFlags = material.textureFlagArray
-                else:
-                    textureFlags = None
-                if hasattr(wmb, 'textureArray'):
-                    for index, texture in textures.items():
-                        if texture == -1:
-                            continue
-                        try:
-                            textures[index] = wmb.textureArray[texture].id # change index to WTA identifier
-                        except:
-                            print("An error has occured! It seems that the global texture array doesn't have enough elements (%d). I think. This is a generic exception." % texture)
-                            #print("I'm deleting this.")
-                            textures[index] = -1
-                    for index, texture in textures.copy().items():
-                        if texture == -1:
-                            del textures[index]
-                    print("Textures on %s:"%material_name, textures)
-                parameterGroups = material.parameterGroups
-                for textureIndex in range(wmb.wta.textureCount):        # for key in textures.keys():
-                    #identifier = textures[key]
-                    identifier = wmb.wta.wtaTextureIdentifier[textureIndex]
-                    texture_file_name = identifier + '.dds'
-                    texture_filepath = os.path.join(texture_dir, texture_file_name)
-                    try:
-                        texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
-                        if texture_stream:
-                            if not os.path.exists(texture_filepath):
-                                create_dir(texture_dir)
-                                texture_fp = open(texture_filepath, "wb")
-                                print('[+] could not find DDS texture, trying to find it in WTA;', texture_file_name)
-                                texture_fp.write(texture_stream)
-                                texture_fp.close()
-                            else:
-                                pass#print('[+] Found %s.dds'% identifier)
-                        else:
-                            print("Texture identifier %s does not exist in WTA, despite being fetched from a WTA identifier list." % identifier)
-                    except:
+        assert(hasattr(wmb, 'materialArray'))
+        for materialIndex, material in enumerate(wmb.materialArray):
+            material_name = material.materialName
+            shader_name = material.effectName
+            uniforms = material.uniformArray
+            textures = material.textureArray
+            textureFlags = material.textureFlagArray
+            if hasattr(wmb, 'textureArray'):
+                for index, texture in textures.items():
+                    if texture == -1:
                         continue
+                    try:
+                        textures[index] = wmb.textureArray[texture].id # change index to WTA identifier
+                        # Load texture
+                        texture_file_name = textures[index] + '.dds'
+                        texture_filepath = os.path.join(texture_dir, texture_file_name)
+                        if bpy.data.images.get(texture_file_name) is None:
+                            bpy.data.images.load(texture_filepath)
+                    except:
+                        print("An error has occured! It seems that the global texture array doesn't have enough elements (%d). I think. This is a generic exception." % texture)
+                        #print("I'm deleting this.")
+                        textures[index] = -1
+                for index, texture in textures.copy().items():
+                    if texture == -1:
+                        del textures[index]
+                print("Textures on %s:"%material_name, textures)
+            parameterGroups = material.parameterGroups
+            
+            # Let's be nice, try and load everything else in the WTA too
+            for identifier in wmb.wta.wtaTextureIdentifier:        # for key in textures.keys():
+                #identifier = textures[key]
+                texture_file_name = identifier + '.dds'
+                texture_filepath = os.path.join(texture_dir, texture_file_name)
+                try:
+                    texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
+                    if texture_stream:
+                        if not os.path.exists(texture_filepath):
+                            create_dir(texture_dir)
+                            texture_fp = open(texture_filepath, "wb")
+                            print('[+] could not find DDS texture, trying to find it in WTA;', texture_file_name)
+                            texture_fp.write(texture_stream)
+                            texture_fp.close()
+                        else:
+                            pass#print('[+] Found %s.dds'% identifier)
+                    else:
+                        print("Texture identifier %s does not exist in WTA, despite being fetched from a WTA identifier list." % identifier)
+                except:
+                    continue
 
-                    if bpy.data.images.get(texture_file_name) is None:
-                        bpy.data.images.load(texture_filepath)
-                
-                materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
-                #print(materials)
-        else:
-            texture_dir = texture_dir.replace('.dat','.dtt')
-            for textureIndex in range(wmb.wta.textureCount):
-                #print(textureIndex)
-                identifier = wmb.wta.wtaTextureIdentifier[textureIndex]
-                texture_stream = wmb.wta.getTextureByIdentifier(identifier,wmb.wtp_fp)
-                if texture_stream:
-                    if not os.path.exists(os.path.join(texture_dir, identifier + '.dds')):
-                        create_dir(texture_dir)
-                        texture_fp = open(os.path.join(texture_dir, identifier + '.dds'), "wb")
-                        print('[+] dumping %s.dds'% identifier)
-                        texture_fp.write(texture_stream)
-                        texture_fp.close()
+                if bpy.data.images.get(texture_file_name) is None:
+                    bpy.data.images.load(texture_filepath)
+            
+            materials.append([material_name,textures,uniforms,shader_name,parameterGroups, textureFlags])
+            #print(materials)
 
     else:
         print('Missing .wta')
@@ -872,10 +862,7 @@ def get_wmb_material(wmb, texture_dir):
                         del textures[index]
                 print("Textures on %s:"%material_name, textures)
             parameterGroups = material.parameterGroups
-            if hasattr(material, "textureFlagArray"): # wmb4
-                textureFlags = material.textureFlagArray
-            else:
-                textureFlags = None
+            textureFlags = material.textureFlagArray
             materials.append([material_name,textures,uniforms,shader_name,parameterGroups,textureFlags])
         
     return materials

@@ -58,10 +58,12 @@ def buildMaterialNodes(material, uniforms):
         image_node.hide = True
         image_node.label = consts.getTextureFlagFromDict(texentry.flag)
         if texentry.flag == 0: # Base color
-            albedoInverterNode = nodes.new(type="ShaderNodeInvert")
-            albedoInverterNode.location = 300, 0
-            albedoInverterNode.inputs[0].default_value = 1.0
-            albedoInverterNode.hide = True
+            if material.mgr_data.shader_name not in consts.transparentShaders:
+                albedoInverterNode = nodes.new(type="ShaderNodeInvert")
+                albedoInverterNode.location = 300, 0
+                albedoInverterNode.inputs[0].default_value = 1.0
+                albedoInverterNode.hide = True
+            #pass
         
         elif texentry.flag == 1:
             mixedAlbedoNode = nodes.new(type='ShaderNodeMixRGB')
@@ -70,7 +72,7 @@ def buildMaterialNodes(material, uniforms):
             
             vertexColAttNode = nodes.new(type='ShaderNodeAttribute')
             vertexColAttNode.attribute_name = "Col"
-            vertexColAttNode.location = (-200, (i*-60)+30)
+            vertexColAttNode.location = (-200, (i*-60)+40)
             vertexColAttNode.hide = True
             
         elif texentry.flag == 2:
@@ -113,9 +115,19 @@ def buildMaterialNodes(material, uniforms):
             if material.mgr_data.shader_name in consts.transparentShaders:
                 links.new(node.outputs['Alpha'], principled.inputs['Alpha'])
                 material.blend_method = 'HASHED'
-            elif not material.mgr_data.shader_name in consts.reflectiveBlacklist:
+            else:
                 links.new(node.outputs['Alpha'], albedoInverterNode.inputs['Color'])
                 links.new(albedoInverterNode.outputs['Color'], principled.inputs['Roughness'])
+                #if 'Specular' in principled.inputs:
+                #    links.new(node.outputs['Alpha'], principled.inputs['Specular'])
+                #else:
+                #    links.new(node.outputs['Alpha'], principled.inputs['Specular IOR Level'])
+            #if material.mgr_data.shader_name in consts.reflectiveBlacklist:
+            #principled.inputs['Roughness'].default_value = 1.0 # Should this be a bit less?
+            if 'Specular' in principled.inputs:
+                principled.inputs['Specular'].default_value = 0.0
+            else:
+                principled.inputs['Specular IOR Level'].default_value = 0.0
             
         
         elif flag == 1: # Second base color, mapped by vertex color
