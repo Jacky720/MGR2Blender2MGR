@@ -1112,11 +1112,9 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
     collection_name = wmbname[:-4]
     if bpy.data.collections.get(collection_name): # oops, duplicate
         collection_suffix = 1
-        while True:
-            if not bpy.data.collections.get(collection_name + "." + ("%03d" % collection_suffix)):
-                collection_name += "." + ("%03d" % collection_suffix)
-                break
+        while bpy.data.collections.get(collection_name + (".%03d" % collection_suffix)):
             collection_suffix += 1
+        collection_name += "." + ("%03d" % collection_suffix)
     col = bpy.data.collections.new(collection_name)
     
     wmbCollection.children.link(col)

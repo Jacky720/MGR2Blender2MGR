@@ -1,6 +1,6 @@
 # write data from Python object to .wmb
-from ....utils.ioUtils import write_Int32, write_uInt32, write_Int16, write_xyz, write_float, write_char, write_string, write_uInt16, SmartIO, write_byte, write_float16
-from ....utils.util import *
+from ...utils.ioUtils import write_Int32, write_uInt32, write_Int16, write_xyz, write_float, write_char, write_string, write_uInt16, SmartIO, write_byte, write_float16
+from ...utils.util import *
 from time import time
 import bpy
 
