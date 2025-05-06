@@ -24,7 +24,7 @@ class c_batch(object):
         self.numPrimitives = len(obj.data.polygons)
         self.blenderObj = obj
 
-class c_batch_supplements(object): # wmb4
+class c_batch_supplements(object):
     def __init__(self, startPointer, collectionName='WMB'):
         allBatches = [x for x in allObjectsInCollectionInOrder(collectionName) if x.type == "MESH"]
         allBatches = sorted(allBatches, key=lambda batch: batch['ID'])
@@ -88,7 +88,7 @@ class c_batch_supplements(object): # wmb4
         self.supplementStructSize = curOffset - startPointer
 
 class c_batches(object):
-    def __init__(self, vertexGroupsCount, wmb4=False, collectionName='WMB'):
+    def __init__(self, vertexGroupsCount, collectionName='WMB'):
     
         self.vertexGroupsCount = vertexGroupsCount
         
@@ -106,7 +106,7 @@ class c_batches(object):
             
             for obj in sorted(allBatches, key=lambda batch: batch['ID']):
                 obj_name = obj.name.split('-')
-                obj_vertexGroupIndex = int(obj_name[0 if wmb4 else -1])
+                obj_vertexGroupIndex = int(obj_name[0])
                 print('[+] Generating Batch', obj.name)
                 if obj_vertexGroupIndex != currentVertexGroup:      # Start of new vertex group
                     indexNums[currentVertexGroup] = cur_indexStart
@@ -120,40 +120,37 @@ class c_batches(object):
                 else:
                     obj_boneSetIndex = -1
                 
-                if wmb4:
-                    batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
-                    if BALLIN:
-                        bpy.data.collections["WMB"]["4-%2d-startIndex" % ballin_index] = 0#batches[-1].indexStart
-                        bpy.data.collections["WMB"]["4-%2d-indexCount" % ballin_index] = batches[-1].numIndexes
-                        bpy.data.collections["WMB"]["4-%2d-startVertex" % ballin_index] = 0#batches[-1].vertexStart
-                        bpy.data.collections["WMB"]["4-%2d-vertexCount" % ballin_index] = batches[-1].numVertexes
-                        bpy.data.collections["WMB"]["4-%2d-A" % ballin_index] = boundingBoxXYZ
-                        bpy.data.collections["WMB"]["4-%2d-B" % ballin_index] = boundingBoxUVW
-                        bpy.data.collections["WMB"]["4-%2d-C" % ballin_index] = obj_vertexGroupIndex
-                        bpy.data.collections["WMB"]["4-%2d-D" % ballin_index] = len(batches) - 1
-                        bpy.data.collections["WMB"]["4-%2d-E" % ballin_index] = 0
-                        bpy.data.collections["WMB"]["4-%2d-E2" % ballin_index] = obj['Materials'][0]
-                        bpy.data.collections["WMB"]["4-%2d-F" % ballin_index] = 1
-                        bpy.data.collections["WMB"]["4-%2d-array" % ballin_index] = []
-                        bpy.data.collections["WMB"]["5-%2d-A"%obj_vertexGroupIndex] = obj_vertexGroupIndex
-                        bpy.data.collections["WMB"]["5-%2d-B"%obj_vertexGroupIndex] = 0
-                        bpy.data.collections["WMB"]["5-%2d-B2"%obj_vertexGroupIndex] = 0
-                        bpy.data.collections["WMB"]["5-%2d-C"%obj_vertexGroupIndex] = -1
-                        bpy.data.collections["WMB"]["5-%2d-C2"%obj_vertexGroupIndex] = 0
-                        add_item_index = 0
-                        while bpy.data.collections["WMB"].get("5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)) is not None:
-                            add_item_index += 1
-                        bpy.data.collections["WMB"]["5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)] = [len(batches) - 1]
-                        ballin_index += 1
-                else:
-                    batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, cur_numVertexes, obj_boneSetIndex))
+                batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
+                if BALLIN:
+                    bpy.data.collections["WMB"]["4-%2d-startIndex" % ballin_index] = 0#batches[-1].indexStart
+                    bpy.data.collections["WMB"]["4-%2d-indexCount" % ballin_index] = batches[-1].numIndexes
+                    bpy.data.collections["WMB"]["4-%2d-startVertex" % ballin_index] = 0#batches[-1].vertexStart
+                    bpy.data.collections["WMB"]["4-%2d-vertexCount" % ballin_index] = batches[-1].numVertexes
+                    bpy.data.collections["WMB"]["4-%2d-A" % ballin_index] = boundingBoxXYZ
+                    bpy.data.collections["WMB"]["4-%2d-B" % ballin_index] = boundingBoxUVW
+                    bpy.data.collections["WMB"]["4-%2d-C" % ballin_index] = obj_vertexGroupIndex
+                    bpy.data.collections["WMB"]["4-%2d-D" % ballin_index] = len(batches) - 1
+                    bpy.data.collections["WMB"]["4-%2d-E" % ballin_index] = 0
+                    bpy.data.collections["WMB"]["4-%2d-E2" % ballin_index] = obj['Materials'][0]
+                    bpy.data.collections["WMB"]["4-%2d-F" % ballin_index] = 1
+                    bpy.data.collections["WMB"]["4-%2d-array" % ballin_index] = []
+                    bpy.data.collections["WMB"]["5-%2d-A"%obj_vertexGroupIndex] = obj_vertexGroupIndex
+                    bpy.data.collections["WMB"]["5-%2d-B"%obj_vertexGroupIndex] = 0
+                    bpy.data.collections["WMB"]["5-%2d-B2"%obj_vertexGroupIndex] = 0
+                    bpy.data.collections["WMB"]["5-%2d-C"%obj_vertexGroupIndex] = -1
+                    bpy.data.collections["WMB"]["5-%2d-C2"%obj_vertexGroupIndex] = 0
+                    add_item_index = 0
+                    while bpy.data.collections["WMB"].get("5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)) is not None:
+                        add_item_index += 1
+                    bpy.data.collections["WMB"]["5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)] = [len(batches) - 1]
+                    ballin_index += 1
                 cur_indexStart += batches[-1].numIndexes
                 cur_numVertexes = batches[-1].vertexStart + batches[-1].numVertexes
             #print([batch.vertexStart for batch in batches])
             return batches
 
         self.batches = get_batches(self)
-        self.batches_StructSize = len(self.batches) * (20 if wmb4 else 28)
+        self.batches_StructSize = len(self.batches) * 20
 
 class c_boneIndexTranslateTable(object):
     def __init__(self, collectionName): # formerly included bones
@@ -235,20 +232,8 @@ class c_boneIndexTranslateTable(object):
 
         self.boneIndexTranslateTable_StructSize = self.firstLevel_Size*2 + self.secondLevel_Size*2 + self.thirdLevel_Size*2
 
-class c_boneMap(object):
-    def __init__(self, bones):
-        boneMap = []
-        for obj in bpy.data.collections['WMB'].all_objects:
-            if obj.type == 'ARMATURE':
-                boneMap = obj.data['boneMap']
-                break
-        
-        self.boneMap = boneMap
-
-        self.boneMap_StructSize = len(boneMap) * 4
-
 class c_boneSet(object):
-    def __init__(self, boneMap, boneSets_Offset, wmb4=False, collectionName='WMB'):
+    def __init__(self, boneMap, boneSets_Offset, collectionName='WMB'):
 
         def get_blender_boneSets(self):
             b_boneSets = []
@@ -271,13 +256,13 @@ class c_boneSet(object):
             
 
             for b_boneSet in b_boneSets:
-                if wmb4 and (b_offset % 16 > 0):
+                if b_offset % 16 > 0:
                     b_offset += 16 - (b_offset % 16)
                 
                 numBoneIndexes = len(b_boneSet)
 
                 boneSets.append([b_offset, numBoneIndexes, b_boneSet])
-                b_offset += len(b_boneSet) * (1 if wmb4 else 2)
+                b_offset += len(b_boneSet)
 
             return boneSets, b_offset - boneSets_Offset
         
@@ -288,24 +273,18 @@ class c_boneSet(object):
         def get_boneSet_StructSize(self):
             boneSet_StructSize = len(self.boneSet) * 8
             for boneSet in self.boneSet:
-                boneSet_StructSize += len(boneSet[2]) * (1 if wmb4 else 2)
+                boneSet_StructSize += len(boneSet[2])
                 
             return boneSet_StructSize
 
 class c_b_boneSets(object):
-    def __init__(self, wmb4=False, collectionName='WMB'):
+    def __init__(self, collectionName='WMB'):
         # Find Armature
         for obj in bpy.data.collections[collectionName].all_objects:
             if obj.type == 'ARMATURE':
                 amt = obj
                 break
 
-        # Get boneMap
-        if not wmb4:
-            boneMap = []
-            for val in amt.data['boneMap']:
-                boneMap.append(val)
-        
         #fuck it
         wmbCol = bpy.data.collections["WMB"]
         if 'mystery' in wmbCol and wmbCol['mystery']:
@@ -322,8 +301,7 @@ class c_b_boneSets(object):
                 for group in obj.vertex_groups:
                     boneID = getBoneIndexByName("WMB", group.name)
                     if boneID != None:
-                        boneMapIndex = boneMap.index(boneID) if not wmb4 else boneID
-                        vertex_group_bones.append(boneMapIndex)
+                        vertex_group_bones.append(boneID)
                 vertex_group_bones = sorted(vertex_group_bones)
                 print(obj.name, vertex_group_bones)
                 assert len(vertex_group_bones) > 0 # This mesh has no bone weights, it should have a boneSetIndex of -1
@@ -361,7 +339,7 @@ def get_bone_localPosition(bone):
         return Vector3(0, 0, 0)
 
 class c_bones(object):
-    def __init__(self, wmb4=False, collectionName='WMB'):
+    def __init__(self, collectionName='WMB'):
 
         def get_bones(self):
             _bones = []
@@ -372,11 +350,11 @@ class c_bones(object):
                 first_bone = obj.data.bones[0]
 
             if numBones > 1:
-                for bone in getAllBonesInOrder("WMB"):
+                for bone in getAllBonesInOrder(collectionName):
                     ID = bone['ID']
                     
                     if bone.parent:
-                        parentIndex = getAllBonesInOrder("WMB").index(bone.parent)
+                        parentIndex = getAllBonesInOrder(collectionName).index(bone.parent)
                     else:
                         parentIndex = -1
 
@@ -394,7 +372,7 @@ class c_bones(object):
                     tPosition = [0, 0, 0]
                     localPosition = [0, 0, 0]
                     
-                    armature = [x for x in bpy.data.collections["WMB"].all_objects if x.type == "ARMATURE"][0]
+                    armature = [x for x in bpy.data.collections[collectionName].all_objects if x.type == "ARMATURE"][0]
                     for pBone in armature.pose.bones:
                         if pBone.name == bone.name:
                             #localRotation
@@ -435,7 +413,7 @@ class c_bones(object):
                     _bones.append(bone)
                 
             elif numBones == 1:
-                bone = getAllBonesInOrder("WMB")[0]
+                bone = getAllBonesInOrder(collectionName)[0]
                 ID = bone['ID']
                 parentIndex = -1
                 
@@ -462,7 +440,7 @@ class c_bones(object):
             return _bones
                         
         self.bones = get_bones(self)
-        self.bones_StructSize = len(self.bones) * (32 if wmb4 else 88)
+        self.bones_StructSize = len(self.bones) * 32
 
 def getColMeshIndex(objToFind):
     colMeshObjs = [obj for obj in bpy.data.collections['WMB'].all_objects if obj.type == 'MESH']
@@ -651,74 +629,6 @@ class c_colTreeNodes(object):
         self.colTreeNodesSize = get_colTreeNodesSize(self.colTreeNodes)
         self.colTreeNodesCount = len(self.colTreeNodes)
 
-class c_lod(object):
-    def __init__(self, lodsStart, batches, lod_level):
-        def get_lodBatches(self, batches, lod_level):
-            lodBatches = []
-            for batch in batches.batches:
-                if batch.blenderObj['LOD_Level'] == lod_level:
-                    lodBatches.append(batch)
-            return lodBatches
-
-        def get_batchInfos(self, batches):
-            batchesInfos = []
-            for batch in batches:                                     
-                vertexGroupIndex = batch.vertexGroupIndex
-                meshIndex = batch.blenderObj['meshGroupIndex']
-
-                for slot in batch.blenderObj.material_slots:
-                    material = slot.material
-                for mat_index, mat in enumerate(getUsedMaterials()):
-                    if mat == material:
-                        materialIndex = mat_index
-                        break
-                
-                colTreeNodeIndex = batch.blenderObj['colTreeNodeIndex']
-                meshMatPairIndex = meshIndex
-                unknownWorldDataIndex = batch.blenderObj['unknownWorldDataIndex']
-                batchInfo = [vertexGroupIndex, meshIndex, materialIndex, colTreeNodeIndex, meshMatPairIndex, unknownWorldDataIndex]
-                batchesInfos.append(batchInfo)
-            return batchesInfos
-
-        self.lodBatches = get_lodBatches(self, batches, lod_level)
-        self.numBatchInfos = len(self.lodBatches)
-        self.offsetName = lodsStart + self.numBatchInfos * 24
-        self.lodLevel = lod_level
-        self.batchStart = batches.batches.index(self.lodBatches[0])
-        self.name = self.lodBatches[0].blenderObj['LOD_Name']
-        self.offsetBatchInfos = self.offsetName - 24 * self.numBatchInfos
-        self.batchInfos = get_batchInfos(self, self.lodBatches)
-        self.lod_StructSize = len(self.name) + 1 + len(self.batchInfos) * 24
-
-class c_lods(object):
-    def __init__(self, lodsStart, batches):
-        def get_lod_levels(batches):
-            lod_levels = []
-            for batch in batches.batches:
-                level = batch.blenderObj['LOD_Level']
-                if level not in lod_levels:
-                    lod_levels.append(level)
-            return lod_levels
-
-        def get_lods(lodsStart, batches):
-            lod_levels = get_lod_levels(batches)
-            lods = []
-            currentLodStart = lodsStart + len(lod_levels) * 20
-            for lod_level in lod_levels:
-                print('[+] Generating LOD', str(lod_level))
-                lods.append(c_lod(currentLodStart, batches, lod_level))
-                currentLodStart += lods[-1].lod_StructSize
-            return lods
-
-        def get_lodsStructSize(lods):
-            lodsStructSize = len(lods) * 20
-            for lod in lods:
-                lodsStructSize += lod.lod_StructSize
-            return lodsStructSize
-
-        self.lods = get_lods(lodsStart, batches)
-        self.lods_StructSize = get_lodsStructSize(self.lods)
-
 def getObjectCenter(obj):
     obj_local_bbox_center = 0.125 * sum((Vector(b) for b in obj.bound_box), Vector())
     #obj_global_bbox_center = obj.matrix_world @ obj_local_bbox_center
@@ -748,7 +658,7 @@ def getMeshBoundingBox(meshObj):
     return midPoint, scale
 
 class c_mesh(object):
-    def __init__(self, offsetMeshes, numMeshes, obj, wmb4=False, meshIDOffset=0, collectionName='WMB', batchDescriptions=None):
+    def __init__(self, offsetMeshes, numMeshes, obj, meshIDOffset=0, collectionName='WMB', batchDescriptions=None):
 
         def get_BoundingBox(self, obj):
             midPoint, scale = getMeshBoundingBox(obj)
@@ -794,122 +704,107 @@ class c_mesh(object):
       
         self.bones, self.numBones = get_bones(self, obj)
 
-        self.nameOffset = offsetMeshes + numMeshes * (44 if not wmb4 else 68)
+        self.nameOffset = offsetMeshes + numMeshes * 68
 
         self.boundingBox = get_BoundingBox(self, obj)
 
         self.name = getRealName(obj.name)
         
-        if wmb4:
-            # TODO this is just broken add a separate parameter
-            # detects SCR export
-            # if collectionName != 'WMB':
-            #     self.name = 'SCR_MESH'
-            self.batches0 = []
-            self.batches1 = []
-            self.batches2 = []
-            self.batches3 = []
-            for mesh in (x for x in allObjectsInCollectionInOrder(collectionName) if x.type == "MESH"):
-                if getRealName(mesh.name) == getRealName(obj.name):
-                    if 'batchGroup' not in mesh:
-                        mesh['batchGroup'] = 0
-                    relevantBatchData = batchDescriptions.batchData[mesh['batchGroup']]
-                    idToAppend = [x[0] for x in relevantBatchData].index(mesh['ID'])
-                    if mesh['batchGroup'] == 0:
-                        self.batches0.append(idToAppend)
-                    elif mesh['batchGroup'] == 1:
-                        self.batches1.append(idToAppend)
-                    elif mesh['batchGroup'] == 2:
-                        self.batches2.append(idToAppend)
-                    elif mesh['batchGroup'] == 3:
-                        self.batches3.append(idToAppend)
+        # TODO this is just broken add a separate parameter
+        # detects SCR export
+        # if collectionName != 'WMB':
+        #     self.name = 'SCR_MESH'
+        self.batches0 = []
+        self.batches1 = []
+        self.batches2 = []
+        self.batches3 = []
+        for mesh in (x for x in allObjectsInCollectionInOrder(collectionName) if x.type == "MESH"):
+            if getRealName(mesh.name) == getRealName(obj.name):
+                if 'batchGroup' not in mesh:
+                    mesh['batchGroup'] = 0
+                relevantBatchData = batchDescriptions.batchData[mesh['batchGroup']]
+                idToAppend = [x[0] for x in relevantBatchData].index(mesh['ID'])
+                if mesh['batchGroup'] == 0:
+                    self.batches0.append(idToAppend)
+                elif mesh['batchGroup'] == 1:
+                    self.batches1.append(idToAppend)
+                elif mesh['batchGroup'] == 2:
+                    self.batches2.append(idToAppend)
+                elif mesh['batchGroup'] == 3:
+                    self.batches3.append(idToAppend)
+        
+        # this code was garbage let us never speak of it again
+        """
+        self.batches = sorted(self.batches)
+        
+        if meshIDOffset == 0:
+            prevBatch = self.batches[0] - 1
+            for batch in self.batches:
+                if prevBatch + 1 < batch:
+                    meshIDOffset = batch - 1
+                    break
+                prevBatch = batch
+        
+        self.batches0 = self.batches
+        self.batches1 = []
+        self.batches2 = []
+        self.batches3 = []
+        if meshIDOffset > 0:
+            for i, batch in enumerate(self.batches):
+                if batch > meshIDOffset:
+                    self.batches0 = self.batches[0:i]
+                    self.batches3 = self.batches[i:]
+                    break
             
-            # this code was garbage let us never speak of it again
-            """
-            self.batches = sorted(self.batches)
-            
-            if meshIDOffset == 0:
-                prevBatch = self.batches[0] - 1
-                for batch in self.batches:
-                    if prevBatch + 1 < batch:
-                        meshIDOffset = batch - 1
-                        break
-                    prevBatch = batch
-            
-            self.batches0 = self.batches
-            self.batches1 = []
-            self.batches2 = []
-            self.batches3 = []
-            if meshIDOffset > 0:
-                for i, batch in enumerate(self.batches):
-                    if batch > meshIDOffset:
-                        self.batches0 = self.batches[0:i]
-                        self.batches3 = self.batches[i:]
-                        break
-                
-                self.batches3 = [batch - meshIDOffset - 1 for batch in self.batches3]
-            """
-            
-            #print(self.name, self.batches0, self.batches1, self.batches2, self.batches3)
+            self.batches3 = [batch - meshIDOffset - 1 for batch in self.batches3]
+        """
+        
+        #print(self.name, self.batches0, self.batches1, self.batches2, self.batches3)
         
         self.meshIDOffset = meshIDOffset
         
-        if wmb4:
-            self.batch0Pointer = self.nameOffset + len(self.name) + 1
-            
-            self.batch1Pointer = self.batch0Pointer
-            self.batch1Pointer += len(self.batches0) * 2
-            if (self.batch1Pointer % 16) > 0:
-                self.batch1Pointer += 16 - (self.batch1Pointer % 16)
-            
-            self.batch2Pointer = self.batch1Pointer
-            self.batch2Pointer += len(self.batches1) * 2
-            if (self.batch2Pointer % 16) > 0:
-                self.batch2Pointer += 16 - (self.batch2Pointer % 16)
-            
-            self.batch3Pointer = self.batch2Pointer
-            self.batch3Pointer += len(self.batches2) * 2
-            if (self.batch3Pointer % 16) > 0:
-                self.batch3Pointer += 16 - (self.batch3Pointer % 16)
-            
-            self.offsetMaterials = self.batch3Pointer
-            self.offsetMaterials += len(self.batches3) * 2
-            if (self.offsetMaterials % 16) > 0:
-                self.offsetMaterials += 16 - (self.offsetMaterials % 16)
-            
-            if len(self.batches1) == 0:
-                self.batch1Pointer = 0
-            if len(self.batches2) == 0:
-                self.batch2Pointer = 0
-            if len(self.batches3) == 0:
-                self.batch3Pointer = 0
-        else:
-            self.offsetMaterials = self.nameOffset + len(self.name) + 1
+        self.batch0Pointer = self.nameOffset + len(self.name) + 1
+        
+        self.batch1Pointer = self.batch0Pointer
+        self.batch1Pointer += len(self.batches0) * 2
+        if (self.batch1Pointer % 16) > 0:
+            self.batch1Pointer += 16 - (self.batch1Pointer % 16)
+        
+        self.batch2Pointer = self.batch1Pointer
+        self.batch2Pointer += len(self.batches1) * 2
+        if (self.batch2Pointer % 16) > 0:
+            self.batch2Pointer += 16 - (self.batch2Pointer % 16)
+        
+        self.batch3Pointer = self.batch2Pointer
+        self.batch3Pointer += len(self.batches2) * 2
+        if (self.batch3Pointer % 16) > 0:
+            self.batch3Pointer += 16 - (self.batch3Pointer % 16)
+        
+        self.offsetMaterials = self.batch3Pointer
+        self.offsetMaterials += len(self.batches3) * 2
+        if (self.offsetMaterials % 16) > 0:
+            self.offsetMaterials += 16 - (self.offsetMaterials % 16)
+        
+        if len(self.batches1) == 0:
+            self.batch1Pointer = 0
+        if len(self.batches2) == 0:
+            self.batch2Pointer = 0
+        if len(self.batches3) == 0:
+            self.batch3Pointer = 0
 
         self.materials = get_materials(self, obj)
 
         self.numMaterials = len(self.materials)
 
-        if self.numBones > 0 and not wmb4:
-            self.offsetBones = self.offsetMaterials + 2*self.numMaterials
-            self.lastOffset = self.offsetBones
-        else:
-            self.offsetBones = 0 
-            self.numBones = 0    
-            self.lastOffset = self.offsetMaterials
+        self.offsetBones = 0 
+        self.numBones = 0    
+        self.lastOffset = self.offsetMaterials
 
         def get_mesh_StructSize(self):
-            mesh_StructSize = 4 + 24 + 4 + 4 + 4 + 4
-            if wmb4:
-                mesh_StructSize = 68
-            mesh_StructSize += len(self.name) + 1
-            if wmb4:
-                #print(mesh_StructSize % 16)
-                mesh_StructSize += self.offsetMaterials - self.batch0Pointer
-                mesh_StructSize += len(self.materials) * 2
-            else:
-                mesh_StructSize += len(self.materials) * 2
-                mesh_StructSize += len(self.bones) * 2
+            mesh_StructSize = 68 + len(self.name) + 1
+            #print(mesh_StructSize % 16)
+            mesh_StructSize += self.offsetMaterials - self.batch0Pointer
+            mesh_StructSize += len(self.materials) * 2
             return mesh_StructSize
 
         self.mesh_StructSize = get_mesh_StructSize(self)
@@ -917,7 +812,7 @@ class c_mesh(object):
         self.blenderObj = obj
 
 class c_meshes(object):
-    def __init__(self, offsetMeshes, wmb4=False, collectionName='WMB', batchDescriptions=None):
+    def __init__(self, offsetMeshes, collectionName='WMB', batchDescriptions=None):
         
         self.meshIDOffset = 0
         def get_meshes(self, offsetMeshes):
@@ -945,7 +840,7 @@ class c_meshes(object):
             meshes_added = []
             # first name pointer is aligned
             catchPadding = 0
-            if wmb4 and ((offsetMeshes + numMeshes*68) % 16 > 0):
+            if (offsetMeshes + numMeshes*68) % 16 > 0:
                 catchPadding = 16 - ((offsetMeshes + numMeshes*68) % 16)
                 offsetMeshes += catchPadding
             
@@ -955,12 +850,12 @@ class c_meshes(object):
                     if obj_name == meshName:
                         if obj_name not in meshes_added:
                             print('[+] Generating Mesh', meshName)
-                            mesh = c_mesh(offsetMeshes, numMeshes, obj, wmb4, self.meshIDOffset, collectionName, batchDescriptions)
+                            mesh = c_mesh(offsetMeshes, numMeshes, obj, self.meshIDOffset, collectionName, batchDescriptions)
                             self.meshIDOffset = mesh.meshIDOffset
                             meshes.append(mesh)
                             meshes_added.append(obj_name)
                             offsetMeshes += mesh.mesh_StructSize
-                            offsetMeshes -= 68 if wmb4 else 44
+                            offsetMeshes -= 68
                             break
 
             return meshes, catchPadding
@@ -977,46 +872,7 @@ class c_meshes(object):
         #print(newOffset, newOffset - offsetMeshes)
         self.meshes_StructSize = get_meshes_StructSize(self, self.meshes) + catchPadding
 
-class c_meshMaterials(object):
-    def __init__(self): # formerly took meshes and lods, now re-generates
-        def get_meshMaterials(self):
-            meshMaterials = []
-            meshNames = []
-
-            for obj in (x for x in allObjectsInCollectionInOrder('WMB') if x.type == "MESH"):
-                obj_name = getRealName(obj.name)
-                if obj_name not in meshNames:
-                    meshNames.append(obj_name)
-
-            for obj in (x for x in allObjectsInCollectionInOrder('WMB') if x.type == "MESH"):
-                obj_name = getRealName(obj.name)
-
-                mesh_index = meshNames.index(obj_name)
-                
-                for slot in obj.material_slots:
-                    material = slot.material
-                    for mat_index, mat in enumerate(getUsedMaterials()):
-                        if mat == material:
-                            struct = [mesh_index, mat_index]
-                            if struct not in meshMaterials:
-                                meshMaterials.append(struct)
-                                break
-            return meshMaterials
-
-        self.meshMaterials = get_meshMaterials(self)
-        self.meshMaterials_StructSize = len(self.meshMaterials) * 8
-        
-    def updateLods(self, lods):
-        # Update LODS meshMatPairs
-        if lods is not None:
-            for lod in lods.lods:
-                for batchInfo in lod.batchInfos:
-                    for meshMat_index, meshMaterial in enumerate(self.meshMaterials):
-                        if meshMaterial[0] == batchInfo[1] and meshMaterial[1] == batchInfo[2]:
-                            batchInfo[4] = meshMat_index
-                            break
-
-class c_mystery(object): # wmb4
+class c_mystery(object):
     def __init__(self, mysteryPointer):
         def mystery1(offset, values):
             mysteryValues = []
@@ -1190,7 +1046,7 @@ class c_mystery(object): # wmb4
         self.mystery_StructSize = self.mysteryOffsets[-1] + self.mysterySizes[-1] - mysteryPointer
         
 
-class c_textures(object): # wmb4
+class c_textures(object):
     def __init__(self, texturesPointer, materials):
         self.textures = []
         for mat in materials:
@@ -1235,7 +1091,7 @@ class c_unknownWorldData(object):
         self.unknownWorldDataCount = len(self.unknownWorldData)
 
 class c_vertexGroup(object):
-    def __init__(self, vertexGroupIndex, vertexesStart, wmb4=False, collectionName='WMB'):
+    def __init__(self, vertexGroupIndex, vertexesStart, collectionName='WMB'):
         self.vertexGroupIndex = vertexGroupIndex
         self.vertexGroupStart = vertexesStart
 
@@ -1245,18 +1101,15 @@ class c_vertexGroup(object):
             
             for index, obj in enumerate(meshes):
                 obj_name = obj.name.split('-')
-                if int(obj_name[0 if wmb4 else -1]) == vertexGroupIndex:
+                if int(obj_name[0]) == vertexGroupIndex:
                     if len(obj.data.uv_layers) == 0:
                         obj.data.uv_layers.new()
                     obj.data.calc_tangents()
-                    if not wmb4:
-                        objs[int(obj_name[0])] = obj
-                    else:
-                        #if len(obj_name) == 2:
-                        #    objs[0] = obj # didn't put a number on the first one
-                        #else:
-                        #    objs[int(obj_name[-1])] = obj
-                        objs[index] = obj
+                    #if len(obj_name) == 2:
+                    #    objs[0] = obj # didn't put a number on the first one
+                    #else:
+                    #    objs[int(obj_name[-1])] = obj
+                    objs[index] = obj
 
             blenderObjects = []
             for key in sorted (objs):
@@ -1302,66 +1155,19 @@ class c_vertexGroup(object):
             uv_coords = objOwner.data.uv_layers[uvSlot].data[loopIndex].uv
             return [uv_coords.x, 1-uv_coords.y]
 
-        # Has bones = 7, 10, 11
-        # 1 UV  = 0
-        # 2 UVs = 1, 4, 7, 10
-        # 3 UVs = 5, 11
-        # 4 UVs = 14
-        # 5 UVs = 12
-        # Has Color = 4, 5, 10, 11, 12, 14
+        # Has bones = TODO: new listing for these
         
         #print(len(self.blenderObjects[0].data.uv_layers))
-        if len(self.blenderObjects[0].data.uv_layers) == 1:         # 0
-            self.vertexFlags = 0
-        elif len(self.blenderObjects[0].data.uv_layers) == 2:       # 1, 4, 7, 10
-            if self.blenderObjects[0]['boneSetIndex'] != -1:        # > 7, 10
-                if self.blenderObjects[0].data.vertex_colors:       # >> 10
-                    self.vertexFlags = 10
-                else:                                               # >> 7
-                    self.vertexFlags = 7
-
-            else:                                                   # > 1, 4
-                if self.blenderObjects[0].data.vertex_colors:       # >> 4
-                    self.vertexFlags = 4
-                else:                                               # >> 1
-                    self.vertexFlags = 1
-
-
-        elif len(self.blenderObjects[0].data.uv_layers) == 3:       # 5, 11
-            if self.blenderObjects[0]['boneSetIndex'] != -1:        # >> 11
-                self.vertexFlags = 11
-            else:                                                   # >> 5
-                self.vertexFlags = 5
-
-        elif len(self.blenderObjects[0].data.uv_layers) == 4:       # 14
-            self.vertexFlags = 14
-        elif len(self.blenderObjects[0].data.uv_layers) == 5:       # 12
-            self.vertexFlags = 12
-        else:
-            print(" - UV Maps Error: No UV Map found!")
-            self.vertexFlags = 14
         
         #print("   Vertex Group %d has vertexFlags %d" % (vertexGroupIndex, self.vertexFlags))
         
-        if self.vertexFlags == 0:
+        vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
+        if vertexFormat in {0x10337, 0x00337}:
+            self.vertexExDataSize = 8
+        elif vertexFormat == 0x10137:
+            self.vertexExDataSize = 4
+        else:
             self.vertexExDataSize = 0
-        if self.vertexFlags == 4:                                         
-            self.vertexExDataSize = 8       
-        elif self.vertexFlags in {5, 7}:                                          
-            self.vertexExDataSize = 12                                    
-        elif self.vertexFlags in {10, 14}:
-            self.vertexExDataSize = 16
-        elif self.vertexFlags in {11, 12}:
-            self.vertexExDataSize = 20
-        
-        if wmb4:
-            vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
-            if vertexFormat in {0x10337, 0x00337}:
-                self.vertexExDataSize = 8
-            elif vertexFormat == 0x10137:
-                self.vertexExDataSize = 4
-            else:
-                self.vertexExDataSize = 0
 
         def get_boneMap(self):
             boneMap = []
@@ -1372,7 +1178,7 @@ class c_vertexGroup(object):
                         boneMap.append(val)
                     return boneMap
 
-        self.boneMap = get_boneMap(self) if not wmb4 else None
+        self.boneMap = None
 
         def get_boneSet(self, boneSetIndex):
             boneSet = []
@@ -1392,7 +1198,7 @@ class c_vertexGroup(object):
             vertexes = []
             vertexesExData = []
             # used for child constraints, define here to optimize
-            possibleArmatures = [x for x in allObjectsInCollectionInOrder('WMB') if x.type == "ARMATURE"]
+            possibleArmatures = [x for x in allObjectsInCollectionInOrder(collectionName) if x.type == "ARMATURE"]
             amt = possibleArmatures[0] if len(possibleArmatures) > 0 else None
             for bvertex_obj in blenderVertices:
                 bvertex_obj_obj = bvertex_obj[1]
@@ -1400,12 +1206,11 @@ class c_vertexGroup(object):
                 loops = get_blenderLoops(self, bvertex_obj_obj)
                 sorted_loops = sorted(loops, key=lambda loop: loop.vertex_index)
                 
-                if self.vertexFlags not in {0, 1, 4, 5, 12, 14} or wmb4:
-                    if 'boneSetIndex' in bvertex_obj_obj:
-                        boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
-                    else:
-                        bvertex_obj_obj["boneSetIndex"] = -1
-                        boneSet = get_boneSet(self, -1)
+                if 'boneSetIndex' in bvertex_obj_obj:
+                    boneSet = get_boneSet(self, bvertex_obj_obj["boneSetIndex"])
+                else:
+                    bvertex_obj_obj["boneSetIndex"] = -1
+                    boneSet = get_boneSet(self, -1)
 
                 
                 previousIndex = -1
@@ -1432,90 +1237,83 @@ class c_vertexGroup(object):
                     tangents = [tx, ty, tz, sign]
 
                     # Normal
-                    normal = []
-                    if self.vertexFlags == 0 or wmb4:
-                        normal = [loop.normal[0], loop.normal[1], loop.normal[2], 0]
-                        if wmb4:
-                            #print(normal)
-                            # what the fuck is this, 11 bit values?
-                            """
-                            if (normal[0] < 0):
-                                normal[0] = -(0x400-normal[0])
-                                normal[0] ^= 0x400
-                            if (normal[1] < 0):
-                                normal[1] = -(0x400-normal[1])
-                                normal[1] ^= 0x400
-                            if (normal[2] < 0):
-                                normal[2] = -(0x200-normal[2])
-                                normal[2] ^= 0x200
-                            true_normal = normal[0] # bits 0-11
-                            true_normal |= normal[1]<<11
-                            true_normal |= normal[2]<<22
-                            normal = true_normal
-                            """
-                            # help me chatgpt, you're my only hope
-                            nx = int(round(normal[0] * float((1<<10)-1)))
-                            ny = int(round(normal[1] * float((1<<10)-1)))
-                            nz = int(round(normal[2] * float((1<<9 )-1)))
-                            if nx < 0:
-                                nx += (1 << 10)
-                                nx ^= 1 << 10
-                            if ny < 0:
-                                ny += (1 << 10)
-                                ny ^= 1 << 10
-                            if nz < 0:
-                                nz += (1 << 9)
-                                nz ^= 1 << 9
-                            normal = nx | (ny << 11) | (nz << 22)
+                    normal = [loop.normal[0], loop.normal[1], loop.normal[2], 0]
+                    #print(normal)
+                    # what the fuck is this, 11 bit values?
+                    """
+                    if (normal[0] < 0):
+                        normal[0] = -(0x400-normal[0])
+                        normal[0] ^= 0x400
+                    if (normal[1] < 0):
+                        normal[1] = -(0x400-normal[1])
+                        normal[1] ^= 0x400
+                    if (normal[2] < 0):
+                        normal[2] = -(0x200-normal[2])
+                        normal[2] ^= 0x200
+                    true_normal = normal[0] # bits 0-11
+                    true_normal |= normal[1]<<11
+                    true_normal |= normal[2]<<22
+                    normal = true_normal
+                    """
+                    # help me chatgpt, you're my only hope
+                    nx = int(round(normal[0] * float((1<<10)-1)))
+                    ny = int(round(normal[1] * float((1<<10)-1)))
+                    nz = int(round(normal[2] * float((1<<9 )-1)))
+                    if nx < 0:
+                        nx += (1 << 10)
+                        nx ^= 1 << 10
+                    if ny < 0:
+                        ny += (1 << 10)
+                        ny ^= 1 << 10
+                    if nz < 0:
+                        nz += (1 << 9)
+                        nz ^= 1 << 9
+                    normal = nx | (ny << 11) | (nz << 22)
                         
                     # UVs
                     uv_maps = []
 
                     uv1 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 0)
                     uv_maps.append(uv1)
-
-                    if self.vertexFlags in {1, 4, 5, 12, 14}:
+                    
+                    # TODO: I think this has been broken the whole time? update with vertexFormat
+                    if False:
                         uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
                         uv_maps.append(uv2)
 
                     # Bones
                     boneIndexes = []
                     boneWeights = []
-                    if self.vertexFlags in {7, 10, 11} or (wmb4 and vertexFormat & 0x30 == 0x30):
+                    if vertexFormat & 0x30 == 0x30:
                         # Bone Indices
                         for groupRef in bvertex.groups:
                             if len(boneIndexes) >= 4:
                                 break
                             boneGroupName = bvertex_obj_obj.vertex_groups[groupRef.group].name
-                            boneID = getBoneIndexByName("WMB", boneGroupName)
+                            boneID = getBoneIndexByName(collectionName, boneGroupName)
                             if boneID is None: # nonexistent group epic fail
                                 missingBones.add(boneGroupName)
                                 continue
-                            if not wmb4:
-                                boneMapIndx = self.boneMap.index(boneID)
-                                boneSetIndx = boneSet.index(boneMapIndx)
-                                boneIndexes.append(boneSetIndx)
-                            else:
-                                if boneID in boneSet:
-                                    boneSetIndx = boneSet.index(boneID)
-                                else: # bone not in set? well fuck that
-                                    for obj in bpy.data.collections['WMB'].all_objects:
-                                        if obj.type != 'ARMATURE':
-                                            continue
-                                        allbonesets = list(obj.data["boneSetArray"])
-                                        boneSet = list(allbonesets[bvertex_obj_obj["boneSetIndex"]])
-                                        if boneID not in boneSet:
-                                            boneSet.append(boneID)
-                                        allbonesets[bvertex_obj_obj["boneSetIndex"]] = boneSet
-                                        obj.data["boneSetArray"] = allbonesets
-                                        boneSetIndx = boneSet.index(boneID) # i swear to god # !!!
-                                        break
-                                
-                                if boneSetIndx < 0 or boneSetIndx > 255:
-                                    print("Hmm, boneID of", boneSetIndx, "could be a problem...")
-                                    print(boneSet)
-                                
-                                boneIndexes.append(boneSetIndx)
+                            if boneID in boneSet:
+                                boneSetIndx = boneSet.index(boneID)
+                            else: # bone not in set? well fuck that
+                                for obj in bpy.data.collections[collectionName].all_objects:
+                                    if obj.type != 'ARMATURE':
+                                        continue
+                                    allbonesets = list(obj.data["boneSetArray"])
+                                    boneSet = list(allbonesets[bvertex_obj_obj["boneSetIndex"]])
+                                    if boneID not in boneSet:
+                                        boneSet.append(boneID)
+                                    allbonesets[bvertex_obj_obj["boneSetIndex"]] = boneSet
+                                    obj.data["boneSetArray"] = allbonesets
+                                    boneSetIndx = boneSet.index(boneID) # i swear to god # !!!
+                                    break
+                            
+                            if boneSetIndx < 0 or boneSetIndx > 255:
+                                print("Hmm, boneID of", boneSetIndx, "could be a problem...")
+                                print(boneSet)
+                            
+                            boneIndexes.append(boneSetIndx)
                         
                         if len(boneIndexes) == 0:
                             print(len(vertexes) ,"- Vertex Weights Error: Vertex has no assigned groups. At least 1 required. Try using Blender's [Select -> Select All By Trait > Ungrouped Verts] function to find them.")
@@ -1588,11 +1386,11 @@ class c_vertexGroup(object):
                     else:
                         for groupRef in bvertex.groups:
                             boneGroupName = bvertex_obj_obj.vertex_groups[groupRef.group].name
-                            boneIndexes.append(getBoneIndexByName("WMB", boneGroupName))
+                            boneIndexes.append(getBoneIndexByName(collectionName, boneGroupName))
                             break
 
                     color = []
-                    if self.vertexFlags in {4, 5, 12, 14} or (wmb4 and vertexFormat >= 0x337):
+                    if vertexFormat >= 0x337:
                         if len (bvertex_obj_obj.data.vertex_colors) == 0:
                             print("Object had no vertex colour layer when one was expected - creating one.")
                             new_vertex_colors = bvertex_obj_obj.data.vertex_colors.new()
@@ -1607,59 +1405,12 @@ class c_vertexGroup(object):
                     normal = []
                     uv_maps = []
                     color = []
-                    if wmb4:
-                        if vertexFormat in {0x10337, 0x10137, 0x00337}:
-                            if vertexFormat != 0x10137:
-                                uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
-                                uv_maps.append(uv2)
-                            loop_color = bvertex_obj_obj.data.vertex_colors.active.data[loop.index].color
-                            color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
-                    
-                    else:
-                        
-                        if self.vertexFlags in {10, 11}:
-                            if len (bvertex_obj_obj.data.vertex_colors) == 0:
-                                print("Object had no vertex colour layer when one was expected - creating one.")
-                                new_vertex_colors = bvertex_obj_obj.data.vertex_colors.new()
-
-                        if self.vertexFlags in {1, 4, 5, 7, 10, 11, 12, 14}:
-                            normal = [loop.normal[0], loop.normal[1], loop.normal[2], 0]
-                        
-                        if self.vertexFlags == 5:
-                            uv3 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 2)
-                            uv_maps.append(uv3)
-
-                        elif self.vertexFlags == 7:
+                    if vertexFormat in {0x10337, 0x10137, 0x00337}:
+                        if vertexFormat != 0x10137:
                             uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
                             uv_maps.append(uv2)
-
-                        elif self.vertexFlags == 10:
-                            uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
-                            uv_maps.append(uv2)
-                            loop_color = bvertex_obj_obj.data.vertex_colors.active.data[loop.index].color
-                            color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
-
-                        elif self.vertexFlags == 11:
-                            uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
-                            uv_maps.append(uv2)
-                            loop_color = bvertex_obj_obj.data.vertex_colors.active.data[loop.index].color
-                            color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
-                            uv3 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
-                            uv_maps.append(uv3)
-
-                        elif self.vertexFlags == 12:
-                            uv3 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 2)
-                            uv_maps.append(uv3)
-                            uv4 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 3)
-                            uv_maps.append(uv4)
-                            uv5 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 4)
-                            uv_maps.append(uv5)
-
-                        elif self.vertexFlags == 14:
-                            uv3 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 2)
-                            uv_maps.append(uv3)
-                            uv4 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 3)
-                            uv_maps.append(uv4)
+                        loop_color = bvertex_obj_obj.data.vertex_colors.active.data[loop.index].color
+                        color = [int(loop_color[0]*255), int(loop_color[1]*255), int(loop_color[2]*255), int(loop_color[3]*255)]
                     
                     vertexExData = [normal, uv_maps, color]
                     vertexesExData.append(vertexExData)
@@ -1676,8 +1427,6 @@ class c_vertexGroup(object):
             for obj in self.blenderObjects:
                 for loop in obj.data.loops:
                     indexes.append(loop.vertex_index + indexesOffset)
-                if not wmb4:
-                    indexesOffset += len(obj.data.vertices)
 
             # Reverse this loop order
             flip_counter = 0
@@ -1691,11 +1440,11 @@ class c_vertexGroup(object):
             
             return indexes
 
-        self.vertexSize = 32 if wmb4 else 28
+        self.vertexSize = 32
 
         self.vertexOffset = self.vertexGroupStart                       
         self.vertexExDataOffset = self.vertexOffset + numVertices * self.vertexSize
-        if wmb4 and self.vertexExDataSize == 0:
+        if self.vertexExDataSize == 0:
             self.vertexExDataOffset = 0
 
         self.unknownOffset = [0, 0]  # Don't question it, it's unknown okay?
@@ -1706,7 +1455,7 @@ class c_vertexGroup(object):
         self.numVertexes = numVertices
 
         self.indexBufferOffset = self.vertexOffset + numVertices * (self.vertexSize + self.vertexExDataSize)
-        if wmb4 and (self.indexBufferOffset % 16 > 0):
+        if self.indexBufferOffset % 16 > 0:
             self.indexBufferOffset += 16 - (self.indexBufferOffset % 16)
         
         self.numIndexes = get_numIndexes(self)
@@ -1715,10 +1464,10 @@ class c_vertexGroup(object):
         
         self.indexes = get_indexes(self)
 
-        self.vertexGroupSize = (self.indexBufferOffset - self.vertexOffset) + (self.numIndexes * (2 if wmb4 else 4))
+        self.vertexGroupSize = (self.indexBufferOffset - self.vertexOffset) + (self.numIndexes * 2)
 
 class c_vertexGroups(object):
-    def __init__(self, offsetVertexGroups, wmb4=False, collectionName='WMB'):
+    def __init__(self, offsetVertexGroups, collectionName='WMB'):
         self.offsetVertexGroups = offsetVertexGroups
         
         # Alright, before we do anything, let's fix the mess that is object IDs
@@ -1787,7 +1536,7 @@ class c_vertexGroups(object):
         
         # Material indexes lfg
         # first, I made this helper function regenerate all the IDs, so we can just...
-        getUsedMaterials()
+        getUsedMaterials(collectionName)
         # don't even have to do anything with it, the IDs on the materials are good now
         for obj in allMeshes:
             if 'Materials' not in obj:
@@ -1807,13 +1556,13 @@ class c_vertexGroups(object):
             for obj in bpy.data.collections[collectionName].all_objects:
                 if obj.type == 'MESH':
                     obj_name = obj.name.split('-')
-                    obj_vertexGroupIndex = int(obj_name[0 if wmb4 else -1])
+                    obj_vertexGroupIndex = int(obj_name[0])
                     if obj_vertexGroupIndex not in vertexGroupIndex:
                         vertexGroupIndex.append(obj_vertexGroupIndex)
 
             vertexGroupIndex.sort()
             
-            vertexGroupHeaderSize = 28 if wmb4 else 48
+            vertexGroupHeaderSize = 28
             
             vertexesOffset = offsetVertexGroups + len(vertexGroupIndex) * vertexGroupHeaderSize
             if vertexesOffset % 16 > 0:
@@ -1822,10 +1571,10 @@ class c_vertexGroups(object):
             vertexGroups = []
             for index in vertexGroupIndex:
                 print('[+] Creating Vertex Group', index)
-                vertexGroups.append(c_vertexGroup(index, vertexesOffset, wmb4, collectionName))
+                vertexGroups.append(c_vertexGroup(index, vertexesOffset, collectionName))
                 vertexesOffset += vertexGroups[index].vertexGroupSize
                 padAmount = 0
-                if wmb4 and (vertexesOffset % 16 > 0):
+                if vertexesOffset % 16 > 0:
                     padAmount = 16 - (vertexesOffset % 16)
                     vertexesOffset += padAmount
                     vertexGroups[index].vertexGroupSize += padAmount
@@ -1840,8 +1589,8 @@ class c_vertexGroups(object):
         self.vertexGroups = get_vertexGroups(self, self.offsetVertexGroups)
 
         def get_vertexGroupsSize(self, vertexGroups):
-            vertexGroupsSize = len(vertexGroups) * (28 if wmb4 else 48)
-            if wmb4 and (vertexGroupsSize % 16 > 0):
+            vertexGroupsSize = len(vertexGroups) * 28
+            if vertexGroupsSize % 16 > 0:
                 vertexGroupsSize += 16 - (vertexGroupsSize % 16)
 
             for vertexGroup in vertexGroups:
@@ -1853,7 +1602,7 @@ class c_vertexGroups(object):
 
 
 class c_generate_data(object):
-    def __init__(self, wmb4=False, collectionName='WMB', BALLER=True):
+    def __init__(self, collectionName='WMB', BALLER=True):
         global BALLIN
         BALLIN = BALLER
         hasArmature = False
@@ -1883,320 +1632,181 @@ class c_generate_data(object):
 
         # Generate custom boneSets from Blender vertex groups
         if hasArmature:
-            self.b_boneSets = c_b_boneSets(wmb4, collectionName)
+            self.b_boneSets = c_b_boneSets(collectionName)
 
         currentOffset = 0
 
         self.header_Offset = currentOffset
-        self.header_Size = 112 if wmb4 else 136
+        self.header_Size = 112
         currentOffset += self.header_Size
         print('header_Size: ', self.header_Size)
 
         currentOffset += 16 - (currentOffset % 16)
         
-        if not wmb4:
-            
-            if hasArmature:
-                self.boneIndexTranslateTable = c_boneIndexTranslateTable(collectionName)
-                
-                self.bones_Offset = currentOffset
-                self.bones = c_bones()
-                self.numBones = len(self.bones.bones)
-                self.bones_Size = self.bones.bones_StructSize
-                currentOffset += self.bones_Size
-                print('bones_Size: ', self.bones_Size)
-
-                currentOffset += 16 - (currentOffset % 16)
-
-                self.boneIndexTranslateTable_Offset = currentOffset
-                #self.boneIndexTranslateTable = c_boneIndexTranslateTable(self.bones)
-                self.boneIndexTranslateTable_Size = self.boneIndexTranslateTable.boneIndexTranslateTable_StructSize
-                currentOffset += self.boneIndexTranslateTable_Size
-                print('boneIndexTranslateTable_Size: ', self.boneIndexTranslateTable_Size)
-            else:
-                self.bones_Offset = 0
-                self.bones = None
-                self.numBones = 0
-                self.bones_Size = 0
-                self.boneIndexTranslateTable_Offset = 0
-                self.boneIndexTranslateTable_Size = 0
-
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            self.vertexGroups_Offset = currentOffset
-            self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset)
-            self.vertexGroupsCount = len(self.vertexGroups.vertexGroups)
-            self.vertexGroups_Size = self.vertexGroups.vertexGroups_StructSize
-            currentOffset += self.vertexGroups_Size
-            print('vertexGroups_Size: ', self.vertexGroups_Size)
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            if hasArmature:
-                self.boneMap = c_boneMap(self.bones)
-                self.numBoneMap = len(self.boneMap.boneMap)
-            else:
-                self.boneMap = None
-                self.numBoneMap = 0
-
-            self.batches_Offset = currentOffset
-            self.batches = c_batches(self.vertexGroupsCount)
-            self.batches_Size = self.batches.batches_StructSize
-            currentOffset += self.batches_Size
-            print('batches_Size: ', self.batches_Size)
-
-            currentOffset += 52
-
-            # Generate custom colTreeNodes in time for LOD data
-            if hasColTreeNodes:
-                self.colTreeNodes = c_colTreeNodes()
-            self.lods_Offset = currentOffset
-            self.lods = c_lods(self.lods_Offset, self.batches)
-            self.lods_Size = self.lods.lods_StructSize
-            self.lodsCount = len(self.lods.lods)
-            currentOffset += self.lods_Size
-            print('lods_Size: ', self.lods_Size)
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            self.meshMaterials_Offset = currentOffset
-            self.meshMaterials = c_meshMaterials(self.meshes, self.lods)
-            self.meshMaterials_Size = self.meshMaterials.meshMaterials_StructSize
-            currentOffset += self.meshMaterials_Size
-            print('meshMaterials_Size: ', self.meshMaterials_Size)
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            # ColTreeNodes Data actually gets stored here
-            if hasColTreeNodes:
-                self.colTreeNodes_Offset = currentOffset
-                self.colTreeNodesSize = self.colTreeNodes.colTreeNodesSize
-                self.colTreeNodesCount = self.colTreeNodes.colTreeNodesCount
-                currentOffset += self.colTreeNodesSize
-            else:
-                self.colTreeNodes = None
-                self.colTreeNodes_Offset = 0
-                self.colTreeNodesCount = 0
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            if hasArmature:
-                self.boneSets_Offset = currentOffset
-
-                if self.boneMap is None or len(self.boneMap.boneMap) > 1:
-                    self.boneSet = c_boneSet(self.boneMap, self.boneSets_Offset)
-                    self.boneSet_Size = self.boneSet.boneSet_StructSize
-                    currentOffset += self.boneSet_Size
-                else:
-                    self.boneSets_Offset = 0
-
-                currentOffset += 16 - (currentOffset % 16)
-
-                self.boneMap_Offset = currentOffset
-                self.boneMap_Size = self.boneMap.boneMap_StructSize
-                currentOffset += self.boneMap_Size
-                print('boneMap_Size: ', self.boneMap_Size)
-            else:
-                self.boneMap_Offset = 0
-                self.boneSets_Offset = 0
-
-            self.meshes_Offset = currentOffset
-            self.meshes = c_meshes(self.meshes_Offset)
-            self.meshes_Size = self.meshes.meshes_StructSize
-            currentOffset += self.meshes_Size
-            print('meshes_Size: ', self.meshes_Size)
-            if not hasArmature:
-                for mesh in self.meshes.meshes:
-                    mesh.numBones = 0
-
-            currentOffset += 16 - (currentOffset % 16)
-
-            self.materials_Offset = currentOffset
-            self.materials = c_materials(self.materials_Offset)
-            self.materials_Size = self.materials.materials_StructSize
-            currentOffset += self.materials_Size
-            print('materials_Size: ', self.materials_Size)
-
-            if hasUnknownWorldData:
-                self.unknownWorldData_Offset = currentOffset
-                self.unknownWorldData = c_unknownWorldData()
-                self.unknownWorldDataSize = self.unknownWorldData.unknownWorldDataSize
-                self.unknownWorldDataCount = self.unknownWorldData.unknownWorldDataCount
-                currentOffset += self.unknownWorldDataSize
-            else:
-                self.unknownWorldData = None
-                self.unknownWorldData_Offset = 0
-                self.unknownWorldDataCount = 0
-
-            self.meshMaterials.updateLods(self.lods)
-            
+        if 'vertexFormat' in bpy.data.collections[collectionName]:
+            self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
         else:
-            
-            if 'vertexFormat' in bpy.data.collections[collectionName]:
-                self.vertexFormat = bpy.data.collections[collectionName]['vertexFormat']
-            else:
-                self.vertexFormat = 65799
-                bpy.data.collections[collectionName]['info'] = "Some of these properties were auto-generated... good luck"
-                bpy.data.collections[collectionName]['vertexFormat'] = 65799
-            
-            if BALLIN:
-                # FUCK YOU BALTIMORE
-                # IF YOU'RE DUMB ENOUGH TO MAKE A DYNAMICALLY CUTTABLE MODEL THIS WEEKEND
-                # YOU'RE A BIG ENOUGH SCHMUCK TO DELETE CUT GROUPS WITH RECKLESS ABANDON
-                for key in list(bpy.data.collections["WMB"].keys()):
-                    if key[:1].isnumeric() and not key[:1] == "3":
-                        del bpy.data.collections["WMB"][key]
-                bpy.data.collections["WMB"]["1- 0-B"] = -1
-                bpy.data.collections["WMB"]["1- 0-name"] = "CG_DEFAULT"
-                bpy.data.collections["WMB"]["1- 0-parent"] = -1
-                # group 4 defined dynamically
-                # group 5 defined dynamically
-                # bpy.data.collections["WMB"]["5- 0-A"] = 0
-                # bpy.data.collections["WMB"]["5- 0-B"] = 0
-                # bpy.data.collections["WMB"]["5- 0-B2"] = -1
-                # bpy.data.collections["WMB"]["5- 0-C"] = 0
-                # bpy.data.collections["WMB"]["5- 0-C2"] = 0
-                # bpy.data.collections["WMB"]["5- 0-D- 0"] = []
-                boundingBoxXYZ, boundingBoxUVW = getGlobalBoundingBox()
-                minX, maxX = boundingBoxXYZ[0] - boundingBoxUVW[0], boundingBoxXYZ[0] + boundingBoxUVW[0]
-                minY, maxY = boundingBoxXYZ[1] - boundingBoxUVW[1], boundingBoxXYZ[1] + boundingBoxUVW[1]
-                minZ, maxZ = boundingBoxXYZ[2] - boundingBoxUVW[2], boundingBoxXYZ[2] + boundingBoxUVW[2]
-                bpy.data.collections["WMB"]["6- 0-A"] = [minX, minY, minZ, 1.0, maxX, minY, maxZ, 1.0, minX, minY, maxZ, 1.0, maxX, minY, minZ, 1.0] \
-                                                      + [maxX, maxY, minZ, 1.0, minX, maxY, minZ, 1.0, minX, maxY, maxZ, 1.0, maxX, maxY, maxZ, 1.0]
-                bpy.data.collections["WMB"]["6- 0-B"] = [0, 1, 2, 0, 3, 1, 0, 4, 3, 0, 5, 4, 0, 6, 5, 0, 2, 6, 3, 7, 1, 3, 4, 7, 2, 7, 6, 2, 1, 7, 5, 7, 4, 5, 6, 7]
-                bpy.data.collections["WMB"]["7- 0-A"] = [0.0, 0.0, 0.0] # offset for chunk 6 coordinates
-                bpy.data.collections["WMB"]["7- 0-B"] = [0.25, 0.25, 0.25] # idk a scale factor or something
-                bpy.data.collections["WMB"]["7- 0-C"] = 0
-                bpy.data.collections["WMB"]["7- 0-D"] = 0.3
-                bpy.data.collections["WMB"]["7- 0-startIndex"] = 0
-                bpy.data.collections["WMB"]["7- 0-startVertex"] = 0
-                bpy.data.collections["WMB"]["7- 0-indexCount"] = 36
-                bpy.data.collections["WMB"]["7- 0-vertexCount"] = 8
-                bpy.data.collections["WMB"]["8- 0-vectors"] = [0.0, -0.025317, 0.004611] + [1.0, 0.0, 0.0] + [0.0, 1.0, 0.0] + [0.0, 0.0, 1.0] + [0.277, 0.230695, 0.273966]
-                bpy.data.collections["WMB"]["8- 0-A"] = 0 # cut group index
-                bpy.data.collections["WMB"]["8- 0-B"] = [1.0, 0.3] #
-                bpy.data.collections["WMB"]["8- 0-C"] = 1 # always 1
-                bpy.data.collections["WMB"]["8- 0-D"] = 0 # always 0
-                bpy.data.collections["WMB"]["8- 0-E"] = 0 # always 0
-                bpy.data.collections["WMB"]["8- 0-F"] = 0 # a more orderly index, probably for 7
-                bpy.data.collections["WMB"]["8- 0-G"] = 1 # always 1
-                bpy.data.collections["WMB"]["9- 0-A"] = 0 # or -1?
-                bpy.data.collections["WMB"]["9- 0-parent"] = -1 # parent
-                bpy.data.collections["WMB"]["9- 0-C"] = 0 # index in 8?
-                bpy.data.collections["WMB"]["9- 0-D"] = 1 # amount of 8 groups
-                bpy.data.collections["WMB"]["9- 0-E"] = 1 # or 0, doesn't seem to matter
-                # IF YOU CAN SLICE SIX FEET IN THE AIR STRAIGHT UP AND NOT CRASH THE GAME,
-                # YOU GET NO DOWN PAYMENT
+            self.vertexFormat = 65799
+            bpy.data.collections[collectionName]['info'] = "Some of these properties were auto-generated... good luck"
+            bpy.data.collections[collectionName]['vertexFormat'] = 65799
+        
+        if BALLIN:
+            # FUCK YOU BALTIMORE
+            # IF YOU'RE DUMB ENOUGH TO MAKE A DYNAMICALLY CUTTABLE MODEL THIS WEEKEND
+            # YOU'RE A BIG ENOUGH SCHMUCK TO DELETE CUT GROUPS WITH RECKLESS ABANDON
+            for key in list(bpy.data.collections["WMB"].keys()):
+                if key[:1].isnumeric() and not key[:1] == "3":
+                    del bpy.data.collections["WMB"][key]
+            bpy.data.collections["WMB"]["1- 0-B"] = -1
+            bpy.data.collections["WMB"]["1- 0-name"] = "CG_DEFAULT"
+            bpy.data.collections["WMB"]["1- 0-parent"] = -1
+            # group 4 defined dynamically
+            # group 5 defined dynamically
+            # bpy.data.collections["WMB"]["5- 0-A"] = 0
+            # bpy.data.collections["WMB"]["5- 0-B"] = 0
+            # bpy.data.collections["WMB"]["5- 0-B2"] = -1
+            # bpy.data.collections["WMB"]["5- 0-C"] = 0
+            # bpy.data.collections["WMB"]["5- 0-C2"] = 0
+            # bpy.data.collections["WMB"]["5- 0-D- 0"] = []
+            boundingBoxXYZ, boundingBoxUVW = getGlobalBoundingBox()
+            minX, maxX = boundingBoxXYZ[0] - boundingBoxUVW[0], boundingBoxXYZ[0] + boundingBoxUVW[0]
+            minY, maxY = boundingBoxXYZ[1] - boundingBoxUVW[1], boundingBoxXYZ[1] + boundingBoxUVW[1]
+            minZ, maxZ = boundingBoxXYZ[2] - boundingBoxUVW[2], boundingBoxXYZ[2] + boundingBoxUVW[2]
+            bpy.data.collections["WMB"]["6- 0-A"] = [minX, minY, minZ, 1.0, maxX, minY, maxZ, 1.0, minX, minY, maxZ, 1.0, maxX, minY, minZ, 1.0] \
+                                                  + [maxX, maxY, minZ, 1.0, minX, maxY, minZ, 1.0, minX, maxY, maxZ, 1.0, maxX, maxY, maxZ, 1.0]
+            bpy.data.collections["WMB"]["6- 0-B"] = [0, 1, 2, 0, 3, 1, 0, 4, 3, 0, 5, 4, 0, 6, 5, 0, 2, 6, 3, 7, 1, 3, 4, 7, 2, 7, 6, 2, 1, 7, 5, 7, 4, 5, 6, 7]
+            bpy.data.collections["WMB"]["7- 0-A"] = [0.0, 0.0, 0.0] # offset for chunk 6 coordinates
+            bpy.data.collections["WMB"]["7- 0-B"] = [0.25, 0.25, 0.25] # idk a scale factor or something
+            bpy.data.collections["WMB"]["7- 0-C"] = 0
+            bpy.data.collections["WMB"]["7- 0-D"] = 0.3
+            bpy.data.collections["WMB"]["7- 0-startIndex"] = 0
+            bpy.data.collections["WMB"]["7- 0-startVertex"] = 0
+            bpy.data.collections["WMB"]["7- 0-indexCount"] = 36
+            bpy.data.collections["WMB"]["7- 0-vertexCount"] = 8
+            bpy.data.collections["WMB"]["8- 0-vectors"] = [0.0, -0.025317, 0.004611] + [1.0, 0.0, 0.0] + [0.0, 1.0, 0.0] + [0.0, 0.0, 1.0] + [0.277, 0.230695, 0.273966]
+            bpy.data.collections["WMB"]["8- 0-A"] = 0 # cut group index
+            bpy.data.collections["WMB"]["8- 0-B"] = [1.0, 0.3] #
+            bpy.data.collections["WMB"]["8- 0-C"] = 1 # always 1
+            bpy.data.collections["WMB"]["8- 0-D"] = 0 # always 0
+            bpy.data.collections["WMB"]["8- 0-E"] = 0 # always 0
+            bpy.data.collections["WMB"]["8- 0-F"] = 0 # a more orderly index, probably for 7
+            bpy.data.collections["WMB"]["8- 0-G"] = 1 # always 1
+            bpy.data.collections["WMB"]["9- 0-A"] = 0 # or -1?
+            bpy.data.collections["WMB"]["9- 0-parent"] = -1 # parent
+            bpy.data.collections["WMB"]["9- 0-C"] = 0 # index in 8?
+            bpy.data.collections["WMB"]["9- 0-D"] = 1 # amount of 8 groups
+            bpy.data.collections["WMB"]["9- 0-E"] = 1 # or 0, doesn't seem to matter
+            # IF YOU CAN SLICE SIX FEET IN THE AIR STRAIGHT UP AND NOT CRASH THE GAME,
+            # YOU GET NO DOWN PAYMENT
 
-            self.vertexGroups_Offset = currentOffset
-            self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset, True, collectionName)
-            self.vertexGroupsCount = len(self.vertexGroups.vertexGroups)
-            self.vertexGroups_Size = self.vertexGroups.vertexGroups_StructSize
-            currentOffset += self.vertexGroups_Size
-            print('vertexGroups_Size: ', self.vertexGroups_Size)
+        self.vertexGroups_Offset = currentOffset
+        self.vertexGroups = c_vertexGroups(self.vertexGroups_Offset, True, collectionName)
+        self.vertexGroupsCount = len(self.vertexGroups.vertexGroups)
+        self.vertexGroups_Size = self.vertexGroups.vertexGroups_StructSize
+        currentOffset += self.vertexGroups_Size
+        print('vertexGroups_Size: ', self.vertexGroups_Size)
+
+        #currentOffset += 16 - (currentOffset % 16)
+        
+        self.batches_Offset = currentOffset
+        self.batches = c_batches(self.vertexGroupsCount, collectionName)
+        self.batches_Size = self.batches.batches_StructSize
+        currentOffset += self.batches_Size
+        print('batches_Size: ', self.batches_Size)
+
+        #currentOffset += 16 - (currentOffset % 16)
+        
+        self.batchDescPointer = currentOffset
+        self.batchDescriptions = c_batch_supplements(currentOffset, collectionName)
+        self.batchDescSize = self.batchDescriptions.supplementStructSize
+        currentOffset += self.batchDescSize
+        print('batchDescSize: ', self.batchDescSize)
+        
+        #currentOffset += 16 - (currentOffset % 16)
+        
+        if hasArmature:
+            self.boneIndexTranslateTable = c_boneIndexTranslateTable(collectionName)
+        
+            self.bones_Offset = currentOffset
+            self.bones = c_bones(collectionName)
+            self.numBones = len(self.bones.bones)
+            self.bones_Size = self.bones.bones_StructSize
+            currentOffset += self.bones_Size
+            print('bones_Size: ', self.bones_Size)
 
             #currentOffset += 16 - (currentOffset % 16)
-            
-            self.batches_Offset = currentOffset
-            self.batches = c_batches(self.vertexGroupsCount, wmb4, collectionName)
-            self.batches_Size = self.batches.batches_StructSize
-            currentOffset += self.batches_Size
-            print('batches_Size: ', self.batches_Size)
 
-            #currentOffset += 16 - (currentOffset % 16)
-            
-            self.batchDescPointer = currentOffset
-            self.batchDescriptions = c_batch_supplements(currentOffset, collectionName)
-            self.batchDescSize = self.batchDescriptions.supplementStructSize
-            currentOffset += self.batchDescSize
-            print('batchDescSize: ', self.batchDescSize)
-            
-            #currentOffset += 16 - (currentOffset % 16)
-            
-            if hasArmature:
-                self.boneIndexTranslateTable = c_boneIndexTranslateTable(collectionName)
-            
-                self.bones_Offset = currentOffset
-                self.bones = c_bones(wmb4, collectionName)
-                self.numBones = len(self.bones.bones)
-                self.bones_Size = self.bones.bones_StructSize
-                currentOffset += self.bones_Size
-                print('bones_Size: ', self.bones_Size)
+            self.boneIndexTranslateTable_Offset = currentOffset
+            #self.boneIndexTranslateTable = c_boneIndexTranslateTable(self.bones, collectionName)
+            self.boneIndexTranslateTable_Size = self.boneIndexTranslateTable.boneIndexTranslateTable_StructSize
+            currentOffset += self.boneIndexTranslateTable_Size
+            print('boneIndexTranslateTable_Size: ', self.boneIndexTranslateTable_Size)
 
-                #currentOffset += 16 - (currentOffset % 16)
-
-                self.boneIndexTranslateTable_Offset = currentOffset
-                #self.boneIndexTranslateTable = c_boneIndexTranslateTable(self.bones, collectionName)
-                self.boneIndexTranslateTable_Size = self.boneIndexTranslateTable.boneIndexTranslateTable_StructSize
-                currentOffset += self.boneIndexTranslateTable_Size
-                print('boneIndexTranslateTable_Size: ', self.boneIndexTranslateTable_Size)
-
-                # psyche, this one is padded
-                #if (currentOffset % 16) > 0:
-                if True: # ???
-                    currentOffset += 16 - (currentOffset % 16)
-            else:
-                self.bones_Offset = 0
-                self.bones = None
-                self.numBones = 0
-                self.bones_Size = 0
-                self.boneIndexTranslateTable_Offset = 0
-                self.boneIndexTranslateTable_Size = 0
-
-            self.boneMap = None
-            self.numBoneMap = 0
-
-            self.lods = None
-
-            self.colTreeNodes = None
-            self.colTreeNodes_Offset = 0
-            self.colTreeNodesCount = 0
-
-            if hasArmature:
-                self.boneSets_Offset = currentOffset
-                self.boneSet = c_boneSet(self.boneMap, self.boneSets_Offset, True, collectionName)
-                self.boneSet_Size = self.boneSet.boneSet_StructSize
-                currentOffset += self.boneSet_Size
-                print('boneSet_Size: ', self.boneSet_Size)
-
-                #currentOffset += 16 - (currentOffset % 16)
-            else:
-                self.boneMap_Offset = 0
-                self.boneSets_Offset = 0
-
-            self.materials_Offset = currentOffset
-            self.materials = c_materials(self.materials_Offset, True, collectionName)
-            self.materials_Size = self.materials.materials_StructSize
-            currentOffset += self.materials_Size
-            print('materials_Size: ', self.materials_Size)
-            
-            currentOffset += 16 - (currentOffset % 16)
-            
-            self.textures_Offset = currentOffset
-            self.textures = c_textures(self.textures_Offset, self.materials.materials)
-            self.textures_Size = self.textures.textures_StructSize
-            # TODO fuck, this doesn't parse in the normal order... now I need to track every pointer # huh?
-            currentOffset += self.textures_Size
-            print('textures_Size: ', self.textures_Size)
-            
-            if currentOffset % 16 > 0:
+            # psyche, this one is padded
+            #if (currentOffset % 16) > 0:
+            if True: # ???
                 currentOffset += 16 - (currentOffset % 16)
-            
-            self.meshes_Offset = currentOffset
-            self.meshes = c_meshes(self.meshes_Offset, True, collectionName, self.batchDescriptions)
-            self.meshes_Size = self.meshes.meshes_StructSize
-            currentOffset += self.meshes_Size
-            print('meshes_Size: ', self.meshes_Size)
-            
-            if not hasArmature:
-                for mesh in self.meshes.meshes:
-                    mesh.numBones = 0
-            
-            if "mystery" in bpy.data.collections['WMB'] and bpy.data.collections['WMB']["mystery"]:
-                self.mystery_Offset = currentOffset #0xf32a2 for Sundowner testing
-                self.mystery = c_mystery(self.mystery_Offset)
-                currentOffset += self.mystery.mystery_StructSize
-            else:
-                self.mystery_Offset = 0
-                self.mystery = None
+        else:
+            self.bones_Offset = 0
+            self.bones = None
+            self.numBones = 0
+            self.bones_Size = 0
+            self.boneIndexTranslateTable_Offset = 0
+            self.boneIndexTranslateTable_Size = 0
+
+        self.boneMap = None
+        self.numBoneMap = 0
+
+        self.lods = None
+
+        self.colTreeNodes = None
+        self.colTreeNodes_Offset = 0
+        self.colTreeNodesCount = 0
+
+        if hasArmature:
+            self.boneSets_Offset = currentOffset
+            self.boneSet = c_boneSet(self.boneMap, self.boneSets_Offset, True, collectionName)
+            self.boneSet_Size = self.boneSet.boneSet_StructSize
+            currentOffset += self.boneSet_Size
+            print('boneSet_Size: ', self.boneSet_Size)
+
+            #currentOffset += 16 - (currentOffset % 16)
+        else:
+            self.boneMap_Offset = 0
+            self.boneSets_Offset = 0
+
+        self.materials_Offset = currentOffset
+        self.materials = c_materials(self.materials_Offset, True, collectionName)
+        self.materials_Size = self.materials.materials_StructSize
+        currentOffset += self.materials_Size
+        print('materials_Size: ', self.materials_Size)
+        
+        currentOffset += 16 - (currentOffset % 16)
+        
+        self.textures_Offset = currentOffset
+        self.textures = c_textures(self.textures_Offset, self.materials.materials)
+        self.textures_Size = self.textures.textures_StructSize
+        # TODO fuck, this doesn't parse in the normal order... now I need to track every pointer # huh?
+        currentOffset += self.textures_Size
+        print('textures_Size: ', self.textures_Size)
+        
+        if currentOffset % 16 > 0:
+            currentOffset += 16 - (currentOffset % 16)
+        
+        self.meshes_Offset = currentOffset
+        self.meshes = c_meshes(self.meshes_Offset, True, collectionName, self.batchDescriptions)
+        self.meshes_Size = self.meshes.meshes_StructSize
+        currentOffset += self.meshes_Size
+        print('meshes_Size: ', self.meshes_Size)
+        
+        if not hasArmature:
+            for mesh in self.meshes.meshes:
+                mesh.numBones = 0
+        
+        if "mystery" in bpy.data.collections['WMB'] and bpy.data.collections['WMB']["mystery"]:
+            self.mystery_Offset = currentOffset #0xf32a2 for Sundowner testing
+            self.mystery = c_mystery(self.mystery_Offset)
+            currentOffset += self.mystery.mystery_StructSize
+        else:
+            self.mystery_Offset = 0
+            self.mystery = None
