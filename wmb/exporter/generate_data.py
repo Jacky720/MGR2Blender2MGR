@@ -1276,8 +1276,7 @@ class c_vertexGroup(object):
                     uv1 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 0)
                     uv_maps.append(uv1)
                     
-                    # TODO: I think this has been broken the whole time? update with vertexFormat
-                    if False:
+                    if vertexFormat == 0x10307:
                         uv2 = get_blenderUVCoords(self, bvertex_obj_obj, loop.index, 1)
                         uv_maps.append(uv2)
 
