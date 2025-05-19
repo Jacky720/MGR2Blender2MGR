@@ -548,7 +548,7 @@ def add_material_to_mesh(mesh, materials , uvs):
     # bm = bmesh.from_edit_mesh(mesh.data)
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
-    uv_layer = bm.loops.layers.uv.verify()
+    uv_layer = bm.loops.layers.uv.new("UVMap1")
     #bm.faces.layers.tex.verify()
     for face in bm.faces:
         face.material_index = 0
@@ -1085,7 +1085,6 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
     #reset_blend()
     wmb = WMB(wmb_file, only_extract)
     wmbname = os.path.split(wmb_file)[-1] # Split only splits into head and tail, but since we want the last part, we don't need to split the head with wmb_file.split(os.sep)
-    wmb4 = wmb.wmb_header.magicNumber == b'WMB4'
     
     if only_extract:
         texture_dir = wmb_file.replace(wmbname, 'textures')
@@ -1137,72 +1136,53 @@ def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.rea
         addWtaExportMaterial(texture_dir, material)
         materials.append(construct_materials(texture_dir, material, materialIndex))
     print('Linking materials to objects...')
-    if not wmb4: # formerly "hasattr(wmb, "meshGroupInfoArray")":
-        for meshGroupInfo in wmb.meshGroupInfoArray:
-            mesh_start = meshGroupInfo.meshStart
-            for Index in range(len(meshGroupInfo.groupedMeshArray)):
-                meshIndex = int(meshes[Index + mesh_start].name.split('-')[0])
-                materialIndex = meshGroupInfo.groupedMeshArray[meshIndex - mesh_start].materialIndex
-                groupIndex = int(meshes[Index + mesh_start].name.split('-')[2])
-                uvMaps = [[], [], [], [], []]
-                for i, VertexIndex in enumerate(usedVerticeIndexArrays[Index + mesh_start]):
-                    for k in range(5):
-                        if uvs[k][groupIndex] != None:
-                            uvMaps[k].append( uvs[k][groupIndex][VertexIndex])
-                if len(materials) > 0:
-                    add_material_to_mesh(meshes[Index + mesh_start], [materials[materialIndex]], uvMaps)
-    else:
-        for mesh in meshes:
-            meshIndex = int(mesh['ID'])
-            groupIndex = int(mesh.name.split('-')[0])
-            uvMaps = [[], [], [], [], []]
-            vertexStart = mesh['VertexIndexStart']
-            for VertexIndex in usedVerticeIndexArrays[meshIndex]:
-                for k in range(5):
-                    if uvs[k][groupIndex] != None:
-                        #print("Found a UV!", k, groupIndex, VertexIndex, uvs[k][groupIndex][VertexIndex])
-                        uvMaps[k].append( uvs[k][groupIndex][vertexStart + VertexIndex])
-            for materialIndex in mesh['Materials']:
-                #if len(materials) > 0:
-                    #print("Some materials made for", mesh.name)
-                # sanity checks are for wimps
-                #print(mesh.name, materialIndex)
-                add_material_to_mesh(mesh, [materials[materialIndex]], uvMaps)
+    for mesh in meshes:
+        meshIndex = int(mesh['ID'])
+        groupIndex = int(mesh.name.split('-')[0])
+        uvMaps = [[], [], [], [], []]
+        vertexStart = mesh['VertexIndexStart']
+        for VertexIndex in usedVerticeIndexArrays[meshIndex]:
+            for k in range(5):
+                if uvs[k][groupIndex] != None:
+                    #print("Found a UV!", k, groupIndex, VertexIndex, uvs[k][groupIndex][VertexIndex])
+                    uvMaps[k].append( uvs[k][groupIndex][vertexStart + VertexIndex])
+        # (the following comment is preserved for posterity)
+        # sanity checks are for wimps
+        add_material_to_mesh(mesh, [materials[materialIndex] for materialIndex in mesh['Materials']], uvMaps)
     
     amt = bpy.data.objects.get(armature_name)
     if amt is not None:
         for mesh in meshes:
             set_partent(amt,mesh)
     
-    if wmb4:
-        # batchgroup sets some meshes as shadow only or low-LOD
-        for obj in [x for x in col.all_objects if x.type == "MESH"]:
-            if obj['batchGroup'] > 0:
-                obj.hide_set(True)
-                obj.hide_render = True
-        # more descriptive bone names where possible
-        if amt is not None:
-            if wmb.wmb_header.vertexFormat == 0x107: # wmb.wmb_header.referenceBone != -1
-                #bpy.ops.object.mode_set(mode='EDIT')
-                for mesh in meshes:
-                    mesh.vertex_groups.new(name="bone%d"%wmb.wmb_header.referenceBone)
-                    mesh.vertex_groups["bone%d"%wmb.wmb_header.referenceBone].add(
-                        list(range(len(mesh.data.vertices))), 1.0, "REPLACE")
-                #bpy.ops.object.mode_set(mode='OBJECT')
-                    
-            for bone in amt.data.bones:
-                oldBoneName = bone.name
-                if bone["ID"] in wmb4_bonenames:
-                    #print("Renaming %s to %s" % (bone.name, wmb4_bonenames[bone["ID"]]))
-                    bone.name = wmb4_bonenames[bone["ID"]]
-                else:
-                    bone.name = "bone%d" % bone["ID"]
-                for mesh in [x for x in col.objects if x.type == "MESH"]:
-                    for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
-                        vertexGroup.name = bone.name
-                    
-        else:
-            print("Huh, no armature. hasBone is", wmb.hasBone)
+    # batchgroup sets some meshes as shadow only or low-LOD
+    for obj in [x for x in col.all_objects if x.type == "MESH"]:
+        if obj['batchGroup'] > 0:
+            obj.hide_set(True)
+            obj.hide_render = True
+    # more descriptive bone names where possible
+    if amt is not None:
+        if wmb.wmb_header.vertexFormat == 0x107: # wmb.wmb_header.referenceBone != -1
+            #bpy.ops.object.mode_set(mode='EDIT')
+            for mesh in meshes:
+                mesh.vertex_groups.new(name="bone%d"%wmb.wmb_header.referenceBone)
+                mesh.vertex_groups["bone%d"%wmb.wmb_header.referenceBone].add(
+                    list(range(len(mesh.data.vertices))), 1.0, "REPLACE")
+            #bpy.ops.object.mode_set(mode='OBJECT')
+                
+        for bone in amt.data.bones:
+            oldBoneName = bone.name
+            if bone["ID"] in wmb4_bonenames:
+                #print("Renaming %s to %s" % (bone.name, wmb4_bonenames[bone["ID"]]))
+                bone.name = wmb4_bonenames[bone["ID"]]
+            else:
+                bone.name = "bone%d" % bone["ID"]
+            for mesh in [x for x in col.objects if x.type == "MESH"]:
+                for vertexGroup in [y for y in mesh.vertex_groups if y.name == oldBoneName]:
+                    vertexGroup.name = bone.name
+                
+    else:
+        print("Huh, no armature. hasBone is", wmb.hasBone)
             
     if wmb.hasColTreeNodes:
         import_colTreeNodes(wmb, col)
