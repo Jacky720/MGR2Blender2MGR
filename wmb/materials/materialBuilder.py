@@ -55,8 +55,13 @@ def buildMaterialNodes(material, uniforms):
         image_node.location = 0,i*-60
         if bpy.data.images.get(str(texentry.id) + ".dds") is not None:
             image_node.image = bpy.data.images.get(str(texentry.id) + ".dds")
+
         image_node.hide = True
         image_node.label = consts.getTextureFlagFromDict(texentry.flag)
+
+        if image_node.image is None:
+            continue # Skip bad/missing images, umbrella-type error handling
+
         if texentry.flag == 0: # Base color
             if material.mgr_data.shader_name not in consts.transparentShaders:
                 albedoInverterNode = nodes.new(type="ShaderNodeInvert")
@@ -150,5 +155,9 @@ def buildMaterialNodes(material, uniforms):
             if not "skn" in material.mgr_data.shader_name:
                 mixedLightmapNode.inputs[0].default_value = 0.792
                 links.new(uv_lightmap_node.outputs['UV'], node.inputs['Vector'])
+                links.new(node.outputs['Color'], mixedLightmapNode.inputs[2])
+                links.new(mixedLightmapNode.outputs['Color'], principled.inputs['Base Color'])
+            else:
+                mixedLightmapNode.inputs[0].default_value = 0.108
                 links.new(node.outputs['Color'], mixedLightmapNode.inputs[2])
                 links.new(mixedLightmapNode.outputs['Color'], principled.inputs['Base Color'])

@@ -35,6 +35,7 @@ from .hkx.importer import hkxImportOperator
 from .path.importer import pathImportOperator
 from .path.exporter import pathExportOperator
 from .wmb import wmb_builder
+from .wmb import lightmapPanel
 
 class NierObjectMenu(bpy.types.Menu):
     bl_idname = 'OBJECT_MT_n2b2n'
@@ -168,7 +169,9 @@ classes = (
     pathImportOperator.ImportMGRPath,
     pathExportOperator.ExportMGRPath,
 
-    wmb_builder.MakeNewWMB
+    wmb_builder.MakeNewWMB,
+    #lightmapPanel.B2MLightmapEditor,
+    lightmapPanel.B2MMakeLightmaps
     
     
 )
@@ -192,7 +195,6 @@ def register():
     bpy.utils.register_class(IMPORT_MGR_MainMenu)
     bpy.utils.register_class(IMPORT_MGR_HKXMenu)
     bpy.utils.register_class(EXPORT_MGR_MainMenu)
-
 
     wta_wtp_ui_manager.register()
     dat_dtt_ui_manager.register()
