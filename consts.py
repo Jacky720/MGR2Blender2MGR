@@ -16,9 +16,43 @@ textureFlagDictonary = {
     10 : "Tension Map"
 }
 
-reflectiveBlacklist = ["skn03_xbXxX","siv00_sxmxb", "siv00_sxmvx", "siv00_sxmvb", "sis20_xxmvb", "siv20_sxxvx", "sis20_xxxfb", "siv00_sxmfb", # These shaders will never have reflection
-"sis20_sxxvX", "sis00_sxmxX", "sis00_sxmxb", "siv00_sxwxx", "siv00_sxmxx", "siv00_sxmex", "sis00_sxmvX", "siv20_sxxfb"] # These I'm not so sure about but seem too reflective currently
-transparentShaders = ["siv01_sxmxx", "ois02_sbxeX", "cnm10_SxwXX", "siv23_sbxex", "siv21_sxxxx", "siv01_sxxvx", "siv01_sxmxx", "sis03_sxxxX", "siv21_sxxvx", "cnm10_SxXXX", "siv02_sxcxx", "cnm20_SxvXX", "siv23_sxcxx", "siv22_sxwxx", "siv22_sxcvx"] # These shaders will be given a cardboard cutout effect
+reflectiveBlacklist = [
+                       # These shaders will never have reflection:
+                       "skn03_xbXxX",
+                       # "siv00_sxmxb", "siv00_sxmvx", "siv00_sxmvb", "siv00_sxmfb", "siv20_sxxvx",
+                       # "sis20_xxmvb", "sis20_xxxfb",
+                       # These I'm not so sure about, but seem too reflective currently:
+                       # "sis00_sxmxX", "sis00_sxmxb", "sis00_sxmvX",
+                       # "siv00_sxwxx", "siv00_sxmxx", "siv00_sxmex",
+                       # "sis20_sxxvX", "siv20_sxxfb",
+                       "siv", "sis"
+                       ]
+
+transparentShaders = [
+                      # These shaders will be given a cardboard cutout effect
+                      # "siv01_sxmxx", "siv01_sxxvx", "siv01_sxmxx", "siv02_sxcxx",
+                      # "siv21_sxxvx", "siv21_sxxxx", "siv22_sxwxx", "siv22_sxcvx", "siv23_sxcxx", "siv23_sbxex",
+                      "siv",
+                      "sis03_sxxxX",
+                      "ois01_xbceX", "ois01_sbceX",
+                      # "ois02_sbxeX", "ois02_sbxxX", "ois02_xbceX", "ois02_xbxeX",
+                      "ois02",
+                      "cnm10_SxwXX", "cnm10_SxXXX", "cnm20_SxvXX",
+                      # "har00_sbXtX", "har00_sbXxX", "har03_sbXtX",
+                      "har",
+                      ]
+
+weakLightmapShaders = ["skn", "eye", "ois00_xbceX", "ois00_xbweX"]
+
+def isReflective(shader_name):
+    return not any(shader_name.startswith(x) for x in reflectiveBlacklist)
+
+def isTransparent(shader_name):
+    return any(shader_name.startswith(x) for x in transparentShaders)
+
+def hasWeakLightmap(shader_name):
+    return any(shader_name.startswith(x) for x in weakLightmapShaders)
+
 
 def getTextureFlagFromDict(id):
     value = textureFlagDictonary.get(id)

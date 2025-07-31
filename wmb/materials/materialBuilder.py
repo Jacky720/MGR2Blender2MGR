@@ -63,7 +63,7 @@ def buildMaterialNodes(material, uniforms):
             continue # Skip bad/missing images, umbrella-type error handling
 
         if texentry.flag == 0: # Base color
-            if material.mgr_data.shader_name not in consts.transparentShaders:
+            if not consts.isTransparent(material.mgr_data.shader_name):
                 albedoInverterNode = nodes.new(type="ShaderNodeInvert")
                 albedoInverterNode.location = 300, 0
                 albedoInverterNode.inputs[0].default_value = 1.0
@@ -118,7 +118,7 @@ def buildMaterialNodes(material, uniforms):
                 else:
                     links.new(node.outputs['Color'], principled.inputs['Base Color'])
             # Alpha
-            if material.mgr_data.shader_name in consts.transparentShaders:
+            if consts.isTransparent(material.mgr_data.shader_name):
                 links.new(node.outputs['Alpha'], principled.inputs['Alpha'])
                 material.blend_method = 'HASHED'
             else:
@@ -128,7 +128,7 @@ def buildMaterialNodes(material, uniforms):
                 #    links.new(node.outputs['Alpha'], principled.inputs['Specular'])
                 #else:
                 #    links.new(node.outputs['Alpha'], principled.inputs['Specular IOR Level'])
-            #if material.mgr_data.shader_name in consts.reflectiveBlacklist:
+            #if not consts.isReflective(material.mgr_data.shader_name):
             #principled.inputs['Roughness'].default_value = 1.0 # Should this be a bit less?
             if 'Specular' in principled.inputs:
                 principled.inputs['Specular'].default_value = 0.0
@@ -152,7 +152,7 @@ def buildMaterialNodes(material, uniforms):
             links.new(invertGreen.outputs["Color"], normalShader.inputs["Color"])
         
         elif flag == 7: # Lightmap
-            if not "skn" in material.mgr_data.shader_name:
+            if not consts.hasWeakLightmap(material.mgr_data.shader_name):
                 mixedLightmapNode.inputs[0].default_value = 0.792
                 links.new(uv_lightmap_node.outputs['UV'], node.inputs['Vector'])
                 links.new(node.outputs['Color'], mixedLightmapNode.inputs[2])
