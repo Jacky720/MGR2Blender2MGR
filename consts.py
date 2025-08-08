@@ -32,7 +32,7 @@ transparentShaders = [
                       # These shaders will be given a cardboard cutout effect
                       # "siv01_sxmxx", "siv01_sxxvx", "siv01_sxmxx", "siv02_sxcxx",
                       # "siv21_sxxvx", "siv21_sxxxx", "siv22_sxwxx", "siv22_sxcvx", "siv23_sxcxx", "siv23_sbxex",
-                      "siv01", "siv02", "siv2",
+                      "siv01", "siv02", "siv21", "siv22",
                       "sis03_sxxxX",
                       "ois01_xbceX", "ois01_sbceX",
                       # "ois02_sbxeX", "ois02_sbxxX", "ois02_xbceX", "ois02_xbxeX",
