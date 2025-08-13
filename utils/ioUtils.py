@@ -6,7 +6,7 @@ from typing import Any, List, Tuple
 
 def read_int8(file) -> int:
     entry = file.read(1)
-    return struct.unpack('>b', entry)[0]
+    return struct.unpack('<b', entry)[0]
 
 def read_uint8(file) -> int:
     entry = file.read(1)
@@ -18,35 +18,35 @@ def read_uint8_x4(file) -> Tuple[int]:
 
 def read_int16(file) -> int:
     entry = file.read(2)
-    return struct.unpack('>h', entry)[0]
+    return struct.unpack('<h', entry)[0]
 
 def read_uint16(file) -> int:
     entry = file.read(2)
-    return struct.unpack('>H', entry)[0]
+    return struct.unpack('<H', entry)[0]
 
 def read_int32(file) -> int:
     entry = file.read(4)
-    return struct.unpack('>i', entry)[0]
+    return struct.unpack('<i', entry)[0]
 
 def read_uint32(file) -> int:
     entry = file.read(4)
-    return struct.unpack('>I', entry)[0]
+    return struct.unpack('<I', entry)[0]
 
 def read_int64(file) -> int:
     entry = file.read(8)
-    return struct.unpack('>q', entry)[0]
+    return struct.unpack('<q', entry)[0]
 
 def read_uint64(file) -> int:
     entry = file.read(8)
-    return struct.unpack('>Q', entry)[0]
+    return struct.unpack('<Q', entry)[0]
 
 def read_float16(file) -> float:
     entry = file.read(2)
-    return struct.unpack('>e', entry)[0]
+    return struct.unpack('<e', entry)[0]
 
 def read_float(file) -> float:
     entry = file.read(4)
-    return struct.unpack('>f', entry)[0]
+    return struct.unpack('<f', entry)[0]
 
 class SmartIO:
     int8 = "b"
@@ -69,7 +69,7 @@ class SmartIO:
 
     @classmethod
     def makeFormat(cls, *formats: List[str]) -> SmartIO:
-        return SmartIO(">" + "".join(formats))
+        return SmartIO("<" + "".join(formats))
     
     def read(self, file) -> Tuple[Any]:
         return struct.unpack(self.format, file.read(self.count))
@@ -81,32 +81,32 @@ def to_uint(bs):
 	return int.from_bytes(bs, byteorder='big', signed=False)
 
 def write_char(file, char):
-    entry = struct.pack('>s', bytes(char, 'utf-8'))
+    entry = struct.pack('<s', bytes(char, 'utf-8'))
     file.write(entry)
 
 
 def write_Int32(file, int):
-    entry = struct.pack('>i', int)
+    entry = struct.pack('<i', int)
     file.write(entry)
 
 
 def write_uInt32(file, int):
-    entry = struct.pack('>I', int)
+    entry = struct.pack('<I', int)
     file.write(entry)
 
 
 def write_Int16(file, int):
-    entry = struct.pack('>h', int)
+    entry = struct.pack('<h', int)
     file.write(entry)
 
 
 def write_uInt16(file, int):
-    entry = struct.pack('>H', int)
+    entry = struct.pack('<H', int)
     file.write(entry)
 
 
 def write_float(file, float):
-    entry = struct.pack('>f', float)
+    entry = struct.pack('<f', float)
     file.write(entry)
 
 
@@ -126,7 +126,7 @@ def write_byte(file, val):
 
 
 def write_float16(file, val):
-    entry = struct.pack(">e", val)
+    entry = struct.pack("<e", val)
     file.write(entry)
 
 # WMB

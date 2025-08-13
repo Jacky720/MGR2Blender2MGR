@@ -654,6 +654,12 @@ def format_wmb_mesh(wmb, collection_name, scr_header=None):
         # very important, should be somewhere else
         bpy.data.collections['WMB']['vertexFormat'] = wmb.wmb_header.vertexFormat
         
+        # (meshIndex, materialIndex, bonesetIndex)
+        batchData = {}
+        for i, mesh in enumerate(wmb.meshArray):
+            for batchItem in mesh.batches0:
+                batchData[batchItem[0]] = (i, batchItem[1], batchItem[2])
+        
         for batchIndex, batch in enumerate(wmb.batchArray):
             wmb2 = not hasattr(wmb, 'batchDataArray')
             if not wmb2: # wmb4
@@ -668,22 +674,23 @@ def format_wmb_mesh(wmb, collection_name, scr_header=None):
                 mesh.vertexStart = batch.vertexStart
                 mesh.vertexCount = batch.numVertexes
                 mesh.bonesetIndex = batchData.boneSetsIndex
+                boneSetIndex = batchData.boneSetsIndex
             else: # wmb 2! why was there a 2???
+                batchItem = batchData[batchIndex]
                 vertexGroup = wmb.vertexGroupArray[0]
-                meshIndex = batchIndex
-                mesh = wmb.meshArray[batchIndex] # this will never work on another model
+                meshIndex = batchItem[0]
+                mesh = wmb.meshArray[meshIndex]
                 mesh.faceStart = batch.indexStart
                 mesh.faceCount = batch.numIndexes
                 mesh.vertexStart = batch.vertexStart
                 mesh.vertexCount = batch.numVertexes
-                mesh.bonesetIndex = batchIndex # oh is that why? actually fair then
+                mesh.bonesetIndex = batchItem[2]
+                boneSetIndex = batchItem[2]
             
             meshInfo = wmb.clear_unused_vertex(meshIndex, batch.vertexGroupIndex, True)
             usedVerticeIndexArrays.append(meshInfo[2]) # usedVerticeIndexArray
             
             meshName = "%d-%s"%(batch.vertexGroupIndex, mesh.name)
-            
-            boneSetIndex = batchIndex if wmb2 else batchData.boneSetsIndex
             
             obj = construct_mesh([
                 meshName,    # meshName
@@ -701,8 +708,8 @@ def format_wmb_mesh(wmb, collection_name, scr_header=None):
                 mesh.boundingBox,       # boundingBox
                 batch.vertexGroupIndex, # vertexGroupIndex
                 batchIndex,
-                [0] if wmb2 else [batchData.materialIndex],
-                wmb.boneSetArray[boneSetIndex] if boneSetIndex > -1 else None, # boneSet
+                [batchItem[1]] if wmb2 else [batchData.materialIndex],
+                wmb.boneSetArray[boneSetIndex] if boneSetIndex in range(len(wmb.boneSetArray)) else None, # boneSet
                 meshInfo[5], # vertexStart
                 0 if wmb2 else batch.batchGroup,       # batch group, which of the four supplements
                 scr_header   # header data for SCR transformations
@@ -722,6 +729,7 @@ def get_wmb_material(wmb, texture_dir):
                 uniforms = material.uniformArray
                 textures = material.textureArray
                 if hasattr(wmb, 'textureArray'):
+                    """
                     for index, texture in textures.items():
                         if texture == -1:
                             continue
@@ -734,6 +742,7 @@ def get_wmb_material(wmb, texture_dir):
                     for index, texture in textures.copy().items():
                         if texture == -1:
                             del textures[index]
+                    """
                     print("Textures on %s:"%material_name, textures)
                 parameterGroups = material.parameterGroups
                 for textureIndex in range(wmb.wta.textureCount):        # for key in textures.keys():

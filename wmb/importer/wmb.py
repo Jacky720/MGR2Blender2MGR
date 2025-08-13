@@ -176,6 +176,28 @@ class WMB_Header(object):
             self.meshCount = read_uint32(wmb_fp)
             
             self.unknownPointer = read_uint32(wmb_fp) # going back in time didn't get rid of it
+            
+            if DEBUG_HEADER_PRINT:
+                print("WMB2 header information")
+                print(" Should be -1: %d" % self.minusone)
+                print(" version       %s" % self.version)
+                print(" bounding_box1 %f" % self.bounding_box1)
+                print(" bounding_box2 %f" % self.bounding_box2)
+                print(" bounding_box3 %f" % self.bounding_box3)
+                print(" bounding_box4 %f" % self.bounding_box4)
+                print(" bounding_box5 %f" % self.bounding_box5)
+                print(" bounding_box6 %f" % self.bounding_box6)
+                print()
+                print(" Name               Pointer Count")
+                print(" vertexGroup       ", hex(self.vertexGroupPointer).rjust(7, " "), str(self.vertexGroupCount).rjust(6, " "))
+                print(" batch             ", hex(self.batchPointer).rjust(7, " "), str(self.batchCount).rjust(6, " "))
+                print(" bone              ", hex(self.bonePointer).rjust(7, " "), str(self.boneCount).rjust(6, " "))
+                print(" boneTranslateTable", hex(self.boneTranslateTablePointer).rjust(7, " "), str(self.boneTranslateTableSize).rjust(6, " "))
+                print(" boneSet           ", hex(self.boneSetPointer).rjust(7, " "), str(self.boneSetCount).rjust(6, " "))
+                print(" material          ", hex(self.materialPointer).rjust(7, " "), str(self.materialCount).rjust(6, " "))
+                print(" texture           ", hex(self.texturePointer).rjust(7, " "), str(self.textureCount).rjust(6, " "))
+                print(" mesh              ", hex(self.meshPointer).rjust(7, " "), str(self.meshCount).rjust(6, " "))
+                print(" ??????            ", hex(self.unknownPointer).rjust(7, " "))
 
 
 class WMB(object):
@@ -620,7 +642,7 @@ class WMB(object):
 
             if self.hasBone:
                 bonesetIndex = mesh.bonesetIndex
-                if bonesetIndex != -1:
+                if bonesetIndex in range(len(self.boneSetArray)):
                     boneSet = self.boneSetArray[bonesetIndex]
                     if not wmb4:
                         boneIndices = [self.boneMap[boneSet[index]] for index in meshVertices[i].boneIndices]

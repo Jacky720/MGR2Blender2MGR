@@ -73,8 +73,8 @@ class wmb2_bone(object):
     def read(self, wmb_fp, index):
         super(wmb2_bone, self).__init__()
         self.boneIndex = index
-        self.boneNumber = read_int16(wmb_fp)
-        self.unknown02 = read_int16(wmb_fp) # one is global index
+        self.boneNumber = read_int16(wmb_fp) # global index
+        self.unknown02 = read_int16(wmb_fp)
         self.parentIndex = read_int16(wmb_fp)
         self.unknownRotation = read_int16(wmb_fp) # rotation order or smth
 
@@ -160,9 +160,9 @@ class wmb2_material(object):
             self.parametersCount = read_int16(wmb_fp)
             self.textures = []
             for i in range(self.texturesCount):
-                self.textures.append("%08x" % read_uint32(wmb_fp))
+                self.textures.append(read_uint32(wmb_fp))
             self.parameters = []
-            for j in range(int(self.parametersCount/4)):
+            for j in range(self.parametersCount//4):
                 newparam = wmb2_material.paramFunc()
                 newparam.read(wmb_fp)
                 self.parameters.append(newparam)
@@ -197,9 +197,9 @@ class wmb2_material(object):
         self.uniformArray = {}
         self.textureArray = {}
         for i, texture in enumerate(texturesArray):
-            if i in {1, 3}:
+            if i in {0}:
                 self.textureArray["albedoMap" + str(i)] = texture
-            elif i == 7:
+            elif i == 3:
                 self.textureArray["normalMap" + str(i)] = texture
             else:
                 self.textureArray["tex" + str(i)] = texture
@@ -258,7 +258,8 @@ class wmb2_mesh(object):
         if DEBUG_MESH_PRINT:
             print("\nMesh name: %s" % self.name)
         
-        self.batches0 = load_data_array(wmb_fp, self.batchPointer, self.batchCount, uint32) # plus a duplicate but idgaf
+        self.batches0 = load_data_array(wmb_fp, self.batchPointer, self.batchCount * 4, uint16)
+        self.batches0 = [(self.batches0[i], self.batches0[i+1], self.batches0[i+2], self.batches0[i+3]) for i in range(0, len(self.batches0), 4)]
         self.batches1 = []
         self.batches2 = []
         self.batches3 = []
@@ -272,7 +273,7 @@ class wmb2_texture(object):
     """The WMB4 texture is delightfully simple."""
     def read(self, wmb_fp):
         super(wmb2_texture, self).__init__()
-        self.id = "%08x" % read_uint32(wmb_fp) # reverse order vs wmb4, and not referenced by index
+        self.id = read_uint32(wmb_fp) # reverse order vs wmb4, and not referenced by index
         self.flags = read_uint32(wmb_fp)
 
 class wmb2_vertexGroup(object):
