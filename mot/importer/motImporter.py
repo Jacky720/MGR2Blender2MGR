@@ -21,7 +21,7 @@ def importMot(file: str, printProgress: bool = True) -> None:
         importCameraMot(mot, printProgress)
     for i in range(3):
         if path.exists(file.replace(".mot", f"_{i}_seq.bxm")):
-            importSeqBxm(file.replace(".mot", f"_{i}_seq.bxm"))
+            #importSeqBxm(file.replace(".mot", f"_{i}_seq.bxm"))
             break
     
     # updated frame range

@@ -84,14 +84,18 @@ def ImportData(only_extract, filepath, transform=None):
         import xml.etree.ElementTree as ET
         
         bxmroot = bxmToXml(os.path.join(extract_dir, filename_without_extension + '.dat', filename_without_extension + "_sub.bxm"))
-        bxtext = bxmroot.find(".//RoomNo").text
+        rooms = bxmroot.find(".//RoomNo").text.split()
         base_data_001 = os.path.dirname(os.path.dirname(extract_dir))
         print(base_data_001)
         
-        for rooms in bxtext.split(" "):
-            stage_folder = "st" + rooms[1]
-            print("Loading room: " + stage_folder + "\\" + rooms + ".dat")
-            ImportData(False, os.path.join(base_data_001, stage_folder, rooms + ".dat"))
+        if all(room[1] == rooms[0][1] for room in rooms) and all(room[2:] != "00" for room in rooms):
+            # Prepend the skybox
+            rooms = [rooms[0][:2] + "00"] + rooms
+        
+        for room in rooms:
+            stage_folder = "st" + room[1]  # Chapter number is second character (e.g. ra00: sta)
+            print("Loading room: " + stage_folder + "\\" + room + ".dat")
+            ImportData(False, os.path.join(base_data_001, stage_folder, room + ".dat"))
             
     
     # WTA/WTP
