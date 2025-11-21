@@ -186,7 +186,7 @@ def makeRecords(
 		
 		records.append(record)
 
-	return records
+	return sorted(records, key=lambda record: record.boneIndex)  # F-Curve fix by Aura
 
 def addAdditionPatchRecords(path: str, currentRecords: List[MotRecord]):
 	with open(path, "rb") as f:
