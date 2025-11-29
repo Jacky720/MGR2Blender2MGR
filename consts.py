@@ -32,17 +32,19 @@ transparentShaders = [
                       # These shaders will be given a cardboard cutout effect
                       # "siv01_sxmxx", "siv01_sxxvx", "siv01_sxmxx", "siv02_sxcxx",
                       # "siv21_sxxvx", "siv21_sxxxx", "siv22_sxwxx", "siv22_sxcvx", "siv23_sxcxx", "siv23_sbxex",
-                      "siv01", "siv02", "siv21", "siv22",
+                      "siv01", "siv02", "siv21", "siv22", "siv23",
                       "sis03_sxxxX",
-                      "ois01_xbceX", "ois01_sbceX",
+                      "ois01_xbceX", "ois01_sbceX", "ois01_sbxeX",
                       # "ois02_sbxeX", "ois02_sbxxX", "ois02_xbceX", "ois02_xbxeX",
                       "ois02",
-                      "cnm10_SxwXX", "cnm10_SxXXX", "cnm20_SxvXX",
+                      "cnm10_SxwXX", "cnm10_SxXXX", "cnm20_SxvXX", "cnm20_SbXXX",
                       # "har00_sbXtX", "har00_sbXxX", "har03_sbXtX",
                       "har",
+                      "eye01_xbXxX", "eye01_sbXxv",
+                      "gla00_sbXxv",
                       ]
 
-weakLightmapShaders = ["skn", "eye", "ois00_xbceX", "ois00_xbweX"]
+weakLightmapShaders = ["skn", "eye", "ois00_xbceX", "ois00_xbweX", "ois00_xbmeX"]
 
 def isReflective(shader_name):
     return not any(shader_name.startswith(x) for x in reflectiveBlacklist)
@@ -51,7 +53,7 @@ def isTransparent(shader_name):
     return any(shader_name.startswith(x) for x in transparentShaders)
 
 def hasWeakLightmap(shader_name):
-    return any(shader_name.startswith(x) for x in weakLightmapShaders)
+    return any(shader_name.startswith(x) for x in weakLightmapShaders) and not isTransparent(shader_name)
 
 
 def getTextureFlagFromDict(id):
