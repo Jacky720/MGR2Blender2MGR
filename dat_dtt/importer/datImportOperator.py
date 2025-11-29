@@ -16,28 +16,30 @@ def ImportData(only_extract, filepath, transform=None):
     extension = os.path.splitext(filepath)[1]
     
     # This is a much better naming scheme
-    head = os.path.split(filepath)[0]
-    filename_with_extension = os.path.split(filepath)[1]
+    head, filename_with_extension = os.path.split(filepath)
     filename_without_extension = filename_with_extension[:-4]
     extract_dir = os.path.join(head, 'nier2blender_extracted')
     
     dat_filepath = os.path.join(head, filename_without_extension + '.dat')
-    dtt_filepath = os.path.join(head, filename_without_extension + '.dtt') 
+    dtt_filepath = os.path.join(head, filename_without_extension + '.dtt')
     
     dtt_filename = "" # Initalization
     dat_filename = ""
     
+    extract_dat = os.path.join(extract_dir, filename_without_extension + '.dat')
+    extract_dtt = os.path.join(extract_dir, filename_without_extension + '.dtt')
+    
     from . import dat_unpacker
     print("DAT Path: " + dat_filepath)
     if os.path.isfile(dat_filepath):
-        dat_filename = dat_unpacker.main(dat_filepath, os.path.join(extract_dir, filename_without_extension + '.dat'), dat_filepath)
+        dat_filename = dat_unpacker.main(dat_filepath, extract_dat, dat_filepath)
     print("DTT Path: " + dtt_filepath)
     if os.path.isfile(dtt_filepath):
-        dtt_filename = dat_unpacker.main(dtt_filepath, os.path.join(extract_dir, filename_without_extension + '.dtt'), dtt_filepath)
+        dtt_filename = dat_unpacker.main(dtt_filepath, extract_dtt, dtt_filepath)
     
     if (dat_filename == "" and dtt_filename == ""):
         print("I have no idea how you managed to select a DAT or DTT if you had neither")
-    if (not os.path.isfile(dat_filepath) and os.path.isfile(dtt_filepath)):
+    if (not os.path.isfile(dat_filepath) and not os.path.isfile(dtt_filepath)):
         print("Did you just type random nonsense into the file select?")
     if (dat_filename == False and dtt_filename == False):
         print("Apparently, both the DAT and DTT associated with your selection are empty.")
@@ -52,23 +54,23 @@ def ImportData(only_extract, filepath, transform=None):
         # I dunno what this does but in the forefathers I trust
         dtt_filename = dat_filename[:10]
         
-    wmb_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dat')) if os.path.splitext(x)[1] == ".wmb"]
+    wmb_files = [x for x in os.listdir(extract_dat) if os.path.splitext(x)[1] == ".wmb"]
     if (len(wmb_files) == 0):
         # Last chance to show yourself
         print("Attempting to find WMB in DTT (fruitless)")
-        if (os.path.exists(os.path.join(extract_dir, filename_without_extension + '.dtt'))):
-            wmb_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dtt')) if os.path.splitext(x)[1] == ".wmb"]
+        if os.path.exists(extract_dtt):
+            wmb_files = [x for x in os.listdir(extract_dtt) if os.path.splitext(x)[1] == ".wmb"]
             wmb_ext = ".dtt"
 
-    scr_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dat')) if os.path.splitext(x)[1] == ".scr"]
+    scr_files = [x for x in os.listdir(extract_dat) if os.path.splitext(x)[1] == ".scr"]
 
     if (len(wmb_files) > 0):
         wmb_mode = True
     elif (len(scr_files) == 0):
         # Last chance to show yourself
         print("Attempting to find SCR in DTT (fruitless)")
-        if os.path.exists(os.path.join(extract_dir, filename_without_extension + '.dtt')):
-            scr_files = [x for x in os.listdir(os.path.join(extract_dir, filename_without_extension + '.dtt')) if os.path.splitext(x)[1] == ".scr"]
+        if os.path.exists(extract_dtt):
+            scr_files = [x for x in os.listdir(extract_dtt) if os.path.splitext(x)[1] == ".scr"]
             scr_ext = ".dtt"
 
     if (len(scr_files) > 0):
@@ -78,12 +80,13 @@ def ImportData(only_extract, filepath, transform=None):
     print("WMB Files: " + str(wmb_files))
 
     # Phase Loader
-    if (os.path.exists(os.path.join(extract_dir, filename_without_extension + '.dat', filename_without_extension + "_sub.bxm"))):
-        print("Loading " + os.path.join(extract_dir, filename_without_extension + '.dat', filename_without_extension + "_sub.bxm"))
+    phase_path = os.path.join(extract_dat, filename_without_extension + "_sub.bxm")
+    if os.path.exists(phase_path):
+        print("Loading " + phase_path)
         from ...bxm.common.bxm import bxmToXml
         import xml.etree.ElementTree as ET
         
-        bxmroot = bxmToXml(os.path.join(extract_dir, filename_without_extension + '.dat', filename_without_extension + "_sub.bxm"))
+        bxmroot = bxmToXml(phase_path)
         rooms = bxmroot.find(".//RoomNo").text.split()
         base_data_001 = os.path.dirname(os.path.dirname(extract_dir))
         print(base_data_001)
