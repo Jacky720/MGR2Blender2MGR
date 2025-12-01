@@ -15,10 +15,26 @@ class AnimationObject:
 	keyFrames: List[KeyFrame]
 	valueOffset: float
 
+def getAllObjectFCurves(action: bpy.types.Action) -> List[bpy.types.FCurve]:
+	# Old versions didn't have an action system that needed combining
+	if bpy.app.version < (4, 4):
+		return action.fcurves
+	
+	# 4.4+ behavior
+	fcurves = []
+	for layer in action.layers:
+		for strip in layer.strips:
+			for bag in strip.channelbags:
+				for curve in bag.fcurves:
+					fcurves.append(curve)
+	return fcurves
+
 def getAllAnimationObjects(obj: bpy.types.Object) -> List[AnimationObject]:
-	curves = list(obj.animation_data.action.fcurves)
+	fcurves = getAllObjectFCurves(obj.animation_data.action)
+	curves = list(fcurves)
 	if obj.type == "CAMERA":
-		curves.extend(obj.data.animation_data.action.fcurves)
+		curves.extend(list(getAllObjectFCurves(obj.data.animation_data.action)))
+	
 	animObjs: List[AnimationObject] = []
 	for curve in curves:
 		animObj = AnimationObject()
