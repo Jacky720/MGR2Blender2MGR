@@ -3,7 +3,7 @@ from mathutils import Vector
 import re
 import os
 from typing import Callable, List
-from ..common.motUtils import KeyFrame, Spline, focalLengthToFov, getArmatureObject, getCameraObject, getCameraTarget, cameraId, camTargetId
+from ..common.motUtils import KeyFrame, Spline, focalLengthToFov, getArmatureObject, getCameraObject, getCameraTarget, cameraId, camTargetId, getAllObjectFCurves
 from ..common.mot import MotFile, MotHeader, MotRecord, MotInterpolValues, MotInterpolSplines
 
 class AnimationObject:
@@ -14,20 +14,6 @@ class AnimationObject:
 	object: bpy.types.Object|None
 	keyFrames: List[KeyFrame]
 	valueOffset: float
-
-def getAllObjectFCurves(action: bpy.types.Action) -> List[bpy.types.FCurve]:
-	# Old versions didn't have an action system that needed combining
-	if bpy.app.version < (4, 4):
-		return list(action.fcurves)
-	
-	# 4.4+ behavior
-	fcurves = []
-	for layer in action.layers:
-		for strip in layer.strips:
-			for bag in strip.channelbags:
-				for curve in bag.fcurves:
-					fcurves.append(curve)
-	return fcurves
 
 def getAllAnimationObjects(obj: bpy.types.Object) -> List[AnimationObject]:
 	curves = getAllObjectFCurves(obj.animation_data.action)
