@@ -18,7 +18,7 @@ class AnimationObject:
 def getAllObjectFCurves(action: bpy.types.Action) -> List[bpy.types.FCurve]:
 	# Old versions didn't have an action system that needed combining
 	if bpy.app.version < (4, 4):
-		return action.fcurves
+		return list(action.fcurves)
 	
 	# 4.4+ behavior
 	fcurves = []
@@ -30,10 +30,9 @@ def getAllObjectFCurves(action: bpy.types.Action) -> List[bpy.types.FCurve]:
 	return fcurves
 
 def getAllAnimationObjects(obj: bpy.types.Object) -> List[AnimationObject]:
-	fcurves = getAllObjectFCurves(obj.animation_data.action)
-	curves = list(fcurves)
+	curves = getAllObjectFCurves(obj.animation_data.action)
 	if obj.type == "CAMERA":
-		curves.extend(list(getAllObjectFCurves(obj.data.animation_data.action)))
+		curves.extend(getAllObjectFCurves(obj.data.animation_data.action))
 	
 	animObjs: List[AnimationObject] = []
 	for curve in curves:
