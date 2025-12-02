@@ -120,7 +120,8 @@ def getAllObjectFCurves(action: bpy.types.Action) -> List[bpy.types.FCurve]:
 	return fcurves
 
 def getBoneFCurve(armatureObj: bpy.types.Object, bone: bpy.types.PoseBone, property: str, index: int) -> bpy.types.FCurve:
-	for fCurve in armatureObj.animation_data.action.fcurves:
+	fcurves = getAllObjectFCurves(armatureObj.animation_data.action)
+	for fCurve in fcurves:
 		if fCurve.data_path == f"pose.bones[\"{bone.name}\"].{property}" and fCurve.array_index == index:
 			return fCurve
 	return None
