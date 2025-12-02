@@ -162,12 +162,14 @@ def hermitVecToBezierVec(vec: Vector) -> Vector:
 def alignTo4(num: int) -> int:
 	return (num + 3) & ~3
 
+# https://github.com/blender/blender/blob/main/source/blender/blenlib/intern/math_rotation_c.cc#L2311
 def fovToFocalLength(camData, fovRad: float) -> float:
-	fovRad *=  16 / 9
-	sensorSize = max(camData.sensor_width, camData.sensor_height)
-	return sensorSize / (2 * tan(fovRad / 2))
+    sensor = camData.sensor_width
+    return (sensor / 2.0) / tan(fovRad)
 
+# MGR stores FOV in a different way than expected, it's doing half-size, instead of the full size
+# so the operations need to export it without any multiplication
+# https://github.com/blender/blender/blob/main/source/blender/blenlib/intern/math_rotation_c.cc#L2306
 def focalLengthToFov(camData, focalLength: float) -> float:
-	fov = 2 * atan(camData.sensor_width / (2 * focalLength))
-	print(fov)
-	return fov
+    sensor = camData.sensor_width
+    return atan((sensor / 2.0) / focalLength)
