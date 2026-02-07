@@ -123,27 +123,34 @@ class c_batches(object):
                 
                 batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
                 if BALLIN:
-                    bpy.data.collections["WMB"]["4-%2d-startIndex" % ballin_index] = 0#batches[-1].indexStart
-                    bpy.data.collections["WMB"]["4-%2d-indexCount" % ballin_index] = batches[-1].numIndexes
-                    bpy.data.collections["WMB"]["4-%2d-startVertex" % ballin_index] = 0#batches[-1].vertexStart
-                    bpy.data.collections["WMB"]["4-%2d-vertexCount" % ballin_index] = batches[-1].numVertexes
-                    bpy.data.collections["WMB"]["4-%2d-A" % ballin_index] = boundingBoxXYZ
-                    bpy.data.collections["WMB"]["4-%2d-B" % ballin_index] = boundingBoxUVW
-                    bpy.data.collections["WMB"]["4-%2d-C" % ballin_index] = obj_vertexGroupIndex
-                    bpy.data.collections["WMB"]["4-%2d-D" % ballin_index] = len(batches) - 1
-                    bpy.data.collections["WMB"]["4-%2d-E" % ballin_index] = 0
-                    bpy.data.collections["WMB"]["4-%2d-E2" % ballin_index] = obj['Materials'][0]
-                    bpy.data.collections["WMB"]["4-%2d-F" % ballin_index] = 1
-                    bpy.data.collections["WMB"]["4-%2d-array" % ballin_index] = []
-                    bpy.data.collections["WMB"]["5-%2d-A"%obj_vertexGroupIndex] = obj_vertexGroupIndex
-                    bpy.data.collections["WMB"]["5-%2d-B"%obj_vertexGroupIndex] = 0
-                    bpy.data.collections["WMB"]["5-%2d-B2"%obj_vertexGroupIndex] = 0
-                    bpy.data.collections["WMB"]["5-%2d-C"%obj_vertexGroupIndex] = -1
-                    bpy.data.collections["WMB"]["5-%2d-C2"%obj_vertexGroupIndex] = 0
+                    Slice4Data(
+                        SVector3(boundingBoxXYZ),
+                        SVector3(boundingBoxUVW),
+                        obj_vertexGroupIndex,  # Slice5Data index
+                        len(batches) - 1,  # Submesh index?
+                        0, obj['Materials'][0],
+                        1,
+                        [],
+                        SFaceSet(0, batches[-1].numVertexes, 0, batches[-1].numIndexes)
+                    ).to_collection(ballin_index)
+                    
+                    # Keep previously generated array, just add one more sub-array
+                    persist_slice5_array = []
+                    
                     add_item_index = 0
-                    while bpy.data.collections["WMB"].get("5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)) is not None:
+                    while "5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index) in bpy.data.collections["WMB"]:
+                        persist_slice5_array.append(
+                            bpy.data.collections["WMB"]["5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index)]
+                        )
                         add_item_index += 1
-                    bpy.data.collections["WMB"]["5-%2d-D-%2d"%(obj_vertexGroupIndex,add_item_index)] = [len(batches) - 1]
+                    
+                    Slice5Data(
+                        obj_vertexGroupIndex,
+                        0, 0,  # Slice1Data index, suspected
+                        -1, 0,  # Slice3Data (materials) index, suspected
+                        persist_slice5_array + [[len(batches) - 1]]
+                    ).to_collection(obj_vertexGroupIndex)
+                    
                     ballin_index += 1
                 cur_indexStart += batches[-1].numIndexes
                 cur_numVertexes = batches[-1].vertexStart + batches[-1].numVertexes
@@ -921,6 +928,7 @@ class c_mystery(object):
             if (currentOffset % 16) > 0:
                 currentOffset += 16 - (currentOffset % 16)
             for data in values:
+                #print(data, data.entries)
                 appendVal = {
                     "content": [{
                         "vecs": [dd.unk_0,
@@ -1705,45 +1713,68 @@ class c_generate_data(object):
             for key in list(bpy.data.collections["WMB"].keys()):
                 if key[:1].isnumeric() and not key[:1] == "3":
                     del bpy.data.collections["WMB"][key]
-            bpy.data.collections["WMB"]["1- 0-B"] = -1
-            bpy.data.collections["WMB"]["1- 0-name"] = "CG_DEFAULT"
-            bpy.data.collections["WMB"]["1- 0-parent"] = -1
-            # group 4 defined dynamically
-            # group 5 defined dynamically
-            # bpy.data.collections["WMB"]["5- 0-A"] = 0
-            # bpy.data.collections["WMB"]["5- 0-B"] = 0
-            # bpy.data.collections["WMB"]["5- 0-B2"] = -1
-            # bpy.data.collections["WMB"]["5- 0-C"] = 0
-            # bpy.data.collections["WMB"]["5- 0-C2"] = 0
-            # bpy.data.collections["WMB"]["5- 0-D- 0"] = []
+            # Most default value here possible
+            Slice1Data.store_section([Slice1Data()])
+            
+            # Slice4Data defined dynamically
+            # Slice5Data defined dynamically
+            
             boundingBoxXYZ, boundingBoxUVW = getGlobalBoundingBox()
             minX, maxX = boundingBoxXYZ[0] - boundingBoxUVW[0], boundingBoxXYZ[0] + boundingBoxUVW[0]
             minY, maxY = boundingBoxXYZ[1] - boundingBoxUVW[1], boundingBoxXYZ[1] + boundingBoxUVW[1]
             minZ, maxZ = boundingBoxXYZ[2] - boundingBoxUVW[2], boundingBoxXYZ[2] + boundingBoxUVW[2]
-            bpy.data.collections["WMB"]["6- 0-A"] = [minX, minY, minZ, 1.0, maxX, minY, maxZ, 1.0, minX, minY, maxZ, 1.0, maxX, minY, minZ, 1.0] \
-                                                  + [maxX, maxY, minZ, 1.0, minX, maxY, minZ, 1.0, minX, maxY, maxZ, 1.0, maxX, maxY, maxZ, 1.0]
-            bpy.data.collections["WMB"]["6- 0-B"] = [0, 1, 2, 0, 3, 1, 0, 4, 3, 0, 5, 4, 0, 6, 5, 0, 2, 6, 3, 7, 1, 3, 4, 7, 2, 7, 6, 2, 1, 7, 5, 7, 4, 5, 6, 7]
-            bpy.data.collections["WMB"]["7- 0-A"] = [0.0, 0.0, 0.0] # offset for chunk 6 coordinates
-            bpy.data.collections["WMB"]["7- 0-B"] = [0.25, 0.25, 0.25] # idk a scale factor or something
-            bpy.data.collections["WMB"]["7- 0-C"] = 0
-            bpy.data.collections["WMB"]["7- 0-D"] = 0.3
-            bpy.data.collections["WMB"]["7- 0-startIndex"] = 0
-            bpy.data.collections["WMB"]["7- 0-startVertex"] = 0
-            bpy.data.collections["WMB"]["7- 0-indexCount"] = 36
-            bpy.data.collections["WMB"]["7- 0-vertexCount"] = 8
-            bpy.data.collections["WMB"]["8- 0-vectors"] = [0.0, -0.025317, 0.004611] + [1.0, 0.0, 0.0] + [0.0, 1.0, 0.0] + [0.0, 0.0, 1.0] + [0.277, 0.230695, 0.273966]
-            bpy.data.collections["WMB"]["8- 0-A"] = 0 # cut group index
-            bpy.data.collections["WMB"]["8- 0-B"] = [1.0, 0.3] #
-            bpy.data.collections["WMB"]["8- 0-C"] = 1 # always 1
-            bpy.data.collections["WMB"]["8- 0-D"] = 0 # always 0
-            bpy.data.collections["WMB"]["8- 0-E"] = 0 # always 0
-            bpy.data.collections["WMB"]["8- 0-F"] = 0 # a more orderly index, probably for 7
-            bpy.data.collections["WMB"]["8- 0-G"] = 1 # always 1
-            bpy.data.collections["WMB"]["9- 0-A"] = 0 # or -1?
-            bpy.data.collections["WMB"]["9- 0-parent"] = -1 # parent
-            bpy.data.collections["WMB"]["9- 0-C"] = 0 # index in 8?
-            bpy.data.collections["WMB"]["9- 0-D"] = 1 # amount of 8 groups
-            bpy.data.collections["WMB"]["9- 0-E"] = 1 # or 0, doesn't seem to matter
+            Slice6Data.store_section([Slice6Data(SGeometry(
+                # Vertexes (SVector4)
+                [SVector4(minX, minY, minZ),
+                 SVector4(maxX, minY, maxZ),
+                 SVector4(minX, minY, maxZ),
+                 SVector4(maxX, minY, minZ),
+                 SVector4(maxX, maxY, minZ),
+                 SVector4(minX, maxY, minZ),
+                 SVector4(minX, maxY, maxZ),
+                 SVector4(maxX, maxY, maxZ)],
+                # Face indexes
+                [0, 1, 2,
+                 0, 3, 1,
+                 0, 4, 3,
+                 0, 5, 4,
+                 0, 6, 5,
+                 0, 2, 6,
+                 3, 7, 1,
+                 3, 4, 7,
+                 2, 7, 6,
+                 2, 1, 7,
+                 5, 7, 4,
+                 5, 6, 7]
+            ))])
+            
+            Slice7Data.store_section([Slice7Data(
+                SVector3(0.0, 0.0, 0.0),  # offset for Slice6Data coordinates
+                SVector3(0.25, 0.25, 0.25),  # idk a scale factor or something
+                0,  # Slice6Data index
+                0.3,
+                SFaceSet(0, 8, 0, 36)
+            )])
+            
+            Slice8Data.store_section([Slice8Data(
+                SVector4(0.0, -0.025317, 0.004611),
+                SVector4(0.0, 0.0, 0.0),
+                SVector4(0.0, 0.0, 0.0),
+                SVector3(0.277, 0.230695, 0.273966),
+                0,  # Slice1Data index
+                1.0, 0.3,
+                # Several default values...
+                chunk7_ind = 0
+            )])
+            
+            Slice9Data.store_section([Slice9Data(
+                0,  # or -1?
+                -1,  # parent (I think)
+                0,  # index in Slice8Data?
+                1,  # amount of referenced Slice8Data groups
+                1  # 0 may be acceptable here
+            )])
+            
             # IF YOU CAN SLICE SIX FEET IN THE AIR STRAIGHT UP AND NOT CRASH THE GAME,
             # YOU GET NO DOWN PAYMENT
 

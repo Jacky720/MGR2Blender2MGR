@@ -303,7 +303,7 @@ def create_wmb_mystery(wmb_file, data):
         wmb_file.seek(mystery3["offset"])
         for entry in mystery3["content"]:
             for vec in entry["vecs"]:
-                write_vector3(wmb_file, vec)
+                vec.to_wmb(wmb_file)
             write_uInt32(wmb_file, entry["material"])
         wmb_file.seek(pos)
     

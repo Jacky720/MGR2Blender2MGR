@@ -241,6 +241,8 @@ class Slice3Data:
             self.unk_24.from_collection(collection[f"3-{index}-D"])
             self.unk_30.from_collection(collection[f"3-{index}-E"])
             self.mat_index = collection[f"3-{index}-material"]
+            
+            return self
         
         def to_collection(self, collection: bpy.types.Collection,
                           entry_index: int, sub_index: int):
@@ -262,9 +264,9 @@ class Slice4Data:
     unk_0: SVector3
     unk_C: SVector3
     chunk5_ind: int
-    unk_1C: int  # Possibly submesh index
+    unk_1C: int  # Tentatively submesh index
     unk_20: int  # short
-    unk_22: int  # short
+    unk_22: int  # short, tentatively material index? That can't be right.
     unk_24: int
     unk_array: list[int]  # 20 elements, or 0.
     faces: SFaceSet
@@ -650,7 +652,7 @@ class Slice9Data:
     unk_0: int  # short
     parent: int  # short, -1 accepted
     chunk8_ind: int  # short
-    unk_6: int  # short
+    unk_6: int  # short, tentatively suspect number of Slice8Data entries
     unk_8: int
     
     def __init__(self, unk_0: int = 0, parent: int = -1, chunk8_ind: int = 0,
@@ -746,7 +748,7 @@ class SVector4:
     z: float
     w: float
     
-    def __init__(self, x: float | list[float] = 0.0, y: float = 0.0, z: float = 0.0, w: float = 0.0):
+    def __init__(self, x: float | list[float] = 0.0, y: float = 0.0, z: float = 0.0, w: float = 1.0):
         if type(x) is list:
             self.x = x[0]
             self.y = x[1]
