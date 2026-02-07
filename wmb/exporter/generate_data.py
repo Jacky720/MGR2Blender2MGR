@@ -951,7 +951,7 @@ class c_mystery(object):
                     "short_22": data.unk_22,
                     "int_24": data.unk_24,
                     "array": data.unk_array,
-                    "faces": data.faces
+                    "faces": data.faces,
                     "offset": currentOffset if (len(data.unk_array) > 0) else 0
                 }
                 currentOffset += 4 * len(data.unk_array)
@@ -1019,7 +1019,7 @@ class c_mystery(object):
                 appendVal = {
                     "vec_0": data.unk_0,
                     "vec_C": data.unk_C,
-                    "ref6", data.chunk6_ind,
+                    "ref6": data.chunk6_ind,
                     "float_1C": data.unk_1C,
                     "faces": data.faces
                 }
