@@ -8,6 +8,7 @@ from time import time
 from ...utils.util import print_class, create_dir
 from ...utils.ioUtils import SmartIO, read_uint8_x4, to_string, read_float, read_float16, read_uint16, read_uint8, read_uint64, read_int16, read_int32, read_string
 from ...wta_wtp.importer.wta import *
+from ..slice_data import *
 
 DEBUG_HEADER_PRINT = True
 DEBUG_VERTEXGROUP_PRINT = False
@@ -502,133 +503,195 @@ class wmb4_mystery(object):
     """Probably for some form of cut info. Present on Sundowner."""
     class mystery1Template(object):
         def read(self, wmb_fp):
-            self.namePointer = read_uint32(wmb_fp)
-            self.parent = read_int16(wmb_fp)
-            self.mysteryB = read_int16(wmb_fp)
-            self.name = load_data(wmb_fp, self.namePointer, filestring)
+            namePointer = read_uint32(wmb_fp)
+            parent = read_int16(wmb_fp)
+            mysteryB = read_int16(wmb_fp)
+            name = load_data(wmb_fp, namePointer, filestring)
+            
+            self.data = Slice1Data(name, parent, mysteryB)
     
     class mystery2Template(object):
         def read(self, wmb_fp):
-            self.posA = read_vector3(wmb_fp)
+            posA = read_vector3(wmb_fp)
             flagA1 = read_int16(wmb_fp)
             flagA2 = read_int16(wmb_fp)
-            self.flagA = [flagA1, flagA2]
             
-            self.posB = read_vector3(wmb_fp)
+            posB = read_vector3(wmb_fp)
             flagB1 = read_int16(wmb_fp)
             flagB2 = read_int16(wmb_fp)
-            self.flagB = [flagB1, flagB2]
             
-            self.posC = read_vector3(wmb_fp)
+            posC = read_vector3(wmb_fp)
             flagC1 = read_int16(wmb_fp)
             flagC2 = read_int16(wmb_fp)
-            self.flagC = [flagC1, flagC2]
             
-            self.posD = read_vector3(wmb_fp)
+            posD = read_vector3(wmb_fp)
+            
+            self.data = Slice2Data(
+                SVector3(posA),
+                flagA1, flagA2,
+                SVector3(posB),
+                flagB1, flagB2,
+                SVector3(posC),
+                flagC1, flagC2,
+                SVector3(posD)
+            )
     
     class mystery3Template(object):
         class vectorsTemplate(object):
             def read(self, wmb_fp):
                 # vectors, but lists are easier to use
-                self.mysteryA = read_vector3(wmb_fp)
-                self.mysteryB = read_vector3(wmb_fp)
-                self.mysteryC = read_vector3(wmb_fp)
-                self.mysteryD = read_vector3(wmb_fp)
-                self.mysteryE = read_vector3(wmb_fp)
+                mysteryA = read_vector3(wmb_fp)
+                mysteryB = read_vector3(wmb_fp)
+                mysteryC = read_vector3(wmb_fp)
+                mysteryD = read_vector3(wmb_fp)
+                mysteryE = read_vector3(wmb_fp)
                 
-                self.mysteryF = read_uint32(wmb_fp)
+                mat_ind = read_uint32(wmb_fp)
+                
+                self.data = Slice3Data.Slice3DataData(
+                    SVector3(mysteryA),
+                    SVector3(mysteryB),
+                    SVector3(mysteryC),
+                    SVector3(mysteryD),
+                    SVector3(mysteryE),
+                    mat_ind
+                )
                 
         
         def read(self, wmb_fp):
-            self.vectorsPointer = read_uint32(wmb_fp)
-            self.vectorsCount = read_uint32(wmb_fp)
-            self.vectors = load_data_array(wmb_fp, self.vectorsPointer, self.vectorsCount, self.vectorsTemplate)
+            vectorsPointer = read_uint32(wmb_fp)
+            vectorsCount = read_uint32(wmb_fp)
+            vectors = load_data_array(wmb_fp, vectorsPointer, vectorsCount, self.vectorsTemplate)
+            
+            self.data = Slice3Data([x.data for x in vectors])
     
     class mystery4Template(object):
-        
         def read(self, wmb_fp):
-            self.posA = read_vector3(wmb_fp)
-            self.posB = read_vector3(wmb_fp)
-            self.mysteryC = read_uint32(wmb_fp)
-            self.mysteryD = read_uint32(wmb_fp)
-            self.mysteryE = read_uint16(wmb_fp)
-            self.mysteryE2 = read_uint16(wmb_fp)
-            self.mysteryF = read_uint32(wmb_fp) # always 0 or 1?
+            posA = read_vector3(wmb_fp)
+            posB = read_vector3(wmb_fp)
+            chunk5_ind = read_uint32(wmb_fp)
+            mysteryD = read_uint32(wmb_fp)
+            mysteryE = read_uint16(wmb_fp)
+            mysteryE2 = read_uint16(wmb_fp)
+            mysteryF = read_uint32(wmb_fp) # always 0 or 1?
             
-            self.twentyElementsPointer = read_uint32(wmb_fp)
-            self.startVertex = read_uint32(wmb_fp)
-            self.vertexCount = read_uint32(wmb_fp)
-            self.startIndex = read_uint32(wmb_fp)
-            self.indexCount = read_uint32(wmb_fp)
+            twentyElementsPointer = read_uint32(wmb_fp)
+            faces = SFaceSet().from_wmb(wmb_fp)
             
-            self.twentyElements = load_data_array(wmb_fp, self.twentyElementsPointer, 20, uint32)
+            twentyElements = load_data_array(wmb_fp, twentyElementsPointer, 20, uint32)
+            
+            self.data = Slice4Data(
+                SVector3(posA),
+                SVector3(posB),
+                chunk5_ind,
+                mysteryD,
+                mysteryE, mysteryE2,
+                mysteryF,
+                twentyElements,
+                faces
+            )
     
     class mystery5Template(object):
         class mysteryDTemplate(object):
             def read(self, wmb_fp):
-                self.contentPointer = read_uint32(wmb_fp)
-                self.contentCount = read_uint32(wmb_fp)
-                self.content = load_data_array(wmb_fp, self.contentPointer, self.contentCount, int16)
+                contentPointer = read_uint32(wmb_fp)
+                contentCount = read_uint32(wmb_fp)
+                self.content = load_data_array(wmb_fp, contentPointer, contentCount, int16)
     
         def read(self, wmb_fp):
-            self.mysteryA = read_uint32(wmb_fp)
-            self.mysteryB = read_int16(wmb_fp)
-            self.mysteryB2 = read_int16(wmb_fp)
-            self.mysteryC = read_int16(wmb_fp)
-            self.mysteryC2 = read_int16(wmb_fp)
-            self.mysteryDPointer = read_uint32(wmb_fp)
-            self.mysteryDCount = read_uint32(wmb_fp)
+            mysteryA = read_uint32(wmb_fp)  # Loopback ID
+            chunk1_ind = read_int16(wmb_fp)
+            mysteryB2 = read_int16(wmb_fp)
+            chunk3_ind = read_int16(wmb_fp)
+            mysteryC2 = read_int16(wmb_fp)
+            mysteryDPointer = read_uint32(wmb_fp)
+            mysteryDCount = read_uint32(wmb_fp)
             
-            self.mysteryD = load_data_array(wmb_fp, self.mysteryDPointer, self.mysteryDCount, self.mysteryDTemplate)
+            mysteryD = load_data_array(wmb_fp, mysteryDPointer, mysteryDCount, self.mysteryDTemplate)
+            
+            self.data = Slice5Data(
+                mysteryA,
+                chunk1_ind, mysteryB2,
+                chunk3_ind, mysteryC2,
+                [x.content for x in mysteryD]
+            )
     
     class mystery6Template(object):
         def read(self, wmb_fp):
-            self.mysteryAPointer = read_uint32(wmb_fp)
-            self.mysteryBPointer = read_uint32(wmb_fp)
-            self.mysteryACount = read_uint32(wmb_fp)
-            self.mysteryBCount = read_uint32(wmb_fp)
+            vertexPointer = read_uint32(wmb_fp)
+            facePointer = read_uint32(wmb_fp)
+            vertexCount = read_uint32(wmb_fp)
+            faceCount = read_uint32(wmb_fp)
             
             # immediately after those headers everything gets out of order.
             # next subchunk is 9, then 8, then 7, before getting back to this content.
             # not gonna bother to reproduce that unless i have to
             
-            self.mysteryA = load_data_array(wmb_fp, self.mysteryAPointer, self.mysteryACount, vector4)
-            self.mysteryB = load_data_array(wmb_fp, self.mysteryBPointer, self.mysteryBCount, int16)
+            vertexes = load_data_array(wmb_fp, vertexPointer, vertexCount, vector4)
+            vertexes = [SVector4(k.x, k.y, k.z, k.w) for k in vertexes]
+            faces = load_data_array(wmb_fp, facePointer, faceCount, int16)
+            
+            self.data = Slice6Data(SGeometry(vertexes, faces))
     
     class mystery7Template(object):
         def read(self, wmb_fp):
-            self.unknownA = read_vector3(wmb_fp)
-            self.unknownB = read_vector3(wmb_fp)
-            self.unknownC = read_uint32(wmb_fp)
-            self.unknownD = read_float(wmb_fp)
+            unknownA = read_vector3(wmb_fp)
+            unknownB = read_vector3(wmb_fp)
+            chunk6_ind = read_uint32(wmb_fp)
+            unknownD = read_float(wmb_fp)
             
-            self.startVertex = read_uint32(wmb_fp)
-            self.vertexCount = read_uint32(wmb_fp)
-            self.startIndex = read_uint32(wmb_fp)
-            self.indexCount = read_uint32(wmb_fp)
+            faces = SFaceSet().from_wmb(wmb_fp)
+            
+            self.data = Slice7Data(
+                SVector3(unknownA),
+                SVector3(unknownB),
+                chunk6_ind,
+                unknownD,
+                faces
+            )
     
     class mystery8Template(object):
         def read(self, wmb_fp):
-            self.vectors = []
-            for i in range(5):
-                self.vectors.append(read_vector3(wmb_fp))
-            self.mysteryA = read_uint32(wmb_fp) # so close to being more vector
+            vectors = [vector4(), vector4(), vector4(), None]
+            vectors[0].read(wmb_fp)
+            vectors[1].read(wmb_fp)
+            vectors[2].read(wmb_fp)
+            vectors[3] = SVector3(read_vector3(wmb_fp))
+            chunk1_ind = read_uint32(wmb_fp)
             mysteryBX = read_float(wmb_fp)
             mysteryBY = read_float(wmb_fp)
-            self.mysteryB = [mysteryBX, mysteryBY]
-            self.mysteryC = read_int16(wmb_fp)
-            self.mysteryD = read_int16(wmb_fp)
-            self.mysteryE = read_uint32(wmb_fp)
-            self.mysteryF = read_uint32(wmb_fp)
-            self.mysteryG = read_uint32(wmb_fp)
+            mysteryC = read_int16(wmb_fp)
+            mysteryD = read_int16(wmb_fp)
+            mysteryE = read_uint32(wmb_fp)
+            chunk7_ind = read_uint32(wmb_fp)
+            mysteryG = read_uint32(wmb_fp)
+            
+            self.data = Slice8Data(
+                vectors[0],
+                vectors[1],
+                vectors[2],
+                vectors[3],
+                chunk1_ind,
+                mysteryBX, mysteryBY,
+                mysteryC, mysteryD,
+                mysteryE,
+                chunk7_ind,
+                mysteryG
+            )
     
     class mystery9Template(object):
         def read(self, wmb_fp):
-            self.mysteryA = read_int16(wmb_fp)
-            self.mysteryParent = read_int16(wmb_fp)
-            self.mysteryC = read_int16(wmb_fp)
-            self.mysteryD = read_int16(wmb_fp)
-            self.mysteryE = read_uint32(wmb_fp)
+            mysteryA = read_int16(wmb_fp)
+            mysteryParent = read_int16(wmb_fp)
+            chunk8_ind = read_int16(wmb_fp)
+            mysteryD = read_int16(wmb_fp)
+            mysteryE = read_uint32(wmb_fp)
+            
+            self.data = Slice9Data(
+                mysteryA, mysteryParent,
+                chunk8_ind, mysteryD,
+                mysteryE
+            )
     
     def read(self, wmb_fp):
         self.mystery1Pointer = read_uint32(wmb_fp)

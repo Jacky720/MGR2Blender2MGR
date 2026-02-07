@@ -11,6 +11,7 @@ from ...utils.util import ShowMessageBox, getPreferences, printTimings
 from .wmb import *
 from ...wta_wtp.exporter.wta_wtp_ui_manager import makeWtaMaterial
 from ..materials import materialBuilder 
+from ..slice_data import *
 
 
 def reset_blend():
@@ -919,8 +920,10 @@ def load_mysterychunk(chunk, collection_name):
     col = bpy.data.collections.new("looseCoords")
     bpy.context.scene.collection.children.link(col)
     print("Processing mystery chunk!")
-    def mset(name, val): # short for mystery should rename
+    def mset(name, val): # short for mystery TODO rename
         bpy.data.collections["WMB"][name] = val # formerly collection name
+    def printStat(ls):
+        print(min(ls), max(ls), ls)
     def makeobj(coords, name="Holder of Place"):
         target = bpy.data.objects.new(name, None)
         target.empty_display_size = 0.15
@@ -929,156 +932,53 @@ def load_mysterychunk(chunk, collection_name):
     
     mset("mystery", True)
     
-    for i, one in enumerate(chunk.mystery1):
-        mset("1-%2d-name"%i, one.name)
-        mset("1-%2d-parent"%i, one.parent)
-        mset("1-%2d-B"%i, one.mysteryB)
-    
-    for i, two in enumerate(chunk.mystery2):
-        mset("2-%2d-A"%i, two.posA)
-        mset("2-%2d-Aflag"%i, two.flagA)
-        mset("2-%2d-B"%i, two.posB)
-        mset("2-%2d-Bflag"%i, two.flagB)
-        mset("2-%2d-C"%i, two.posC)
-        mset("2-%2d-Cflag"%i, two.flagC)
-        mset("2-%2d-D"%i, two.posD)
-    
-    for i, three in enumerate(chunk.mystery3):
-        for j, content in enumerate(three.vectors):
-            mset("3-%2d-%2d-A"%(i,j), content.mysteryA)
-            #makeobj(content.mysteryA[:3], "3-%2d-%2d-A"%(i,j))
-            mset("3-%2d-%2d-B"%(i,j), content.mysteryB)
-            #makeobj(content.mysteryB[:3], "3-%2d-%2d-B"%(i,j))
-            mset("3-%2d-%2d-C"%(i,j), content.mysteryC)
-            #makeobj(content.mysteryC[:3], "3-%2d-%2d-C"%(i,j))
-            mset("3-%2d-%2d-D"%(i,j), content.mysteryD)
-            #makeobj(content.mysteryD[:3], "3-%2d-%2d-D"%(i,j))
-            mset("3-%2d-%2d-E"%(i,j), content.mysteryE)
-            #makeobj(content.mysteryE[:3], "3-%2d-%2d-E"%(i,j))
-            mset("3-%2d-%2d-F"%(i,j), content.mysteryF)
-    
-    for i, four in enumerate(chunk.mystery4):
-        mset("4-%2d-A"%i, four.posA)
-        #makeobj([four.posA[0], four.posA[2], four.posA[1]], "4-%2d-A"%i)
-        mset("4-%2d-B"%i, four.posB)
-        #makeobj([four.posB[0], four.posB[2], four.posB[1]], "4-%2d-B"%i)
-        mset("4-%2d-C"%i, four.mysteryC)
-        mset("4-%2d-D"%i, four.mysteryD) # batch index
-        mset("4-%2d-E"%i, four.mysteryE) # usually 0, a couple 1
-        mset("4-%2d-E2"%i, four.mysteryE2)
-        mset("4-%2d-F"%i, four.mysteryF) # always 1? (0 in some other model)
-        mset("4-%2d-array"%i, four.twentyElements)
-        mset("4-%2d-startVertex"%i, four.startVertex)
-        mset("4-%2d-vertexCount"%i, four.vertexCount)
-        mset("4-%2d-startIndex"%i, four.startIndex)
-        mset("4-%2d-indexCount"%i, four.indexCount)
-    _4A = ["%d-%d %d-%d" % (x.startVertex, x.startVertex+x.vertexCount, x.startIndex, x.startIndex+x.indexCount) for x in chunk.mystery4]
+    Slice1Data.store_section([x.data for x in chunk.mystery1])
+    Slice2Data.store_section([x.data for x in chunk.mystery2])
+    Slice3Data.store_section([x.data for x in chunk.mystery3])
+    Slice4Data.store_section([x.data for x in chunk.mystery4])
+    _4A = [str(x.data.faces) for x in chunk.mystery4]
     print("4 Vertexes and indexes:")
     print("\n".join(_4A))
-    
-    for i, five in enumerate(chunk.mystery5):
-        mset("5-%2d-A"%i, five.mysteryA)
-        mset("5-%2d-B"%i, five.mysteryB) # cut group index
-        mset("5-%2d-B2"%i, five.mysteryB2) # usually 0, a couple 1
-        mset("5-%2d-C"%i, five.mysteryC) # parent cut group?
-        mset("5-%2d-C2"%i, five.mysteryC2) # always 0
-        
-        for j, content in enumerate(five.mysteryD):
-            mset("5-%2d-D-%2d"%(i,j), content.content)
-    myList = [x.mysteryA for x in chunk.mystery5]
+    Slice5Data.store_section([x.data for x in chunk.mystery5])
     print("5A:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryB for x in chunk.mystery5]
+    printStat([x.data.unk_0 for x in chunk.mystery5])
     print("5B:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryC for x in chunk.mystery5]
+    printStat([x.data.chunk1_ind for x in chunk.mystery5])
     print("5C:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryC2 for x in chunk.mystery5]
+    printStat([x.data.chunk3_ind for x in chunk.mystery5])
     print("5C2:")
-    print(min(myList), max(myList), myList)
+    printStat([x.data.unk_A for x in chunk.mystery5])
     print()
-    
-    for i, six in enumerate(chunk.mystery6):
-        sixAFlat = []
-        for vec in six.mysteryA:
-            sixAFlat.extend([vec.x, vec.y, vec.z, vec.w])
-            offsetted = chunk.mystery7[i].unknownA
-            #makeobj([vec.x + offsetted[0], vec.z + offsetted[2], vec.y + offsetted[1]], "6-%2d-A-%2d" % (i, len(sixAFlat) // 4))
-        mset("6-%2d-A"%i, sixAFlat)
-        mset("6-%2d-B"%i, six.mysteryB)
-    myList = [x.mysteryB for x in chunk.mystery6]
+    Slice6Data.store_section([x.data for x in chunk.mystery6])
+    myList = [x.data.data.faces for x in chunk.mystery6]
     print("6B:")
     print(min([min(x) for x in myList]), max([max(x) for x in myList]), myList)
-    
-    for i, seven in enumerate(chunk.mystery7):
-        mset("7-%2d-A"%i, seven.unknownA)
-        x = seven.unknownA
-        #makeobj([x[0], -x[2], x[1]], "7A-%2d"%i)
-        mset("7-%2d-B"%i, seven.unknownB)
-        x = seven.unknownB
-        #makeobj([x[0], -x[2], x[1]], "7B-%2d"%i)
-        mset("7-%2d-C"%i, seven.unknownC)
-        mset("7-%2d-D"%i, seven.unknownD)
-        
-        mset("7-%2d-startVertex"%i, seven.startVertex)
-        mset("7-%2d-vertexCount"%i, seven.vertexCount)
-        mset("7-%2d-startIndex"%i, seven.startIndex)
-        mset("7-%2d-indexCount"%i, seven.indexCount)
-    
-    for i, eight in enumerate(chunk.mystery8):
-        eightVectorsFlat = []
-        for vec in eight.vectors:
-            eightVectorsFlat.extend(vec)
-            #makeobj(vec, "8-%2d-%2d"%(i, len(eightVectorsFlat)//3))
-        mset("8-%2d-vectors"%i, eightVectorsFlat)
-        mset("8-%2d-A"%i, eight.mysteryA)
-        mset("8-%2d-B"%i, eight.mysteryB)
-        mset("8-%2d-C"%i, eight.mysteryC)
-        mset("8-%2d-D"%i, eight.mysteryD)
-        mset("8-%2d-E"%i, eight.mysteryE)
-        mset("8-%2d-F"%i, eight.mysteryF)
-        mset("8-%2d-G"%i, eight.mysteryG)
-    myList = [x.mysteryA for x in chunk.mystery8]
+    Slice7Data.store_section([x.data for x in chunk.mystery7])
+    Slice8Data.store_section([x.data for x in chunk.mystery8])
     print("8A:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryC for x in chunk.mystery8]
+    printStat([x.data.chunk1_ind for x in chunk.mystery8])
     print("8C:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryD for x in chunk.mystery8]
+    printStat([x.data.unk_48 for x in chunk.mystery8])
     print("8D:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryE for x in chunk.mystery8]
+    printStat([x.data.unk_4A for x in chunk.mystery8])
     print("8E:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryF for x in chunk.mystery8]
+    printStat([x.data.unk_4C for x in chunk.mystery8])
     print("8F:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryG for x in chunk.mystery8]
+    printStat([x.data.chunk7_ind for x in chunk.mystery8])
     print("8G:")
-    print(min(myList), max(myList), myList)
-    
-    for i, nine in enumerate(chunk.mystery9):
-        mset("9-%2d-A"%i, nine.mysteryA)
-        mset("9-%2d-parent"%i, nine.mysteryParent)
-        mset("9-%2d-C"%i, nine.mysteryC)
-        mset("9-%2d-D"%i, nine.mysteryD)
-        mset("9-%2d-E"%i, nine.mysteryE)
-    myList = [x.mysteryA for x in chunk.mystery9]
+    printStat([x.data.unk_54 for x in chunk.mystery8])
+    print()
+    Slice9Data.store_section([x.data for x in chunk.mystery9])
     print("9A:")
-    print(min(myList), max(myList), myList)
-    #myList = [x.mysteryB for x in chunk.mystery9]
+    printStat([x.data.unk_0 for x in chunk.mystery9])
     #print("9B:")
-    #print(min(myList), max(myList), myList)
-    myList = [x.mysteryC for x in chunk.mystery9]
+    #printStat([x.data.parent for x in chunk.mystery9])
     print("9C:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryD for x in chunk.mystery9]
+    printStat([x.data.chunk8_ind for x in chunk.mystery9])
     print("9D:")
-    print(min(myList), max(myList), myList)
-    myList = [x.mysteryE for x in chunk.mystery9]
+    printStat([x.data.unk_6 for x in chunk.mystery9])
     print("9E:")
-    print(min(myList), max(myList), myList)
+    printStat([x.data.unk_8 for x in chunk.mystery9])
     print("\n\n")
 
 def main(only_extract = False, wmb_file = os.path.join(os.path.split(os.path.realpath(__file__))[0], 'test', 'pl0000.dtt', 'pl0000.wmb'), wmb4_transform = None):
