@@ -974,9 +974,10 @@ class c_mystery(object):
             mysteryValues = []
             currentOffset = offset
             mysteryD = []
-            newValues = []
             currentOffset += 20 * len(values)
-            for data in newValues:
+            if (currentOffset % 16) > 0:
+                currentOffset += 16 - (currentOffset % 16)
+            for data in values:
                 appendVal = {
                     "int_0": data.unk_0,
                     "ref1": data.chunk1_ind,

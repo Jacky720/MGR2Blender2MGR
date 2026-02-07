@@ -330,6 +330,7 @@ def create_wmb_mystery(wmb_file, data):
     subchunk = data.mystery.mystery[4]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[4])
     for mystery5 in subchunk:
+        #print("Writing mystery5 entry at", wmb_file.tell())
         write_uInt32(wmb_file, mystery5["int_0"])
         write_Int16(wmb_file, mystery5["ref1"])
         write_Int16(wmb_file, mystery5["short_6"])
