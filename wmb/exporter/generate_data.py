@@ -8,6 +8,7 @@ import numpy as np
 import mathutils as mu
 from .materials.material import c_material
 from .materials.create_materials import c_materials
+from ..slice_data import *
 
 def getRealName(name):
     splitname = name.split('-')
@@ -874,96 +875,114 @@ class c_meshes(object):
 
 class c_mystery(object):
     def __init__(self, mysteryPointer):
-        def mystery1(offset, values):
+        def mystery1(offset):
+            values = Slice1Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 8 * len(values)
             if (currentOffset % 16) > 0:
                 currentOffset += 16 - (currentOffset % 16)
-            for vals in values:
-                appendVal = vals
-                appendVal["offsetName"] = currentOffset
-                currentOffset += len(vals["name"]) + 1
+            for data in values:
+                appendVal = {
+                    "offsetName": currentOffset,
+                    "name": data.name,
+                    "parent": data.parent_ind,
+                    "short_6": data.unk_6
+                }
+                currentOffset += len(data.name) + 1
                 mysteryValues.append(appendVal)
             
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery2(offset, values):
+        def mystery2(offset):
+            values = Slice2Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 60 * len(values)
-            for vals in values:
-                appendVal = vals
+            for data in values:
+                appendVal = {
+                    "vec_0": data.unk_0,
+                    "flag_C": [data.unk_C, data.unk_E],
+                    "vec_10": data.unk_10,
+                    "flag_1C": [data.unk_1C, data.unk_1E],
+                    "vec_20": data.unk_20,
+                    "flag_2C": [data.unk_2C, data.unk_2E],
+                    "vec_30": data.unk_30
+                }
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery3(offset, values):
+        def mystery3(offset):
             # ik ik it's incomprehensible
+            values = Slice3Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
-            vectorGroups = []
-            for i, vals in enumerate(values):
-                vectorGroups.append([])
-                for j in range(len(vals)//6):
-                    vectorGroups[-1].append([[], [], [], [], [], 0])
-                for key, val in vals.items():
-                    splitkey = key.split("-")
-                    j = int(splitkey[0])
-                    k = "ABCDEF".index(splitkey[1])
-                    vectorGroups[i][j][k] = list(val) if k < 5 else int(val)
-                    #print(key)
-                #print(vectorGroups[-1])
-            currentOffset += 8 * len(vectorGroups)
+            currentOffset += 8 * len(values)
             if (currentOffset % 16) > 0:
                 currentOffset += 16 - (currentOffset % 16)
-            for vals in vectorGroups:
-                appendVal = {}
-                appendVal["content"] = vals
-                appendVal["offset"] = currentOffset
-                currentOffset += 64 * len(vals) # 5 vector3's + 1 int/group
+            for data in values:
+                appendVal = {
+                    "content": [{
+                        "vecs": [dd.unk_0,
+                                 dd.unk_C,
+                                 dd.unk_18,
+                                 dd.unk_24,
+                                 dd.unk_30],
+                        "material": dd.mat_index
+                    } for dd in data.entries],
+                    "offset": currentOffset
+                }
+                currentOffset += 64 * len(data.entries) # 5 vector3's + 1 int/group
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery4(offset, values):
+        def mystery4(offset):
+            values = Slice4Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 60 * len(values)
-            for vals in values:
-                appendVal = vals
-                appendVal["offset"] = currentOffset if (len(vals["array"]) > 0) else 0
-                currentOffset += 4 * len(vals["array"])
+            for data in values:
+                appendVal = {
+                    "vec_0": data.unk_0,
+                    "vec_C": data.unk_C,
+                    "ref5": data.chunk5_ind,
+                    "int_1C": data.unk_1C,
+                    "short_20": data.unk_20,
+                    "short_22": data.unk_22,
+                    "int_24": data.unk_24,
+                    "array": data.unk_array,
+                    "faces": data.faces
+                    "offset": currentOffset if (len(data.unk_array) > 0) else 0
+                }
+                currentOffset += 4 * len(data.unk_array)
                 mysteryValues.append(appendVal)
             
             if (currentOffset % 16) > 0:
                 currentOffset += 16 - (currentOffset % 16)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery5(offset, values):
+        def mystery5(offset):
+            values = Slice5Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             mysteryD = []
             newValues = []
-            for vals in values:
-                newValues.append({"D": []})
-                for key, val in vals.items():
-                    splitkey = key.split("-")
-                    if splitkey[0] == "D":
-                        i = int(splitkey[1])
-                        while len(newValues[-1]["D"]) < i + 1:
-                            newValues[-1]["D"].append([])
-                        newValues[-1]["D"][i] = val
-                    else:
-                        newValues[-1][key] = val
-            
-            currentOffset += 20 * len(newValues)
-            for vals in newValues:
-                appendVal = vals
-                appendVal["offset"] = currentOffset
-                currentOffset += 8 * len(vals["D"])
+            currentOffset += 20 * len(values)
+            for data in newValues:
+                appendVal = {
+                    "int_0": data.unk_0,
+                    "ref1": data.chunk1_ind,
+                    "short_6": data.unk_6,
+                    "ref3": data.chunk3_ind,
+                    "short_A": data.unk_A,
+                    "array": data.unk_array,
+                    "offset": currentOffset,
+                    "offsetTwo": []
+                }
+                currentOffset += 8 * len(data.unk_array)
                 if (currentOffset % 16) > 0:
                     currentOffset += 16 - (currentOffset % 16)
-                appendVal["offsetTwo"] = []
-                for nums in vals["D"]:
+                for nums in data.unk_array:
                     appendVal["offsetTwo"].append(currentOffset)
                     currentOffset += 2 * len(nums)
                     if (currentOffset % 16) > 0:
@@ -971,63 +990,93 @@ class c_mystery(object):
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery6(offset, values):
+        def mystery6(offset):
+            values = Slice6Data.fetch_section()
             mysteryValues = []
             currentOffsetA = offset
             currentOffsetA += 16 * len(values)
             currentOffsetB = currentOffsetA
-            for vals in values:
-                currentOffsetB += 4 * len(vals["A"])
-            for vals in values:
-                appendVal = vals
-                appendVal["offsetA"] = currentOffsetA
-                currentOffsetA += 4 * len(vals["A"]) # float
-                appendVal["offsetB"] = currentOffsetB
-                currentOffsetB += 2 * len(vals["B"]) # short
+            for data in values:
+                currentOffsetB += 16 * len(data.data.vertexes)
+            for data in values:
+                appendVal = {
+                    "vertexes": data.data.vertexes,
+                    "faces": data.data.faces,
+                    "offsetVert": currentOffsetA,
+                    "offsetFace": currentOffsetB
+                }
+                currentOffsetA += 16 * len(data.data.vertexes) # vec4
+                currentOffsetB += 2 * len(data.data.faces) # short
                 mysteryValues.append(appendVal)
             return {"size": currentOffsetB - offset, "content": mysteryValues}
                 
-        def mystery7(offset, values):
+        def mystery7(offset):
+            values = Slice7Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 48 * len(values)
-            for vals in values:
-                appendVal = vals
+            for data in values:
+                appendVal = {
+                    "vec_0": data.unk_0,
+                    "vec_C": data.unk_C,
+                    "ref6", data.chunk6_ind,
+                    "float_1C": data.unk_1C,
+                    "faces": data.faces
+                }
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery8(offset, values):
+        def mystery8(offset):
+            values = Slice8Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 88 * len(values)
-            for vals in values:
-                appendVal = vals
+            for data in values:
+                appendVal = {
+                    "vec_0": data.unk_0,
+                    "vec_10": data.unk_10,
+                    "vec_20": data.unk_20,
+                    "vec_30": data.unk_30,
+                    "ref1": data.chunk1_ind,
+                    "float_40": data.unk_40,
+                    "float_44": data.unk_44,
+                    "short_48": data.unk_48,
+                    "short_4A": data.unk_4A,
+                    "int_4C": data.unk_4C,
+                    "ref7": data.chunk7_ind,
+                    "int_54": data.unk_54
+                }
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
-        def mystery9(offset, values):
+        def mystery9(offset):
+            values = Slice9Data.fetch_section()
             mysteryValues = []
             currentOffset = offset
             currentOffset += 12 * len(values)
-            for vals in values:
-                appendVal = vals
+            for data in values:
+                appendVal = {
+                    "short_0": data.unk_0,
+                    "parent": data.parent,
+                    "ref8": data.chunk8_ind,
+                    "short_6": data.unk_6,
+                    "int_8": data.unk_8
+                }
                 mysteryValues.append(appendVal)
             return {"size": currentOffset - offset, "content": mysteryValues}
                 
         
-        blendervals = [[], [], [], [], [], [], [], [], []]
+        mysteryCounts = [0] * 9
         for key, value in bpy.data.collections['WMB'].items():
             if key[0].isnumeric():
                 splitkey = key.split("-")
                 i = int(splitkey.pop(0)) - 1
                 j = int(splitkey.pop(0))
-                while len(blendervals[i]) < j + 1:
-                    blendervals[i].append({})
-                shortname = "-".join(splitkey)
-                blendervals[i][j][shortname] = value
+                if mysteryCounts[i] < j + 1:
+                    mysteryCounts[i] = j + 1
         
         self.mysteryOffsets = [0] * 9
-        self.mysteryCounts = [len(x) for x in blendervals]
+        self.mysteryCounts = mysteryCounts
         self.mysterySizes = [0] * 9
         self.mystery = []
         mysteryFuncs = [mystery1, mystery2, mystery3, mystery4, mystery5, mystery6, mystery7, mystery8, mystery9]
@@ -1038,7 +1087,7 @@ class c_mystery(object):
                     self.mysteryOffsets[i] += 16 - (self.mysteryOffsets[i] % 16)
             else:
                 self.mysteryOffsets[i] = self.mysteryOffsets[i-1] + self.mysterySizes[i-1]
-            self.mystery.append(mysteryFuncs[i](self.mysteryOffsets[i], blendervals[i]))
+            self.mystery.append(mysteryFuncs[i](self.mysteryOffsets[i]))
             self.mysterySizes[i] = self.mystery[i]["size"]
         for i in range(9):
             if self.mysteryCounts[i] == 0:

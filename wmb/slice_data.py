@@ -1,8 +1,9 @@
 from __future__ import annotations
 import bpy
 from idprop.types import IDPropertyArray
+from io import BufferedReader, BufferedWriter
 
-from ..utils.ioUtils import read_uint32
+from ..utils.ioUtils import read_uint32, write_float, write_uInt32
 
 # TODO: Better exception classes
 # TODO: check all "tentative" matches (somehow)
@@ -265,7 +266,7 @@ class Slice4Data:
     unk_20: int  # short
     unk_22: int  # short
     unk_24: int
-    unk_array: list[int]  # 20 elements
+    unk_array: list[int]  # 20 elements, or 0.
     faces: SFaceSet
     
     def __init__(self, unk_0: SVector3 = None, unk_C: SVector3 = None, chunk5_ind: int = 0,
@@ -732,6 +733,11 @@ class SVector3:
     def to_collection(self, col: bpy.types.Collection, write_key: str):
         # col may not be None here, assume handled by parent
         col[write_key] = [self.x, self.y, self.z]
+    
+    def to_wmb(self, wmb_fp: BufferedWriter):
+        write_float(wmb_fp, self.x)
+        write_float(wmb_fp, self.y)
+        write_float(wmb_fp, self.z)
 
 """Helper"""
 class SVector4:
@@ -764,6 +770,12 @@ class SVector4:
     def to_collection(self, col: bpy.types.Collection, write_key: str):
         # col may not be None here, assume handled by parent
         col[write_key] = [self.x, self.y, self.z, self.w]
+    
+    def to_wmb(self, wmb_fp: BufferedWriter):
+        write_float(wmb_fp, self.x)
+        write_float(wmb_fp, self.y)
+        write_float(wmb_fp, self.z)
+        write_float(wmb_fp, self.w)
 
 """Helper"""
 class SFaceSet:
@@ -799,6 +811,12 @@ class SFaceSet:
         self.faceCount = read_uint32(wmb_fp)
         
         return self
+    
+    def to_wmb(self, wmb_fp: BufferedWriter):
+        write_uInt32(wmb_fp, self.vertexStart)
+        write_uInt32(wmb_fp, self.vertexCount)
+        write_uInt32(wmb_fp, self.faceStart)
+        write_uInt32(wmb_fp, self.faceCount)
     
     def __str__(self):
         return f"v: {self.vertexStart}-{self.vertexStart + self.vertexCount}; f: {self.faceStart}-{self.faceStart + self.faceCount}"

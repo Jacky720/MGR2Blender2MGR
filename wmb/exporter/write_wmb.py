@@ -250,46 +250,50 @@ def create_wmb_meshes(wmb_file, data):
             for bone in mesh.bones:
                 write_uInt16(wmb_file, bone)                    # bones
 
-def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a jiffy
+def create_wmb_mystery(wmb_file, data):
     def write_vector3(wmb_file, vec):
         write_float(wmb_file, vec[0])
         write_float(wmb_file, vec[1])
         write_float(wmb_file, vec[2])
     
-    def write_vector4(wmb_file, vec): # wait, there are no vector4s? they were made up by the la-li-lu-le-lo?
+    def write_vector4(wmb_file, vec):
         write_vector3(wmb_file, vec) # :)
         write_float(wmb_file, vec[3])
     
+    # General offsets
     wmb_file.seek(data.mystery_Offset)
     for i, offset in enumerate(data.mystery.mysteryOffsets):
         write_uInt32(wmb_file, offset)
         write_uInt32(wmb_file, data.mystery.mysteryCounts[i])
     
+    # Slice1Data
     subchunk = data.mystery.mystery[0]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[0])
     for mystery1 in subchunk:
         write_uInt32(wmb_file, mystery1["offsetName"])
         write_Int16(wmb_file, mystery1["parent"])
-        write_Int16(wmb_file, mystery1["B"])
+        write_Int16(wmb_file, mystery1["short_6"])
         pos = wmb_file.tell()
         wmb_file.seek(mystery1["offsetName"])
         write_string(wmb_file, mystery1["name"])
         wmb_file.seek(pos)
     
+    # Slice2Data
     subchunk = data.mystery.mystery[1]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[1])
     for mystery2 in subchunk:
-        write_vector3(wmb_file, mystery2["A"])
-        write_Int16(wmb_file, mystery2["Aflag"][0])
-        write_Int16(wmb_file, mystery2["Aflag"][1])
-        write_vector3(wmb_file, mystery2["B"])
-        write_Int16(wmb_file, mystery2["Bflag"][0])
-        write_Int16(wmb_file, mystery2["Bflag"][1])
-        write_vector3(wmb_file, mystery2["C"])
-        write_Int16(wmb_file, mystery2["Cflag"][0])
-        write_Int16(wmb_file, mystery2["Cflag"][1])
-        write_vector3(wmb_file, mystery2["D"])
+        mystery2["vec_0"].to_wmb(wmb_file)
+        write_Int16(wmb_file, mystery2["flag_C"][0])
+        write_Int16(wmb_file, mystery2["flag_C"][1])
+        mystery2["vec_10"].to_wmb(wmb_file)
+        write_Int16(wmb_file, mystery2["flag_1C"][0])
+        write_Int16(wmb_file, mystery2["flag_1C"][1])
+        mystery2["vec_20"].to_wmb(wmb_file)
+        write_Int16(wmb_file, mystery2["flag_2C"][0])
+        write_Int16(wmb_file, mystery2["flag_2C"][1])
+        mystery2["vec_30"].to_wmb(wmb_file)
     
+    # Slice3Data
     subchunk = data.mystery.mystery[2]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[2])
     for mystery3 in subchunk:
@@ -297,47 +301,45 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
         write_uInt32(wmb_file, len(mystery3["content"])) # count
         pos = wmb_file.tell()
         wmb_file.seek(mystery3["offset"])
-        for vecGroup in mystery3["content"]:
-            for vec in vecGroup[:5]:
-                #print(vec)
+        for entry in mystery3["content"]:
+            for vec in entry["vecs"]:
                 write_vector3(wmb_file, vec)
-            write_uInt32(wmb_file, vecGroup[-1])
+            write_uInt32(wmb_file, entry["material"])
         wmb_file.seek(pos)
     
+    # Slice4Data
     subchunk = data.mystery.mystery[3]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[3])
     for mystery4 in subchunk:
-        write_vector3(wmb_file, mystery4["A"])
-        write_vector3(wmb_file, mystery4["B"])
-        write_uInt32(wmb_file, mystery4["C"])
-        write_uInt32(wmb_file, mystery4["D"])
-        write_uInt16(wmb_file, mystery4["E"])
-        write_uInt16(wmb_file, mystery4["E2"])
-        write_uInt32(wmb_file, mystery4["F"])
+        mystery4["vec_0"].to_wmb(wmb_file)
+        mystery4["vec_C"].to_wmb(wmb_file)
+        write_uInt32(wmb_file, mystery4["ref5"])
+        write_uInt32(wmb_file, mystery4["int_1C"])
+        write_uInt16(wmb_file, mystery4["short_20"])
+        write_uInt16(wmb_file, mystery4["short_22"])
+        write_uInt32(wmb_file, mystery4["int_24"])
         write_uInt32(wmb_file, mystery4["offset"])
-        write_uInt32(wmb_file, mystery4["startVertex"])
-        write_uInt32(wmb_file, mystery4["vertexCount"])
-        write_uInt32(wmb_file, mystery4["startIndex"])
-        write_uInt32(wmb_file, mystery4["indexCount"])
+        mystery4["faces"].to_wmb(wmb_file)
         pos = wmb_file.tell()
         wmb_file.seek(mystery4["offset"])
         for val in mystery4["array"]: # 20
             write_uInt32(wmb_file, val)
         wmb_file.seek(pos)
     
+    # Slice5Data
     subchunk = data.mystery.mystery[4]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[4])
     for mystery5 in subchunk:
-        write_uInt32(wmb_file, mystery5["A"])
-        write_Int16(wmb_file, mystery5["B"])
-        write_Int16(wmb_file, mystery5["B2"])
-        write_Int16(wmb_file, mystery5["C"])
-        write_Int16(wmb_file, mystery5["C2"])
+        write_uInt32(wmb_file, mystery5["int_0"])
+        write_Int16(wmb_file, mystery5["ref1"])
+        write_Int16(wmb_file, mystery5["short_6"])
+        write_Int16(wmb_file, mystery5["ref3"])
+        write_Int16(wmb_file, mystery5["short_A"])
         write_uInt32(wmb_file, mystery5["offset"])
-        write_uInt32(wmb_file, len(mystery5["D"]))
+        write_uInt32(wmb_file, len(mystery5["array"]))
         pos1 = wmb_file.tell()
         wmb_file.seek(mystery5["offset"])
-        for i, content in enumerate(mystery5["D"]):
+        for i, content in enumerate(mystery5["array"]):
             write_uInt32(wmb_file, mystery5["offsetTwo"][i]) # pointer 2
             write_uInt32(wmb_file, len(content))
             pos2 = wmb_file.tell()
@@ -348,57 +350,60 @@ def create_wmb_mystery(wmb_file, data): # i'm sure we'll be editing this in a ji
         
         wmb_file.seek(pos1)
     
+    # Slice6Data
     subchunk = data.mystery.mystery[5]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[5])
     for mystery6 in subchunk:
-        write_uInt32(wmb_file, mystery6["offsetA"])
-        write_uInt32(wmb_file, mystery6["offsetB"])
-        write_uInt32(wmb_file, int(len(mystery6["A"])/4)) # vector4 count
-        write_uInt32(wmb_file, len(mystery6["B"]))
+        write_uInt32(wmb_file, mystery6["offsetVert"])
+        write_uInt32(wmb_file, mystery6["offsetFace"])
+        write_uInt32(wmb_file, len(mystery6["vertexes"])) # vector4 count
+        write_uInt32(wmb_file, len(mystery6["faces"]))
         pos = wmb_file.tell()
-        wmb_file.seek(mystery6["offsetA"])
-        for flt in mystery6["A"]:
-            write_float(wmb_file, flt)
-        wmb_file.seek(mystery6["offsetB"])
-        for num in mystery6["B"]:
+        wmb_file.seek(mystery6["offsetVert"])
+        for vec in mystery6["vertexes"]:
+            vec.to_wmb(wmb_file)
+        wmb_file.seek(mystery6["offsetFace"])
+        for num in mystery6["faces"]:
             write_Int16(wmb_file, num)
         
         wmb_file.seek(pos)
     
+    # Slice7Data
     subchunk = data.mystery.mystery[6]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[6])
     for mystery7 in subchunk:
-        write_vector3(wmb_file, mystery7["A"])
-        write_vector3(wmb_file, mystery7["B"])
-        write_uInt32(wmb_file, mystery7["C"])
-        write_float(wmb_file, mystery7["D"])
-        write_uInt32(wmb_file, mystery7["startVertex"])
-        write_uInt32(wmb_file, mystery7["vertexCount"])
-        write_uInt32(wmb_file, mystery7["startIndex"])
-        write_uInt32(wmb_file, mystery7["indexCount"])
+        mystery7["vec_0"].to_wmb(wmb_file)
+        mystery7["vec_C"].to_wmb(wmb_file)
+        write_uInt32(wmb_file, mystery7["ref6"])
+        write_float(wmb_file, mystery7["float_1C"])
+        mystery7["faces"].to_wmb(wmb_file)
     
+    # Slice8Data
     subchunk = data.mystery.mystery[7]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[7])
     for mystery8 in subchunk:
-        for flt in mystery8["vectors"]: # five vector3's
-            write_float(wmb_file, flt)
-        write_uInt32(wmb_file, mystery8["A"])
-        write_float(wmb_file, mystery8["B"][0]) # some nutjob joined these floats... oh.
-        write_float(wmb_file, mystery8["B"][1])
-        write_Int16(wmb_file, mystery8["C"])
-        write_Int16(wmb_file, mystery8["D"])
-        write_uInt32(wmb_file, mystery8["E"])
-        write_uInt32(wmb_file, mystery8["F"])
-        write_uInt32(wmb_file, mystery8["G"])
+        mystery8["vec_0"].to_wmb(wmb_file)
+        mystery8["vec_10"].to_wmb(wmb_file)
+        mystery8["vec_20"].to_wmb(wmb_file)
+        mystery8["vec_30"].to_wmb(wmb_file)
+        write_uInt32(wmb_file, mystery8["ref1"])
+        write_float(wmb_file, mystery8["float_40"])
+        write_float(wmb_file, mystery8["float_44"])
+        write_Int16(wmb_file, mystery8["short_48"])
+        write_Int16(wmb_file, mystery8["short_4A"])
+        write_uInt32(wmb_file, mystery8["int_4C"])
+        write_uInt32(wmb_file, mystery8["ref7"])
+        write_uInt32(wmb_file, mystery8["int_54"])
     
+    # Slice9Data
     subchunk = data.mystery.mystery[8]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[8])
     for mystery9 in subchunk:
-        write_Int16(wmb_file, mystery9["A"])
+        write_Int16(wmb_file, mystery9["short_0"])
         write_Int16(wmb_file, mystery9["parent"])
-        write_Int16(wmb_file, mystery9["C"])
-        write_Int16(wmb_file, mystery9["D"])
-        write_uInt32(wmb_file, mystery9["E"])
+        write_Int16(wmb_file, mystery9["ref8"])
+        write_Int16(wmb_file, mystery9["short_6"])
+        write_uInt32(wmb_file, mystery9["int_8"])
 
 def create_wmb_textures(wmb_file, data):
     wmb_file.seek(data.textures_Offset)
