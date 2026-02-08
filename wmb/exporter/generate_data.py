@@ -123,6 +123,7 @@ class c_batches(object):
                 
                 batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
                 if BALLIN:
+                    col = bpy.data.collections["WMB"]
                     Slice4Data(
                         SVector3(boundingBoxXYZ),
                         SVector3(boundingBoxUVW),
@@ -138,16 +139,16 @@ class c_batches(object):
                     persist_slice5_array = []
                     
                     add_item_index = 0
-                    while "5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index) in bpy.data.collections["WMB"]:
+                    while "5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index) in col:
                         persist_slice5_array.append(
-                            bpy.data.collections["WMB"]["5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index)]
+                            col["5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index)]
                         )
                         add_item_index += 1
                     
                     Slice5Data(
                         obj_vertexGroupIndex,
                         0, 0,  # Slice1Data index, suspected
-                        -1, 0,  # Slice3Data (materials) index, suspected
+                        0 if any(k.startswith("3-") for k in col.keys()) else -1, 0,  # Slice3Data (materials) index, suspected
                         persist_slice5_array + [[len(batches) - 1]]
                     ).to_collection(obj_vertexGroupIndex)
                     
