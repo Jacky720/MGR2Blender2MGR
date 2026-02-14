@@ -1,9 +1,11 @@
 # basically a wrapper for generate_data.py and write_wmb/__init__.py
 from ...utils.ioUtils import create_wmb, close_wmb
 from .generate_data import c_generate_data
+from ...bxm.common.bxm import bxmToXml, xmlToBxm
 from .write_wmb import *
 
 import time
+import os
 
 normals_flipped = False
 
@@ -35,7 +37,7 @@ def restore_blend():
     return {'FINISHED'}
 
 
-def main(filepath, wmb4=True, collectionName="WMB", BALLIN=True):
+def main(filepath, wmb4=True, collectionName="WMB", BALLIN=True, useCutInfo=True):
     start_time = int(time.time())
     prepare_blend()
 
@@ -82,8 +84,15 @@ def main(filepath, wmb4=True, collectionName="WMB", BALLIN=True):
     create_wmb_meshes(wmb_file, generated_data)
     
     if generated_data.mystery is not None:
-        print("God help us, writing that absurd mystery chunk.")
-        create_wmb_mystery(wmb_file, generated_data)
+        print("God help us, writing that absurd slice data chunk.")
+        cutinfopath = os.path.join(os.path.dirname(filepath), 'CutInfo.bxm')
+        if os.path.exists(cutinfopath) and useCutInfo:
+            CutInfo = bxmToXml(cutinfopath)
+            create_wmb_mystery(wmb_file, generated_data, CutInfo)
+            print("Exporting CutInfo.bxm")
+            xmlToBxm(CutInfo, cutinfopath)
+        else:
+            create_wmb_mystery(wmb_file, generated_data)
 
     print('Finished writing. Closing file..')
     close_wmb(wmb_file, generated_data)

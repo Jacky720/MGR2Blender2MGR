@@ -1,6 +1,8 @@
 # write data from Python object to .wmb
 from ...utils.ioUtils import write_Int32, write_uInt32, write_Int16, write_xyz, write_float, write_char, write_string, write_uInt16, SmartIO, write_byte, write_float16
 from ...utils.util import *
+from ...bxm.common.bxm import XmlNode
+import os
 from time import time
 import bpy
 
@@ -250,7 +252,7 @@ def create_wmb_meshes(wmb_file, data):
             for bone in mesh.bones:
                 write_uInt16(wmb_file, bone)                    # bones
 
-def create_wmb_mystery(wmb_file, data):
+def create_wmb_mystery(wmb_file, data, CutInfo=None):
     def write_vector3(wmb_file, vec):
         write_float(wmb_file, vec[0])
         write_float(wmb_file, vec[1])
@@ -307,10 +309,15 @@ def create_wmb_mystery(wmb_file, data):
             write_uInt32(wmb_file, entry["material"])
         wmb_file.seek(pos)
     
-    # Slice4Data
+    # Slice4Data (ClsInfo)
     subchunk = data.mystery.mystery[3]["content"]
     wmb_file.seek(data.mystery.mysteryOffsets[3])
-    for mystery4 in subchunk:
+    ClsInfo = None
+    allMeshes = data.meshes.meshes
+    if CutInfo is not None:
+        ClsInfo = CutInfo.find('ClsInfoList')
+        ClsInfo.clear()
+    for i, mystery4 in enumerate(subchunk):
         mystery4["vec_0"].to_wmb(wmb_file)
         mystery4["vec_C"].to_wmb(wmb_file)
         write_uInt32(wmb_file, mystery4["ref5"])
@@ -325,6 +332,51 @@ def create_wmb_mystery(wmb_file, data):
         for val in mystery4["array"]: # 20
             write_uInt32(wmb_file, val)
         wmb_file.seek(pos)
+        # ClsInfo
+        if ClsInfo is not None:
+            searchBatchInd = mystery4["refBatch"]
+            meshName = "unknown"
+            for mesh in allMeshes:
+                if searchBatchInd in mesh.batches0:
+                    meshName = mesh.name
+                    break
+            vertexNums = {14}
+            if "body" in meshName:
+                vertexNums.add(0)
+                vertexNums.add(1)
+                vertexNums.add(39)
+            if "head" in meshName:
+                vertexNums.add(0)
+                vertexNums.add(1)
+            if "R_leg" in meshName:
+                vertexNums.add(9)
+                vertexNums.add(10)
+                vertexNums.add(15)
+                vertexNums.add(27)
+            if "L_leg" in meshName:
+                vertexNums.add(12)
+                vertexNums.add(13)
+                vertexNums.add(29)
+            if "R_arm" in meshName:
+                vertexNums.add(3)
+                vertexNums.add(4)
+                vertexNums.add(23)
+            if "L_arm" in meshName:
+                vertexNums.add(6)
+                vertexNums.add(7)
+                vertexNums.add(25)
+                # vertexNums.add(32)
+            # Now generate the BXM
+            clsEntry = XmlNode()
+            clsEntry.name = "ClsInfo"
+            clsEntry.attributes['Index'] = str(i)
+            for vNum in vertexNums:
+                clsSubEntry = XmlNode()
+                clsSubEntry.name = "VertexNum"
+                clsSubEntry.attributes['Index'] = str(vNum)
+                clsSubEntry.attributes['Num'] = str(mystery4['faces'].vertexCount)
+                clsEntry.children.append(clsSubEntry)
+            ClsInfo.append(clsEntry.toXml())
     
     # Slice5Data
     subchunk = data.mystery.mystery[4]["content"]

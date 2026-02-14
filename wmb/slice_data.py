@@ -390,7 +390,7 @@ class Slice5Data:
         if collection is None:
             collection = bpy.data.collections['WMB']
         i: str = f"{entry_index:2d}"
-        collection[f"5-{i}-refVertexGroup"] = self.vertGroup_ind
+        collection[f"5-{i}-refVertexGroup"] = self.vertgroup_ind
         collection[f"5-{i}-ref1"] = self.chunk1_ind
         collection[f"5-{i}-short_6"] = self.unk_6
         collection[f"5-{i}-ref3"] = self.chunk3_ind

@@ -138,18 +138,18 @@ class c_batches(object):
                     # Keep previously generated array, just add one more sub-array
                     persist_slice5_array = []
                     
-                    add_item_index = 0
-                    while "5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index) in col:
-                        persist_slice5_array.append(
-                            col["5-%2d-array-%2d"%(obj_vertexGroupIndex,add_item_index)]
-                        )
-                        add_item_index += 1
-                    
                     # Get existing index, or append
-                    if len(persist_slice5_array) > 0:
+                    if obj_vertexGroupIndex in [x.vertgroup_ind for x in Slice5Data.fetch_section()]:
                         gen5_ind = [x.vertgroup_ind for x in Slice5Data.fetch_section()].index(obj_vertexGroupIndex)
+                        add_item_index = 0
+                        while "5-%2d-array-%2d"%(gen5_ind,add_item_index) in col:
+                            persist_slice5_array.append(
+                                col["5-%2d-array-%2d"%(gen5_ind,add_item_index)]
+                            )
+                            add_item_index += 1
                     else:
                         gen5_ind = len(Slice5Data.fetch_section())
+                    
                     Slice5Data(
                         obj_vertexGroupIndex,
                         0, 0,  # Slice1Data index, suspected

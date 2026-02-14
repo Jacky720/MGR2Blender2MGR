@@ -941,7 +941,7 @@ def load_mysterychunk(chunk, collection_name):
     print("\n".join(_4A))
     Slice5Data.store_section([x.data for x in chunk.mystery5])
     print("5A:")
-    printStat([x.data.unk_0 for x in chunk.mystery5])
+    printStat([x.data.vertgroup_ind for x in chunk.mystery5])
     print("5B:")
     printStat([x.data.chunk1_ind for x in chunk.mystery5])
     print("5C:")
