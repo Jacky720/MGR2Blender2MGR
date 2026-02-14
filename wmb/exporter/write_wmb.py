@@ -341,23 +341,23 @@ def create_wmb_mystery(wmb_file, data, CutInfo=None):
                     meshName = mesh.name
                     break
             vertexNums = {14}
-            if "body" in meshName:
+            if any(x in meshName for x in {"body", "belly", "chest"}):
                 vertexNums = vertexNums.union({20, 39})
-            if "head" in meshName or "body" in meshName:
+            if any(x in meshName for x in {"body", "belly", "chest", "head"}):
                 vertexNums = vertexNums.union({0, 1, 21, 31, 33})
-            if "arm_A" in meshName or "body" in meshName:
+            if any(x in meshName for x in {"body", "belly", "chest", "arm_A", "shoulder"}):
                 vertexNums.add(39)
-            if "leg" in meshName:
+            if any(x in meshName for x in {"leg", "hip", "feet"}):
                 vertexNums = vertexNums.union({15, 19, 26, 28})
-            if "_A" in meshName:
+            if any(x in meshName for x in {"_A", "shoulder", "hip"}):
                 vertexNums = vertexNums.union({16, 17, 30})
-            if "R_leg" in meshName:
+            if any(x in meshName for x in {"R_leg", "R_hip", "Rleg"}):
                 vertexNums = vertexNums.union({8, 9, 10, 27})
-            if "L_leg" in meshName:
+            if any(x in meshName for x in {"L_leg", "L_hip", "Lleg"}):
                 vertexNums = vertexNums.union({11, 12, 13, 29})
-            if "R_arm" in meshName:
+            if any(x in meshName for x in {"R_arm", "R_forearm", "R_shoulder"}):
                 vertexNums = vertexNums.union({2, 3, 4, 22, 23})
-            if "L_arm" in meshName:
+            if any(x in meshName for x in {"L_arm", "L_forearm", "L_shoulder"}):
                 vertexNums = vertexNums.union({5, 6, 7, 24, 25, 32})
             # Now generate the BXM
             clsEntry = XmlNode()
