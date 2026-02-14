@@ -342,30 +342,23 @@ def create_wmb_mystery(wmb_file, data, CutInfo=None):
                     break
             vertexNums = {14}
             if "body" in meshName:
-                vertexNums.add(0)
-                vertexNums.add(1)
+                vertexNums = vertexNums.union({20, 39})
+            if "head" in meshName or "body" in meshName:
+                vertexNums = vertexNums.union({0, 1, 21, 31, 33})
+            if "arm_A" in meshName or "body" in meshName:
                 vertexNums.add(39)
-            if "head" in meshName:
-                vertexNums.add(0)
-                vertexNums.add(1)
+            if "leg" in meshName:
+                vertexNums = vertexNums.union({15, 19, 26, 28})
+            if "_A" in meshName:
+                vertexNums = vertexNums.union({16, 17, 30})
             if "R_leg" in meshName:
-                vertexNums.add(9)
-                vertexNums.add(10)
-                vertexNums.add(15)
-                vertexNums.add(27)
+                vertexNums = vertexNums.union({8, 9, 10, 27})
             if "L_leg" in meshName:
-                vertexNums.add(12)
-                vertexNums.add(13)
-                vertexNums.add(29)
+                vertexNums = vertexNums.union({11, 12, 13, 29})
             if "R_arm" in meshName:
-                vertexNums.add(3)
-                vertexNums.add(4)
-                vertexNums.add(23)
+                vertexNums = vertexNums.union({2, 3, 4, 22, 23})
             if "L_arm" in meshName:
-                vertexNums.add(6)
-                vertexNums.add(7)
-                vertexNums.add(25)
-                # vertexNums.add(32)
+                vertexNums = vertexNums.union({5, 6, 7, 24, 25, 32})
             # Now generate the BXM
             clsEntry = XmlNode()
             clsEntry.name = "ClsInfo"

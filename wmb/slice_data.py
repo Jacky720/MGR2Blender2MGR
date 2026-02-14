@@ -420,6 +420,14 @@ class Slice5Data:
             i += 1
         return out
 
+    @staticmethod
+    def sort(collection: bpy.types.Collection = None) -> None:
+        if collection is None:
+            collection = bpy.data.collections["WMB"]
+        section = Slice5Data.fetch_section(collection)
+        section = sorted(section, key=lambda x: x.vertgroup_ind)
+        Slice5Data.store_section(section, collection)
+
 
 """
 Base vertex/face data for later sections
