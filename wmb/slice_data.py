@@ -264,7 +264,7 @@ class Slice4Data:
     unk_0: SVector3
     unk_C: SVector3
     chunk5_ind: int
-    unk_1C: int  # Tentatively submesh index
+    batch_ind: int
     unk_20: int  # short
     unk_22: int  # short, tentatively material index? That can't be right.
     unk_24: int
@@ -272,7 +272,7 @@ class Slice4Data:
     faces: SFaceSet
     
     def __init__(self, unk_0: SVector3 = None, unk_C: SVector3 = None, chunk5_ind: int = 0,
-                 unk_1C: int = 0, unk_20: int = 0, unk_22: int = 0, unk_24: int = 0,
+                 batch_ind: int = 0, unk_20: int = 0, unk_22: int = 0, unk_24: int = 0,
                  unk_array: list[int] = None, faces: SFaceSet = None):
         if unk_0 is None:
             unk_0 = SVector3()
@@ -285,7 +285,7 @@ class Slice4Data:
         self.unk_0 = unk_0
         self.unk_C = unk_C
         self.chunk5_ind = chunk5_ind
-        self.unk_1C = unk_1C
+        self.batch_ind = batch_ind
         self.unk_20 = unk_20
         self.unk_22 = unk_22
         self.unk_24 = unk_24
@@ -299,7 +299,7 @@ class Slice4Data:
         self.unk_0.from_collection(collection[f"4-{i}-vec_0"])
         self.unk_C.from_collection(collection[f"4-{i}-vec_C"])
         self.chunk5_ind = collection[f"4-{i}-ref5"]
-        self.unk_1C = collection[f"4-{i}-int_1C"]
+        self.batch_ind = collection[f"4-{i}-refBatch"]
         self.unk_20 = collection[f"4-{i}-short_20"]
         self.unk_22 = collection[f"4-{i}-short_22"]
         self.unk_24 = collection[f"4-{i}-int_24"]
@@ -315,7 +315,7 @@ class Slice4Data:
         self.unk_0.to_collection(collection, f"4-{i}-vec_0")
         self.unk_C.to_collection(collection, f"4-{i}-vec_C")
         collection[f"4-{i}-ref5"] = self.chunk5_ind
-        collection[f"4-{i}-int_1C"] = self.unk_1C
+        collection[f"4-{i}-refBatch"] = self.batch_ind
         collection[f"4-{i}-short_20"] = self.unk_20
         collection[f"4-{i}-short_22"] = self.unk_22
         collection[f"4-{i}-int_24"] = self.unk_24
@@ -351,18 +351,18 @@ Referenced by Slice4Data (tentative)
 References Slice1Data (tentative), Slice3Data (tentative)
 """
 class Slice5Data:
-    unk_0: int  # loopback ID
+    vertgroup_ind: int
     chunk1_ind: int  # short
     unk_6: int  # short
     chunk3_ind: int  # short, -1 accepted
     unk_A: int  # short
     unk_array: list[list[int]]  # 2D short array
     
-    def __init__(self, unk_0: int = 0, chunk1_ind: int = 0, unk_6: int = 0,
+    def __init__(self, vertgroup_ind: int = 0, chunk1_ind: int = 0, unk_6: int = 0,
                  chunk3_ind: int = -1, unk_A: int = 0, unk_array: list[list[int]] = None):
         if unk_array is None:
             unk_array = []
-        self.unk_0 = unk_0
+        self.vertgroup_ind = vertgroup_ind
         self.chunk1_ind = chunk1_ind
         self.unk_6 = unk_6
         self.chunk3_ind = chunk3_ind
@@ -373,7 +373,7 @@ class Slice5Data:
         if collection is None:
             collection = bpy.data.collections['WMB']
         i: str = f"{entry_index:2d}"
-        self.unk_0 = collection[f"5-{i}-int_0"]
+        self.vertgroup_ind = collection[f"5-{i}-refVertexGroup"]
         self.chunk1_ind = collection[f"5-{i}-ref1"]
         self.unk_6 = collection[f"5-{i}-short_6"]
         self.chunk3_ind = collection[f"5-{i}-ref3"]
@@ -390,7 +390,7 @@ class Slice5Data:
         if collection is None:
             collection = bpy.data.collections['WMB']
         i: str = f"{entry_index:2d}"
-        collection[f"5-{i}-int_0"] = self.unk_0
+        collection[f"5-{i}-refVertexGroup"] = self.vertGroup_ind
         collection[f"5-{i}-ref1"] = self.chunk1_ind
         collection[f"5-{i}-short_6"] = self.unk_6
         collection[f"5-{i}-ref3"] = self.chunk3_ind

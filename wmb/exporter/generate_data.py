@@ -122,13 +122,13 @@ class c_batches(object):
                     obj_boneSetIndex = -1
                 
                 batches.append(c_batch(obj, obj_vertexGroupIndex, cur_indexStart, 0, obj_boneSetIndex, cur_numVertexes))
-                if BALLIN:
+                if BALLIN and obj.get('batchGroup') == 0:
                     col = bpy.data.collections["WMB"]
                     Slice4Data(
                         SVector3(boundingBoxXYZ),
                         SVector3(boundingBoxUVW),
                         obj_vertexGroupIndex,  # Slice5Data index
-                        len(batches) - 1,  # Submesh index?
+                        len(batches) - 1,  # Submesh index
                         0, obj['Materials'][0],
                         1,
                         [],
@@ -145,12 +145,17 @@ class c_batches(object):
                         )
                         add_item_index += 1
                     
+                    # Get existing index, or append
+                    if len(persist_slice5_array) > 0:
+                        gen5_ind = [x.vertgroup_ind for x in Slice5Data.fetch_section()].index(obj_vertexGroupIndex)
+                    else:
+                        gen5_ind = len(Slice5Data.fetch_section())
                     Slice5Data(
                         obj_vertexGroupIndex,
                         0, 0,  # Slice1Data index, suspected
                         0 if any(k.startswith("3-") for k in col.keys()) else -1, 0,  # Slice3Data (materials) index, suspected
-                        persist_slice5_array + [[len(batches) - 1]]
-                    ).to_collection(obj_vertexGroupIndex)
+                        persist_slice5_array + [[ballin_index]]
+                    ).to_collection(gen5_ind)
                     
                     ballin_index += 1
                 cur_indexStart += batches[-1].numIndexes
@@ -955,7 +960,7 @@ class c_mystery(object):
                     "vec_0": data.unk_0,
                     "vec_C": data.unk_C,
                     "ref5": data.chunk5_ind,
-                    "int_1C": data.unk_1C,
+                    "refBatch": data.batch_ind,
                     "short_20": data.unk_20,
                     "short_22": data.unk_22,
                     "int_24": data.unk_24,
@@ -980,7 +985,7 @@ class c_mystery(object):
                 currentOffset += 16 - (currentOffset % 16)
             for data in values:
                 appendVal = {
-                    "int_0": data.unk_0,
+                    "refVertexGroup": data.vertgroup_ind,
                     "ref1": data.chunk1_ind,
                     "short_6": data.unk_6,
                     "ref3": data.chunk3_ind,

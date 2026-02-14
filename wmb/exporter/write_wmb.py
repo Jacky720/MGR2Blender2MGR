@@ -314,7 +314,7 @@ def create_wmb_mystery(wmb_file, data):
         mystery4["vec_0"].to_wmb(wmb_file)
         mystery4["vec_C"].to_wmb(wmb_file)
         write_uInt32(wmb_file, mystery4["ref5"])
-        write_uInt32(wmb_file, mystery4["int_1C"])
+        write_uInt32(wmb_file, mystery4["refBatch"])
         write_uInt16(wmb_file, mystery4["short_20"])
         write_uInt16(wmb_file, mystery4["short_22"])
         write_uInt32(wmb_file, mystery4["int_24"])
@@ -331,7 +331,7 @@ def create_wmb_mystery(wmb_file, data):
     wmb_file.seek(data.mystery.mysteryOffsets[4])
     for mystery5 in subchunk:
         #print("Writing mystery5 entry at", wmb_file.tell())
-        write_uInt32(wmb_file, mystery5["int_0"])
+        write_uInt32(wmb_file, mystery5["refVertexGroup"])
         write_Int16(wmb_file, mystery5["ref1"])
         write_Int16(wmb_file, mystery5["short_6"])
         write_Int16(wmb_file, mystery5["ref3"])
